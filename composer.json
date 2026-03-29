@@ -1,71 +1,80 @@
 {
-    "name": "php-imap/php-imap",
-    "description": "Manage mailboxes, filter/get/delete emails in PHP (supports IMAP/POP3/NNTP)",
-    "keywords": [
-        "PHP",
-        "mail",
-        "IMAP",
-        "POP3",
-        "mailbox",
-        "receive emails"
-    ],
-    "homepage": "https://github.com/barbushin/php-imap",
-    "license": "MIT",
-    "type": "library",
-    "authors": [
-        {
-            "name": "Sergey Barbushin",
-            "homepage": "http://linkedin.com/in/barbushin",
-            "email": "barbushin@gmail.com"
-        }
-    ],
-    "config": {
-        "sort-packages": true
-    },
-    "require": {
-        "php": "^8.1",
-        "ext-fileinfo": "*",
-        "ext-iconv": "*",
-        "ext-imap": "*",
-        "ext-mbstring": "*",
-        "ext-json": "*",
-        "ext-random": "*"
-    },
-    "require-dev": {
-        "friendsofphp/php-cs-fixer": "^3.38",
-        "maglnet/composer-require-checker": "^4.7",
-        "nikic/php-parser": "^4.17",
-        "paragonie/hidden-string": "^2.0",
-        "php-parallel-lint/php-parallel-lint": "^1.3",
-        "phpunit/phpunit": "^10.5.10",
-        "povils/phpmnd": "^3.4",
-        "psalm/plugin-phpunit": "^0.18.4",
-        "roave/security-advisories": "dev-master"
-    },
-    "scripts": {
-        "static-analysis": [
-            "parallel-lint .php-cs-fixer.dist.php src tests examples",
-            "composer-require-checker check --config-file=composer-require-checker.config.json ./composer.json",
-            "phpmnd ./ --exclude=./.github/ --exclude=./examples/ --exclude=./vendor/ --hint",
-            "php-cs-fixer fix --allow-risky=yes --no-interaction --dry-run -v",
-            "psalm --show-info=false"
-        ],
-        "tests": [
-            "@static-analysis",
-            "phpunit --testdox"
-        ]
-    },
-    "suggest": {
-        "ext-fileinfo": "To facilitate IncomingMailAttachment::getFileInfo() auto-detection"
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "PhpImap\\": "tests/unit"
-        }
-    },
-    "autoload": {
-        "psr-4": {
-            "PhpImap\\": "src/PhpImap"
-        }
-    }
+	"name": "php-imap/php-imap",
+	"description": "Manage mailboxes, filter/get/delete emails in PHP (supports IMAP/POP3/NNTP)",
+	"keywords": [
+		"PHP",
+		"mail",
+		"IMAP",
+		"POP3",
+		"mailbox",
+		"receive emails"
+	],
+	"homepage": "https://github.com/barbushin/php-imap",
+	"license": "MIT",
+	"type": "library",
+	"authors": [
+		{
+			"name": "Sergey Barbushin",
+			"homepage": "http://linkedin.com/in/barbushin",
+			"email": "barbushin@gmail.com"
+		},
+		{
+			"name": "Sebastian Fischer",
+			"homepage": "https://github.com/garbast",
+			"email": "php-imap@fischer.im"
+		}
+	],
+	"config": {
+		"sort-packages": true
+	},
+	"require": {
+		"php": "^8.1",
+		"ext-fileinfo": "*",
+		"ext-iconv": "*",
+		"ext-imap": "*",
+		"ext-mbstring": "*",
+		"ext-json": "*",
+		"ext-random": "*"
+	},
+	"require-dev": {
+		"friendsofphp/php-cs-fixer": "^3.4",
+		"maglnet/composer-require-checker": "^4.15.0",
+		"paragonie/hidden-string": "^2.0",
+		"phpunit/phpunit": "^11.5.55",
+		"povils/phpmnd": "^3.6.1",
+		"phpstan/phpstan": "^2.1.43",
+		"phpstan/phpstan-phpunit": "^2.0.8",
+		"roave/security-advisories": "dev-latest"
+	},
+	"scripts": {
+		"php-cs-fixer-check": "php-cs-fixer check -v --diff --config=Build/php-cs-fixer/config.php",
+		"php-cs-fixer-fix": "php-cs-fixer fix --no-interaction --dry-run -v --config=Build/php-cs-fixer/config.php",
+		"phpmd": "phpmnd ./ --exclude=./.ddev/ --exclude=./.github/ --exclude=./examples/ --exclude=./vendor/ --hint",
+		"composer-require-checker": "composer-require-checker check --config-file=Build/composer-require-checker.config.json composer.json",
+		"phpstan": "phpstan analyse --configuration Build/phpstan/phpstan.neon",
+		"static-analysis": [
+			"@php-cs-fixer-check",
+			"@composer-require-checker",
+			"@phpmd",
+			"@php-cs-fixer-fix",
+			"@phpstan"
+		],
+		"tests": [
+			"@static-analysis",
+			"phpunit --testdox --configuration Build/phpunit/UnitTests.xml"
+		]
+	},
+	"suggest": {
+		"ext-fileinfo": "To facilitate IncomingMailAttachment::getFileInfo() auto-detection"
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"PhpImap\\": "tests/unit"
+		}
+	},
+	"autoload": {
+		"psr-4": {
+			"PhpImap\\": "src/PhpImap"
+		}
+	}
 }

@@ -1,15 +1,26 @@
 root = true
 
 [*]
+charset = utf-8
+end_of_line = lf
 indent_style = space
 indent_size = 4
-end_of_line = lf
-charset = utf-8
-trim_trailing_whitespace = true
 insert_final_newline = true
+trim_trailing_whitespace = true
 
-[*.yml]
+# JSON-Files
+[*.json]
+indent_style = tab
+
+# Markdown-Files
+[*.md]
+max_line_length = 80
+
+# YAML-Files
+[*.{yaml,yml}]
 indent_size = 2
 
-[composer.json]
-indent_style = space
+# NEON-Files
+[*.neon]
+indent_size = 2
+indent_style = tab
