@@ -9,8 +9,12 @@
  */
 declare(strict_types=1);
 
-namespace PhpImap;
+namespace PhpImap\Tests\Unit;
 
+use PhpImap\DataPartInfo;
+use PhpImap\Mailbox;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 class LiveMailboxStringDecodingConvertingTest extends TestCase
@@ -71,9 +75,9 @@ class LiveMailboxStringDecodingConvertingTest extends TestCase
 
     /**
      * Test that string decoding and converting works as expected.
-     *
-     * @dataProvider stringDecodeProvider
      */
+    #[Test]
+    #[DataProvider('stringDecodeProvider')]
     public function testStringDecode(int $encoding, string $charset, string $iso_8859_2, string $utf8, string $sha256): void
     {
         $mailbox = new Mailbox('', '', '');

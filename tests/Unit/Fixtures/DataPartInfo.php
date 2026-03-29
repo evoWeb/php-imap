@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpImap\Fixtures;
+namespace PhpImap\Tests\Unit\Fixtures;
 
 use PhpImap\DataPartInfo as Base;
 

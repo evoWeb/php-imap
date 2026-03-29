@@ -9,12 +9,14 @@
  */
 declare(strict_types=1);
 
-namespace PhpImap;
+namespace PhpImap\Tests\Unit;
 
-use Generator;
 use ParagonIE\HiddenString\HiddenString;
 
-use function date;
+use PhpImap\Imap;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\Test;
 
 /**
  * @phpstan-type MAILBOX_ARGS = array{
@@ -35,11 +37,11 @@ use function date;
  *	description?:string,
  *	disposition?:array{filename:string}
  * }>
- *
- * @todo see @todo of Imap::mail_compose()
  */
 class LiveMailboxTest extends AbstractLiveMailboxTest
 {
+    use LiveMailboxAppendTestTrait;
+
     public const RANDOM_MAILBOX_SAMPLE_SIZE = 3;
 
     public const ISSUE_EXPECTED_ATTACHMENT_COUNT = [
@@ -47,11 +49,9 @@ class LiveMailboxTest extends AbstractLiveMailboxTest
         391 => 2,
     ];
 
-    /**
-     * @dataProvider MailBoxProvider
-     *
-     * @group live
-     */
+    #[Test]
+    #[DataProvider('MailBoxProvider')]
+    #[Group('live')]
     public function testGetImapStream(HiddenString $imapPath, HiddenString $login, HiddenString $password, string $attachmentsDir, string $serverEncoding = 'UTF-8'): void
     {
         [$mailbox, $remove_mailbox] = $this->getMailbox(
@@ -62,7 +62,7 @@ class LiveMailboxTest extends AbstractLiveMailboxTest
             $serverEncoding
         );
 
-        /** @var \Throwable|null */
+        /** @var \Throwable|null $exception */
         $exception = null;
 
         try {
@@ -96,8 +96,8 @@ class LiveMailboxTest extends AbstractLiveMailboxTest
 
                 $unix = \strtotime($check->Date);
 
-                if ($unix === false && \preg_match('/[+-]\d{1,2}:?\d{2} \([^\)]+\)$/', $check->Date)) {
-                    /** @var int */
+                if ($unix === false && \preg_match('/[+-]\d{1,2}:?\d{2} \([^)]+\)$/', $check->Date)) {
+                    /** @var int $pos */
                     $pos = \strrpos($check->Date, '(');
 
                     // Although the date property is likely RFC2822-compliant, it will not be parsed by strtotime()
@@ -137,7 +137,7 @@ class LiveMailboxTest extends AbstractLiveMailboxTest
     }
 
     /**
-     * @phpstan-return Generator<int, array{0: array{subject: string}, 1: array{0: array{type: 0|1|3, 'contents.data'?: string, encoding?: 3, subtype?: 'octet-stream', description?: '.gitignore'|'gitignore.', 'disposition.type'?: 'attachment', disposition?: array{filename: '.gitignore'|'gitignore.'}, 'type.parameters'?: array{name: '.gitignore'|'gitignore.'}}, 1?: array{type: 0, 'contents.data': 'test'}, 2?: array{type: 3, encoding: 3, subtype: 'octet-stream', description: 'foo.bin', 'disposition.type': 'attachment', disposition: array{filename: 'foo.bin'}, 'type.parameters': array{name: 'foo.bin'}, 'contents.data': string}, 3?: array{type: 3, encoding: 3, subtype: 'octet-stream', description: 'foo.bin', 'disposition.type': 'attachment', disposition: array{filename: 'foo.bin'}, 'type.parameters': array{name: 'foo.bin'}, 'contents.data': string}}, 2: string}, mixed, void>
+     * @phpstan-return \Generator<int, array{0: array{subject: string}, 1: array{0: array{type: 0|1|3, 'contents.data'?: string, encoding?: 3, subtype?: 'octet-stream', description?: '.gitignore'|'gitignore.', 'disposition.type'?: 'attachment', disposition?: array{filename: '.gitignore'|'gitignore.'}, 'type.parameters'?: array{name: '.gitignore'|'gitignore.'}}, 1?: array{type: 0, 'contents.data': 'test'}, 2?: array{type: 3, encoding: 3, subtype: 'octet-stream', description: 'foo.bin', 'disposition.type': 'attachment', disposition: array{filename: 'foo.bin'}, 'type.parameters': array{name: 'foo.bin'}, 'contents.data': string}, 3?: array{type: 3, encoding: 3, subtype: 'octet-stream', description: 'foo.bin', 'disposition.type': 'attachment', disposition: array{filename: 'foo.bin'}, 'type.parameters': array{name: 'foo.bin'}, 'contents.data': string}}, 2: string}, mixed, void>
      */
     public static function ComposeProvider(): \Generator
     {
@@ -289,13 +289,12 @@ class LiveMailboxTest extends AbstractLiveMailboxTest
     }
 
     /**
-     * @dataProvider ComposeProvider
-     *
-     * @group compose
-     *
      * @phpstan-param COMPOSE_ENVELOPE $envelope
      * @phpstan-param COMPOSE_BODY $body
      */
+    #[Test]
+    #[DataProvider('ComposeProvider')]
+    #[Group('compose')]
     public function testMailCompose(array $envelope, array $body, string $expected_result): void
     {
         $actual_result = Imap::mail_compose($envelope, $body);
@@ -309,16 +308,15 @@ class LiveMailboxTest extends AbstractLiveMailboxTest
     }
 
     /**
-     * @dataProvider AppendProvider
-     *
-     * @group live
-     *
      * @depends testAppend
      *
      * @phpstan-param MAILBOX_ARGS $mailbox_args
      * @phpstan-param COMPOSE_ENVELOPE $envelope
      * @phpstan-param COMPOSE_BODY $body
      */
+    #[Test]
+    #[DataProvider('AppendProvider')]
+    #[Group('live')]
     public function testAppendNudgesMailboxCount(
         array $mailbox_args,
         array $envelope,
@@ -398,16 +396,15 @@ class LiveMailboxTest extends AbstractLiveMailboxTest
     }
 
     /**
-     * @dataProvider AppendProvider
-     *
-     * @group live
-     *
      * @depends testAppend
      *
      * @phpstan-param MAILBOX_ARGS $mailbox_args
      * @phpstan-param COMPOSE_ENVELOPE $envelope
      * @phpstan-param COMPOSE_BODY $body
      */
+    #[Test]
+    #[DataProvider('AppendProvider')]
+    #[Group('live')]
     public function testAppendSingleSearchMatchesSort(
         array $mailbox_args,
         array $envelope,
@@ -496,16 +493,15 @@ class LiveMailboxTest extends AbstractLiveMailboxTest
     }
 
     /**
-     * @dataProvider AppendProvider
-     *
-     * @group live
-     *
      * @depends testAppend
      *
      * @phpstan-param MAILBOX_ARGS $mailbox_args
      * @phpstan-param COMPOSE_ENVELOPE $envelope
      * @phpstan-param COMPOSE_BODY $body
      */
+    #[Test]
+    #[DataProvider('AppendProvider')]
+    #[Group('live')]
     public function testAppendRetrievalMatchesExpected(
         array $mailbox_args,
         array $envelope,
@@ -641,16 +637,8 @@ class LiveMailboxTest extends AbstractLiveMailboxTest
         );
     }
 
-    /**
-     * @param string $expected_result
-     * @param string $actual_result
-     *
-     * @return string
-     */
-    protected function ReplaceBoundaryHere(
-        $expected_result,
-        $actual_result
-    ) {
+    protected function ReplaceBoundaryHere(string $expected_result, string $actual_result): string
+    {
         if (
             \preg_match('/{{REPLACE_BOUNDARY_HERE}}/', $expected_result) === 1 &&
             \preg_match(

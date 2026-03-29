@@ -450,7 +450,7 @@ class Mailbox
      */
     public function encodeStringToUtf7Imap(string $str): string
     {
-        return imap_utf7_encode($str);
+        return \mb_convert_encoding($str, 'UTF7-IMAP', 'UTF-8');
     }
 
     /**

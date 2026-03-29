@@ -9,10 +9,13 @@
  */
 declare(strict_types=1);
 
-namespace PhpImap;
+namespace PhpImap\Tests\Unit;
 
 use Generator;
 use ParagonIE\HiddenString\HiddenString;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\Test;
 
 /**
  * @phpstan-type MAILBOX_ARGS = array{
@@ -36,6 +39,8 @@ use ParagonIE\HiddenString\HiddenString;
  */
 class LiveMailboxIssue250Test extends AbstractLiveMailboxTest
 {
+    use LiveMailboxAppendTestTrait;
+
     /**
      * @phpstan-return Generator<int, array{0: array{subject: string}, 1: array{0: array{type: 0, 'contents.data': 'test'}}, 2: string}, mixed, void>
      */
@@ -62,15 +67,14 @@ class LiveMailboxIssue250Test extends AbstractLiveMailboxTest
     }
 
     /**
-     * @dataProvider AppendProvider
-     *
-     * @group live
-     * @group live-issue-250
-     *
      * @phpstan-param MAILBOX_ARGS $mailbox_args
      * @phpstan-param COMPOSE_ENVELOPE $envelope
      * @phpstan-param COMPOSE_BODY $body
      */
+    #[Test]
+    #[DataProvider('AppendProvider')]
+    #[Group('live')]
+    #[Group('live-issue-250')]
     public function testAppend(
         array $mailbox_args,
         array $envelope,
@@ -78,12 +82,6 @@ class LiveMailboxIssue250Test extends AbstractLiveMailboxTest
         string $_expected_compose_result,
         bool $pre_compose
     ): void {
-        parent::testAppend(
-            $mailbox_args,
-            $envelope,
-            $body,
-            $_expected_compose_result,
-            $pre_compose
-        );
+        $this->runAppendTest($mailbox_args, $envelope, $body, $_expected_compose_result, $pre_compose);
     }
 }

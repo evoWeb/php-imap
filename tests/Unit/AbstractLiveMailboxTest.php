@@ -1,0 +1,83 @@
+<?php
+
+/**
+ * Live Mailbox - PHPUnit tests.
+ *
+ * Runs tests on a live mailbox
+ *
+ * @author BAPCLTD-Marv
+ */
+declare(strict_types=1);
+
+namespace PhpImap\Tests\Unit;
+
+use ParagonIE\HiddenString\HiddenString;
+use PHPUnit\Framework\TestCase;
+
+/**
+ * @phpstan-type MAILBOX_ARGS = array{
+ *	0:HiddenString,
+ *	1:HiddenString,
+ *	2:HiddenString,
+ *	3:string,
+ *	4?:string
+ * }
+ * @phpstan-type COMPOSE_ENVELOPE = array{
+ *	subject?:string
+ * }
+ * @phpstan-type COMPOSE_BODY = list<array{
+ *	type?:int,
+ *	encoding?:int,
+ *	charset?:string,
+ *	subtype?:string,
+ *	description?:string,
+ *  'disposition.type'?:string,
+ *  'type.parameters'?:array{name:string},
+ *  'contents.data'?:string,
+ *  id?:string,
+ *	disposition?:array{filename:string}
+ * }>
+ */
+abstract class AbstractLiveMailboxTest extends TestCase
+{
+    use LiveMailboxTestingTrait;
+
+    /**
+     * @phpstan-return \Generator<int, array{COMPOSE_ENVELOPE, COMPOSE_BODY, string}, mixed, void>
+     */
+    public static function ComposeProvider(): \Generator
+    {
+        yield from [];
+    }
+
+    /**
+     * Get subject search criteria and subject.
+     *
+     * @phpstan-param array{subject?:mixed} $envelope
+     *
+     * @phpstan-return array{0:string, 1:string}
+     */
+    protected function SubjectSearchCriteriaAndSubject(array $envelope): array
+    {
+        /** @var string|null */
+        $subject = $envelope['subject'] ?? null;
+
+        self::assertIsString($subject);
+
+        $search_criteria = \sprintf('SUBJECT "%s"', $subject);
+
+        /** @phpstan-var array{0:string, 1:string} */
+        return [$search_criteria, $subject];
+    }
+
+    protected function MaybeSkipAppendTest(array $envelope): bool
+    {
+        if (!isset($envelope['subject'])) {
+            self::markTestSkipped(
+                'Cannot search for message by subject, no subject specified!'
+            );
+        }
+
+        return false;
+    }
+}

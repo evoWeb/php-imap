@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace PhpImap\Fixtures;
+namespace PhpImap\Tests\Unit\Fixtures;
 
-use PhpImap\Mailbox as Base;
+use PhpImap\Mailbox as BaseMailbox;
 
-class Mailbox extends Base
+class Mailbox extends BaseMailbox
 {
     public function getImapPassword(): string
     {

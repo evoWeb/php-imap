@@ -9,10 +9,13 @@
  */
 declare(strict_types=1);
 
-namespace PhpImap;
+namespace PhpImap\Tests\Unit;
 
 use Generator;
 use ParagonIE\HiddenString\HiddenString;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\Test;
 
 /**
  * @phpstan-type MAILBOX_ARGS = array{
@@ -52,13 +55,12 @@ class LiveMailboxWithManualSetupTest extends AbstractLiveMailboxTest
     /**
      * Tests the status of an absolute mailbox path set from the Mailbox constructor.
      *
-     * @dataProvider statusProviderAbsolutePath
-     *
-     * @group live
-     * @group live-manual
-     *
      * @phpstan-param MAILBOX_ARGS $mailbox_args
      */
+    #[Test]
+    #[DataProvider('statusProviderAbsolutePath')]
+    #[Group('live')]
+    #[Group('live-manual')]
     public function testAbsolutePathStatusFromConstruction(
         array $mailbox_args
     ): void {

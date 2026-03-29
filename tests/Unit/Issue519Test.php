@@ -9,8 +9,13 @@
  */
 declare(strict_types=1);
 
-namespace PhpImap;
+namespace PhpImap\Tests\Unit;
 
+use PhpImap\DataPartInfo;
+use PhpImap\Mailbox;
+use PhpImap\IncomingMail;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 class Issue519Test extends TestCase
@@ -116,9 +121,8 @@ class Issue519Test extends TestCase
         return $out;
     }
 
-    /**
-     * @dataProvider provider
-     */
+    #[Test]
+    #[DataProvider('provider')]
     public function test(string $header_value): void
     {
         $mailbox = new Mailbox('', '', '');

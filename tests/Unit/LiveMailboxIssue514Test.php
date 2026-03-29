@@ -9,21 +9,23 @@
  */
 declare(strict_types=1);
 
-namespace PhpImap;
+namespace PhpImap\Tests\Unit;
 
+use PhpImap\Imap;
 use ParagonIE\HiddenString\HiddenString;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\Test;
 
 /**
  * @phpstan-import-type COMPOSE_ENVELOPE from AbstractLiveMailboxTest
  */
 class LiveMailboxIssue514Test extends AbstractLiveMailboxTest
 {
-    /**
-     * @dataProvider MailBoxProvider
-     *
-     * @group live
-     * @group issue-514
-     */
+    #[Test]
+    #[DataProvider('MailBoxProvider')]
+    #[Group('live')]
+    #[Group('live-issue-514')]
     public function testEmbed(
         HiddenString $imapPath,
         HiddenString $login,
@@ -31,10 +33,10 @@ class LiveMailboxIssue514Test extends AbstractLiveMailboxTest
         string $attachmentsDir,
         string $serverEncoding = 'UTF-8'
     ): void {
-        /** @var \Throwable|null */
+        /** @var \Throwable|null $exception */
         $exception = null;
 
-        /** @phpstan-var COMPOSE_ENVELOPE */
+        /** @phpstan-var COMPOSE_ENVELOPE $envelope */
         $envelope = [
             'subject' => 'barbushin/php-imap#514--' . \bin2hex(\random_bytes(16)),
         ];
@@ -99,8 +101,6 @@ class LiveMailboxIssue514Test extends AbstractLiveMailboxTest
             $serverEncoding,
         ]);
 
-        $result = null;
-
         try {
             $search = $mailbox->searchMailbox($search_criteria);
 
@@ -130,7 +130,7 @@ class LiveMailboxIssue514Test extends AbstractLiveMailboxTest
 
             $result = $mailbox->getMail($search[0], false);
 
-            /** @var array<string, int> */
+            /** @var array<string, int> $counts */
             $counts = [];
 
             foreach ($result->getAttachments() as $attachment) {
@@ -169,11 +169,11 @@ class LiveMailboxIssue514Test extends AbstractLiveMailboxTest
 
             $embedded = \implode('', [
                 '<img alt="png" width="5" height="1" src="',
-                'data:image/png; charset=binary;base64, ',
+                'data:image/png;base64, ',
                 $body[3]['contents.data'],
                 '">',
                 '<img alt="webp" width="5" height="1" src="',
-                'data:image/webp; charset=binary;base64, ',
+                'data:image/webp;base64, ',
                 $body[4]['contents.data'],
                 '">',
             ]);

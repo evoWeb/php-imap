@@ -170,7 +170,7 @@ class IncomingMail extends IncomingMailHeader
 
         $match = \preg_match_all('/=["\'](ci?d:([\w\.%*@-]+))["\']/i', $fetchedHtml, $matches);
 
-        /** @phpstan-var array{list<string>, list<non-falsy-string>, list<non-empty-string>} */
+        /** @phpstan-var array{list<string>, list<non-falsy-string>, list<non-empty-string>} $matches */
         $matches = $matches;
 
         return $match ? \array_combine($matches[2], $matches[1]) : [];
@@ -210,23 +210,40 @@ class IncomingMail extends IncomingMailHeader
 
         if (\count($matches[0])) {
             $matches = $matches[0];
-            $attachments = $this->getAttachments();
             foreach ($matches as $match) {
                 $cid = \str_replace('cid:', '', $match);
 
+                /**
+                 * Inline images can contain a "Content-Disposition: inline", but only a "Content-ID" is also enough.
+                 * See https://github.com/barbushin/php-imap/issues/569.
+                 *
+                 * Re-fetch attachments each iteration so removed attachments are excluded.
+                 * Prefer contentId matching; only fall back to disposition-based matching when no contentId match exists,
+                 * to avoid embedding the wrong attachment when multiple inline images are present.
+                 */
+                $attachments = $this->getAttachments();
+                $matched = null;
                 foreach ($attachments as $attachment) {
-                    /**
-                     * Inline images can contain a "Content-Disposition: inline", but only a "Content-ID" is also enough.
-                     * See https://github.com/barbushin/php-imap/issues/569.
-                     */
-                    if ($attachment->contentId == $cid || \mb_strtolower((string)$attachment->disposition) == 'inline') {
-                        $contents = $attachment->getContents();
-                        $contentType = $attachment->getFileInfo(\FILEINFO_MIME_TYPE);
-
-                        if (!\strstr($contentType, 'image')) {
-                            continue;
+                    if ($attachment->contentId == $cid) {
+                        $matched = $attachment;
+                        break;
+                    }
+                }
+                if ($matched === null) {
+                    foreach ($attachments as $attachment) {
+                        if (\mb_strtolower((string)$attachment->disposition) == 'inline') {
+                            $matched = $attachment;
+                            break;
                         }
-                        if (!\is_string($attachment->id)) {
+                    }
+                }
+
+                if ($matched !== null) {
+                    $contents = $matched->getContents();
+                    $contentType = $matched->getFileInfo(\FILEINFO_MIME_TYPE);
+
+                    if (\strstr($contentType, 'image')) {
+                        if (!\is_string($matched->id)) {
                             throw new \InvalidArgumentException('Argument 1 passed to ' . __METHOD__ . '() does not have an id specified!');
                         }
 
@@ -235,7 +252,7 @@ class IncomingMail extends IncomingMailHeader
 
                         $this->textHtml = \str_replace($match, $replacement, $this->textHtml);
 
-                        $this->removeAttachment($attachment->id);
+                        $this->removeAttachment($matched->id);
                     }
                 }
             }

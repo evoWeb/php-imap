@@ -9,8 +9,9 @@
  */
 declare(strict_types=1);
 
-namespace PhpImap;
+namespace PhpImap\Tests\Unit;
 
+use PhpImap\Mailbox;
 use ParagonIE\HiddenString\HiddenString;
 
 /**
@@ -49,15 +50,17 @@ trait LiveMailboxTestingTrait
     /**
      * Get instance of Mailbox, pre-set to a random mailbox.
      *
-     * @param string $attachmentsDir
-     * @param string $serverEncoding
-     *
      * @return (Mailbox|\ParagonIE\HiddenString\HiddenString|string)[]
      *
      * @phpstan-return array{0: Mailbox, 1: string, 2: \ParagonIE\HiddenString\HiddenString}
      */
-    protected function getMailbox(HiddenString $imapPath, HiddenString $login, HiddenString $password, $attachmentsDir, $serverEncoding = 'UTF-8'): array
-    {
+    protected function getMailbox(
+        HiddenString $imapPath,
+        HiddenString $login,
+        HiddenString $password,
+        string $attachmentsDir,
+        string $serverEncoding = 'UTF-8'
+    ): array {
         $mailbox = new Mailbox($imapPath->getString(), $login->getString(), $password->getString(), $attachmentsDir, $serverEncoding);
 
         $random = 'test-box-' . \date('c') . \bin2hex(\random_bytes(4));

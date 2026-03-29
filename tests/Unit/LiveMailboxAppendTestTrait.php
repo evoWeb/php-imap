@@ -9,47 +9,21 @@
  */
 declare(strict_types=1);
 
-namespace PhpImap;
+namespace PhpImap\Tests\Unit;
 
-use ParagonIE\HiddenString\HiddenString;
-use PHPUnit\Framework\TestCase;
+use PhpImap\Imap;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 
 /**
- * @phpstan-type MAILBOX_ARGS = array{
- *	0:HiddenString,
- *	1:HiddenString,
- *	2:HiddenString,
- *	3:string,
- *	4?:string
- * }
- * @phpstan-type COMPOSE_ENVELOPE = array{
- *	subject?:string
- * }
- * @phpstan-type COMPOSE_BODY = list<array{
- *	type?:int,
- *	encoding?:int,
- *	charset?:string,
- *	subtype?:string,
- *	description?:string,
- *  'disposition.type'?:string,
- *  'type.parameters'?:array{name:string},
- *  'contents.data'?:string,
- *  id?:string,
- *	disposition?:array{filename:string}
- * }>
+ * Provides testAppend for test classes that implement ComposeProvider.
+ *
+ * @phpstan-import-type MAILBOX_ARGS from AbstractLiveMailboxTest
+ * @phpstan-import-type COMPOSE_ENVELOPE from AbstractLiveMailboxTest
+ * @phpstan-import-type COMPOSE_BODY from AbstractLiveMailboxTest
  */
-abstract class AbstractLiveMailboxTest extends TestCase
+trait LiveMailboxAppendTestTrait
 {
-    use LiveMailboxTestingTrait;
-
-    /**
-     * @phpstan-return \Generator<int, array{COMPOSE_ENVELOPE, COMPOSE_BODY, string}, mixed, void>
-     */
-    public static function ComposeProvider(): \Generator
-    {
-        yield from [];
-    }
-
     /**
      * @phpstan-return \Generator<int, array{
      *	0:MAILBOX_ARGS,
@@ -61,14 +35,14 @@ abstract class AbstractLiveMailboxTest extends TestCase
      */
     public static function AppendProvider(): \Generator
     {
-        foreach (self::MailBoxProvider() as $mailbox_args) {
-            foreach (self::ComposeProvider() as $compose_args) {
+        foreach (static::MailBoxProvider() as $mailbox_args) {
+            foreach (static::ComposeProvider() as $compose_args) {
                 [$envelope, $body, $expected_compose_result] = $compose_args;
 
                 yield [$mailbox_args, $envelope, $body, $expected_compose_result, false];
             }
 
-            foreach (self::ComposeProvider() as $compose_args) {
+            foreach (static::ComposeProvider() as $compose_args) {
                 [$envelope, $body, $expected_compose_result] = $compose_args;
 
                 yield [$mailbox_args, $envelope, $body, $expected_compose_result, true];
@@ -77,10 +51,6 @@ abstract class AbstractLiveMailboxTest extends TestCase
     }
 
     /**
-     * @dataProvider AppendProvider
-     *
-     * @group live
-     *
      * @depends testGetImapStream
      * @depends testMailCompose
      *
@@ -88,7 +58,24 @@ abstract class AbstractLiveMailboxTest extends TestCase
      * @phpstan-param COMPOSE_ENVELOPE $envelope
      * @phpstan-param COMPOSE_BODY $body
      */
+    #[Test]
+    #[DataProvider('AppendProvider')]
     public function testAppend(
+        array $mailbox_args,
+        array $envelope,
+        array $body,
+        string $_expected_compose_result,
+        bool $pre_compose
+    ): void {
+        $this->runAppendTest($mailbox_args, $envelope, $body, $_expected_compose_result, $pre_compose);
+    }
+
+    /**
+     * @phpstan-param MAILBOX_ARGS $mailbox_args
+     * @phpstan-param COMPOSE_ENVELOPE $envelope
+     * @phpstan-param COMPOSE_BODY $body
+     */
+    protected function runAppendTest(
         array $mailbox_args,
         array $envelope,
         array $body,
@@ -172,36 +159,5 @@ abstract class AbstractLiveMailboxTest extends TestCase
         if ($exception !== null) {
             throw $exception;
         }
-    }
-
-    /**
-     * Get subject search criteria and subject.
-     *
-     * @phpstan-param array{subject?:mixed} $envelope
-     *
-     * @phpstan-return array{0:string, 1:string}
-     */
-    protected function SubjectSearchCriteriaAndSubject(array $envelope): array
-    {
-        /** @var string|null */
-        $subject = $envelope['subject'] ?? null;
-
-        self::assertIsString($subject);
-
-        $search_criteria = \sprintf('SUBJECT "%s"', $subject);
-
-        /** @phpstan-var array{0:string, 1:string} */
-        return [$search_criteria, $subject];
-    }
-
-    protected function MaybeSkipAppendTest(array $envelope): bool
-    {
-        if (!isset($envelope['subject'])) {
-            self::markTestSkipped(
-                'Cannot search for message by subject, no subject specified!'
-            );
-        }
-
-        return false;
     }
 }

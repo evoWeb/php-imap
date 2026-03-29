@@ -1,0 +1,11 @@
+services:
+  imap:
+    image: dovecot/dovecot:latest
+    container_name: ddev-${DDEV_SITENAME}-imap
+    hostname: imap
+    environment:
+      USER_PASSWORD: testpass
+    restart: "no"
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: $DDEV_APPROOT

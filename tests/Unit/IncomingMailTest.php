@@ -5,12 +5,19 @@
 */
 declare(strict_types=1);
 
-namespace PhpImap;
+namespace PhpImap\Tests\Unit;
 
+use PhpImap\DataPartInfo;
+use PhpImap\IncomingMail;
+use PhpImap\IncomingMailAttachment;
+use PhpImap\IncomingMailHeader;
+use PhpImap\Mailbox;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 class IncomingMailTest extends TestCase
 {
+    #[Test]
     public function testSetHeader(): void
     {
         $mail = new IncomingMail();
@@ -40,6 +47,7 @@ class IncomingMailTest extends TestCase
         }
     }
 
+    #[Test]
     public function testDataPartInfo(): void
     {
         $mail = new IncomingMail();
@@ -57,6 +65,7 @@ class IncomingMailTest extends TestCase
         self::assertTrue($mail->__isset('textPlain'));
     }
 
+    #[Test]
     public function testAttachments(): void
     {
         $mail = new IncomingMail();

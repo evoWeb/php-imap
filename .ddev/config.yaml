@@ -8,7 +8,10 @@ additional_hostnames: []
 additional_fqdns: []
 use_dns_when_possible: true
 composer_version: "2"
-web_environment: []
+web_environment:
+    - PHPIMAP_IMAP_PATH={ddev-php-imap-imap:31993/imap/ssl/novalidate-cert}INBOX
+    - PHPIMAP_LOGIN=testuser
+    - PHPIMAP_PASSWORD=testpass
 corepack_enable: false
 omit_containers: [db]
 webimage_extra_packages:

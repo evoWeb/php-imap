@@ -5,10 +5,14 @@
 */
 declare(strict_types=1);
 
-namespace PhpImap;
+namespace PhpImap\Tests\Unit;
 
 use ParagonIE\HiddenString\HiddenString;
 use PhpImap\Exceptions\ConnectionException;
+use PhpImap\Imap;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase as Base;
 
 /**
@@ -57,7 +61,7 @@ class ImapTest extends Base
         if (\is_string($imapPath) && \is_string($login) && \is_string($password)) {
             yield 'CI ENV with invalid password' => [
                 ConnectionException::class,
-                '/^\[AUTHENTICATIONFAILED\].*/',
+                '/.*\[AUTHENTICATIONFAILED\].*/',
                 [
                     new HiddenString($imapPath, true, true),
                     new HiddenString($login, true, true),
@@ -72,11 +76,11 @@ class ImapTest extends Base
     }
 
     /**
-     * @dataProvider OpenFailure
-     *
      * @phpstan-param class-string<\Throwable> $exception
      * @phpstan-param PSALM_OPEN_ARGS $args
      */
+    #[Test]
+    #[DataProvider('OpenFailure')]
     public function testOpenFailure(
         string $exception,
         string $message,
@@ -101,11 +105,9 @@ class ImapTest extends Base
         );
     }
 
-    /**
-     * @dataProvider MailBoxProvider
-     *
-     * @group live
-     */
+    #[Test]
+    #[DataProvider('MailBoxProvider')]
+    #[Group('live')]
     public function testSortEmpty(
         HiddenString $path,
         HiddenString $login,

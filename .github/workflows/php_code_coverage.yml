@@ -8,46 +8,29 @@ on:
 
 jobs:
   coverage:
-    name: Coverage
-    runs-on: ${{ matrix.operating-system }}
+    name: PHPUnit Coverage Check
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        operating-system: ['ubuntu-latest']
-        php-versions: ['8.2', '8.3', '8.4', '8.5']
+        php: [ '8.2', '8.3', '8.4', '8.5' ]
 
     steps:
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: ${{ matrix.php-versions }}
-        coverage: xdebug
+      - name: Checkout code
+        uses: actions/checkout@v6
 
-    - uses: actions/checkout@v6
+      - name: Install PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring,
+          coverage: xdebug, pcov
+          tools: composer:v2
 
-    - name: Validate composer.json and composer.lock
-      run: composer validate
+      - name: Validate composer.json and composer.lock
+        run: composer validate
 
-    - name: Get Composer Cache Directory
-      id: composer-cache
-      run: |
-        echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
 
-    - name: Cache Files
-      uses: actions/cache@v5
-      with:
-        path: |
-          ${{ steps.composer-cache.outputs.dir }}
-          **/.php_cs.cache
-        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-composer-
-    - name: Install dependencies
-      if: steps.composer-cache.outputs.cache-hit != 'true'
-      run: composer install --prefer-dist --no-progress --no-suggest
-
-    - name: Run tests
-      uses: paambaati/codeclimate-action@v9.0.0
-      env:
-        CC_TEST_REPORTER_ID: "945dfb58a832d233a3caeb84e3e6d3be212e8c7abcb48117fce63b9adcb43647"
-      with:
-        coverageCommand: ./vendor/bin/phpunit --testdox --stop-on-failure --coverage-clover=clover.xml
+      - name: Run test suite
+        run: composer run phpunit-coverage

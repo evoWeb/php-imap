@@ -52,6 +52,8 @@
 		"phpmd": "phpmnd ./ --exclude=./.ddev/ --exclude=./.github/ --exclude=./examples/ --exclude=./vendor/ --hint",
 		"composer-require-checker": "composer-require-checker check --config-file=Build/composer-require-checker.config.json composer.json",
 		"phpstan": "phpstan analyse --configuration Build/phpstan/phpstan.neon",
+		"phpunit": "phpunit --no-coverage --configuration Build/phpunit/UnitTests.xml",
+		"phpunit-coverage": "phpunit --coverage-clover --configuration Build/phpunit/UnitTests.xml",
 		"static-analysis": [
 			"@php-cs-fixer-check",
 			"@composer-require-checker",
@@ -61,7 +63,7 @@
 		],
 		"tests": [
 			"@static-analysis",
-			"phpunit --testdox --configuration Build/phpunit/UnitTests.xml"
+			"@phpunit"
 		]
 	},
 	"suggest": {
@@ -69,7 +71,7 @@
 	},
 	"autoload-dev": {
 		"psr-4": {
-			"PhpImap\\": "tests/unit"
+			"PhpImap\\Tests\\": "tests"
 		}
 	},
 	"autoload": {

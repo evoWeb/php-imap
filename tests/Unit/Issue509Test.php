@@ -9,8 +9,10 @@
  */
 declare(strict_types=1);
 
-namespace PhpImap;
+namespace PhpImap\Tests\Unit;
 
+use PhpImap\Mailbox;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 class Issue509Test extends TestCase
@@ -45,6 +47,7 @@ class Issue509Test extends TestCase
     public const sha256 =
         '5656f5f8a872b8989ba3aaecdfbdc6311bf4c5e0219c27b3b004ce83d8ffd6f3';
 
+    #[Test]
     public function testDecode(): void
     {
         $mailbox = new Mailbox('', '', '');
