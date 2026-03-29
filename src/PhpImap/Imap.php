@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @author Barbushin Sergey http://linkedin.com/in/barbushin
  * @author BAPCLTD-Marv
@@ -7,26 +8,7 @@ declare(strict_types=1);
 
 namespace PhpImap;
 
-use const CL_EXPUNGE;
-use const IMAP_CLOSETIMEOUT;
-use const IMAP_OPENTIMEOUT;
-use const IMAP_READTIMEOUT;
-use const IMAP_WRITETIMEOUT;
-use InvalidArgumentException;
-use const NIL;
-use const PHP_MAJOR_VERSION;
 use PhpImap\Exceptions\ConnectionException;
-use const SE_FREE;
-use const SORTARRIVAL;
-use const SORTCC;
-use const SORTDATE;
-use const SORTFROM;
-use const SORTSIZE;
-use const SORTSUBJECT;
-use const SORTTO;
-use stdClass;
-use Throwable;
-use UnexpectedValueException;
 
 /**
  * @psalm-type PARTSTRUCTURE_PARAM = object{attribute:string, value?:string}
@@ -45,27 +27,27 @@ final class Imap
 {
     /** @psalm-var list<int> */
     public const SORT_CRITERIA = [
-        SORTARRIVAL,
-        SORTCC,
-        SORTDATE,
-        SORTFROM,
-        SORTSIZE,
-        SORTSUBJECT,
-        SORTTO,
+        \SORTARRIVAL,
+        \SORTCC,
+        \SORTDATE,
+        \SORTFROM,
+        \SORTSIZE,
+        \SORTSUBJECT,
+        \SORTTO,
     ];
 
     /** @psalm-var list<int> */
     public const TIMEOUT_TYPES = [
-        IMAP_CLOSETIMEOUT,
-        IMAP_OPENTIMEOUT,
-        IMAP_READTIMEOUT,
-        IMAP_WRITETIMEOUT,
+        \IMAP_CLOSETIMEOUT,
+        \IMAP_OPENTIMEOUT,
+        \IMAP_READTIMEOUT,
+        \IMAP_WRITETIMEOUT,
     ];
 
     /** @psalm-var list<int> */
     public const CLOSE_FLAGS = [
         0,
-        CL_EXPUNGE,
+        \CL_EXPUNGE,
     ];
 
     /**
@@ -86,7 +68,7 @@ final class Imap
 
         $imap_stream = self::EnsureConnection($imap_stream, __METHOD__, 1);
 
-        if (null !== $options && null !== $internal_date) {
+        if ($options !== null && $internal_date !== null) {
             $result = \imap_append(
                 $imap_stream,
                 $mailbox,
@@ -94,14 +76,14 @@ final class Imap
                 $options,
                 $internal_date
             );
-        } elseif (null !== $options) {
+        } elseif ($options !== null) {
             $result = \imap_append($imap_stream, $mailbox, $message, $options);
         } else {
             $result = \imap_append($imap_stream, $mailbox, $message);
         }
 
-        if (false === $result) {
-            throw new UnexpectedValueException('Could not append message to mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_append'));
+        if ($result === false) {
+            throw new \UnexpectedValueException('Could not append message to mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_append'));
         }
 
         return $result;
@@ -123,8 +105,8 @@ final class Imap
             $options
         );
 
-        if (false === $result) {
-            throw new UnexpectedValueException('Could not fetch message body from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_body'));
+        if ($result === false) {
+            throw new \UnexpectedValueException('Could not fetch message body from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_body'));
         }
 
         return $result;
@@ -139,8 +121,8 @@ final class Imap
 
         $result = \imap_check(self::EnsureConnection($imap_stream, __METHOD__, 1));
 
-        if (false === $result) {
-            throw new UnexpectedValueException('Could not check imap mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_check'));
+        if ($result === false) {
+            throw new \UnexpectedValueException('Could not check imap mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_check'));
         }
 
         /** @var object */
@@ -174,7 +156,7 @@ final class Imap
         );
 
         if (!$result) {
-            throw new UnexpectedValueException('Could not clear flag on messages!', 0, self::HandleErrors(\imap_errors(), 'imap_clearflag_full'));
+            throw new \UnexpectedValueException('Could not clear flag on messages!', 0, self::HandleErrors(\imap_errors(), 'imap_clearflag_full'));
         }
 
         return $result;
@@ -196,15 +178,15 @@ final class Imap
 
         $result = \imap_close(self::EnsureConnection($imap_stream, __METHOD__, 1), $flag);
 
-        if (false === $result) {
+        if ($result === false) {
             $message = 'Could not close imap connection';
 
-            if (CL_EXPUNGE === ($flag & CL_EXPUNGE)) {
+            if (\CL_EXPUNGE === ($flag & \CL_EXPUNGE)) {
                 $message .= ', messages may not have been expunged';
             }
 
             $message .= '!';
-            throw new UnexpectedValueException($message, 0, self::HandleErrors(\imap_errors(), 'imap_close'));
+            throw new \UnexpectedValueException($message, 0, self::HandleErrors(\imap_errors(), 'imap_close'));
         }
 
         return $result;
@@ -224,8 +206,8 @@ final class Imap
             static::encodeStringToUtf7Imap($mailbox)
         );
 
-        if (false === $result) {
-            throw new UnexpectedValueException('Could not create mailbox!', 0, self::HandleErrors(\imap_errors(), 'createmailbox'));
+        if ($result === false) {
+            throw new \UnexpectedValueException('Could not create mailbox!', 0, self::HandleErrors(\imap_errors(), 'createmailbox'));
         }
 
         return $result;
@@ -261,8 +243,8 @@ final class Imap
             $options
         );
 
-        if (false === $result) {
-            throw new UnexpectedValueException('Could not delete message from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_delete'));
+        if ($result === false) {
+            throw new \UnexpectedValueException('Could not delete message from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_delete'));
         }
 
         return $result;
@@ -282,8 +264,8 @@ final class Imap
             static::encodeStringToUtf7Imap($mailbox)
         );
 
-        if (false === $result) {
-            throw new UnexpectedValueException('Could not delete mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_deletemailbox'));
+        if ($result === false) {
+            throw new \UnexpectedValueException('Could not delete mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_deletemailbox'));
         }
 
         return $result;
@@ -302,8 +284,8 @@ final class Imap
             self::EnsureConnection($imap_stream, __METHOD__, 1)
         );
 
-        if (false === $result) {
-            throw new UnexpectedValueException('Could not expunge messages from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_expunge'));
+        if ($result === false) {
+            throw new \UnexpectedValueException('Could not expunge messages from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_expunge'));
         }
 
         return $result;
@@ -335,8 +317,8 @@ final class Imap
             $options
         );
 
-        if (false === $result) {
-            throw new UnexpectedValueException('Could not fetch overview for message from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_fetch_overview'));
+        if ($result === false) {
+            throw new \UnexpectedValueException('Could not fetch overview for message from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_fetch_overview'));
         }
 
         /** @psalm-var list<object> */
@@ -354,7 +336,7 @@ final class Imap
         int $options = 0
     ): string {
         if (!\is_string($section) && !\is_int($section)) {
-            throw new InvalidArgumentException('Argument 3 passed to '.__METHOD__.'() must be a string or integer, '.\gettype($section).' given!');
+            throw new \InvalidArgumentException('Argument 3 passed to ' . __METHOD__ . '() must be a string or integer, ' . \gettype($section) . ' given!');
         }
 
         \imap_errors(); // flush errors
@@ -362,12 +344,12 @@ final class Imap
         $result = \imap_fetchbody(
             self::EnsureConnection($imap_stream, __METHOD__, 1),
             $msg_number,
-            self::encodeStringToUtf7Imap((string) $section),
+            self::encodeStringToUtf7Imap((string)$section),
             $options
         );
 
-        if (false === $result) {
-            throw new UnexpectedValueException('Could not fetch message body from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_fetchbody'));
+        if ($result === false) {
+            throw new \UnexpectedValueException('Could not fetch message body from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_fetchbody'));
         }
 
         return $result;
@@ -389,8 +371,8 @@ final class Imap
             $options
         );
 
-        if (false === $result) {
-            throw new UnexpectedValueException('Could not fetch message header from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_fetchheader'));
+        if ($result === false) {
+            throw new \UnexpectedValueException('Could not fetch message header from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_fetchheader'));
         }
 
         return $result;
@@ -414,8 +396,8 @@ final class Imap
             $options
         );
 
-        if (false === $result) {
-            throw new UnexpectedValueException('Could not fetch message structure from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_fetchstructure'));
+        if ($result === false) {
+            throw new \UnexpectedValueException('Could not fetch message structure from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_fetchstructure'));
         }
 
         /** @psalm-var PARTSTRUCTURE */
@@ -438,8 +420,8 @@ final class Imap
             self::encodeStringToUtf7Imap($quota_root)
         );
 
-        if (false === $result) {
-            throw new UnexpectedValueException('Could not quota for mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_get_quotaroot'));
+        if ($result === false) {
+            throw new \UnexpectedValueException('Could not quota for mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_get_quotaroot'));
         }
 
         return $result;
@@ -465,10 +447,10 @@ final class Imap
             $pattern
         );
 
-        if (false === $result) {
+        if ($result === false) {
             $errors = \imap_errors();
 
-            if (false === $errors) {
+            if ($errors === false) {
                 /*
                 * if there were no errors then there were no mailboxes,
                 *  rather than a failure to get mailboxes.
@@ -476,7 +458,7 @@ final class Imap
                 return [];
             }
 
-            throw new UnexpectedValueException('Call to imap_getmailboxes() with supplied arguments returned false, not array!', 0, self::HandleErrors(\imap_errors(), 'imap_getmailboxes'));
+            throw new \UnexpectedValueException('Call to imap_getmailboxes() with supplied arguments returned false, not array!', 0, self::HandleErrors(\imap_errors(), 'imap_getmailboxes'));
         }
 
         /** @psalm-var list<object> */
@@ -503,8 +485,8 @@ final class Imap
             $pattern
         );
 
-        if (false === $result) {
-            throw new UnexpectedValueException('Call to imap_getsubscribed() with supplied arguments returned false, not array!', 0, self::HandleErrors(\imap_errors(), 'imap_getsubscribed'));
+        if ($result === false) {
+            throw new \UnexpectedValueException('Call to imap_getsubscribed() with supplied arguments returned false, not array!', 0, self::HandleErrors(\imap_errors(), 'imap_getsubscribed'));
         }
 
         /** @psalm-var list<object> */
@@ -522,8 +504,8 @@ final class Imap
             self::EnsureConnection($imap_stream, __METHOD__, 1)
         );
 
-        if (false === $result) {
-            throw new UnexpectedValueException('Could not fetch headers from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_headers'));
+        if ($result === false) {
+            throw new \UnexpectedValueException('Could not fetch headers from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_headers'));
         }
 
         return $result;
@@ -546,8 +528,8 @@ final class Imap
             static::encodeStringToUtf7Imap($pattern)
         );
 
-        if (false === $result) {
-            throw new UnexpectedValueException('Could not list folders mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_list'));
+        if ($result === false) {
+            throw new \UnexpectedValueException('Could not list folders mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_list'));
         }
 
         return \array_values(\array_map(
@@ -609,8 +591,8 @@ final class Imap
             $options
         );
 
-        if (false === $result) {
-            throw new UnexpectedValueException('Could not copy messages!', 0, self::HandleErrors(\imap_errors(), 'imap_mail_copy'));
+        if ($result === false) {
+            throw new \UnexpectedValueException('Could not copy messages!', 0, self::HandleErrors(\imap_errors(), 'imap_mail_copy'));
         }
 
         return $result;
@@ -642,8 +624,8 @@ final class Imap
             $options
         );
 
-        if (false === $result) {
-            throw new UnexpectedValueException('Could not move messages!', 0, self::HandleErrors(\imap_errors(), 'imap_mail_move'));
+        if ($result === false) {
+            throw new \UnexpectedValueException('Could not move messages!', 0, self::HandleErrors(\imap_errors(), 'imap_mail_move'));
         }
 
         return $result;
@@ -652,7 +634,7 @@ final class Imap
     /**
      * @param false|resource $imap_stream
      */
-    public static function mailboxmsginfo($imap_stream): stdClass
+    public static function mailboxmsginfo($imap_stream): \stdClass
     {
         \imap_errors(); // flush errors
 
@@ -660,8 +642,8 @@ final class Imap
             self::EnsureConnection($imap_stream, __METHOD__, 1)
         );
 
-        if (false === $result) {
-            throw new UnexpectedValueException('Could not fetch mailboxmsginfo from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_mailboxmsginfo'));
+        if ($result === false) {
+            throw new \UnexpectedValueException('Could not fetch mailboxmsginfo from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_mailboxmsginfo'));
         }
 
         return $result;
@@ -676,8 +658,8 @@ final class Imap
 
         $result = \imap_num_msg(self::EnsureConnection($imap_stream, __METHOD__, 1));
 
-        if (false === $result) {
-            throw new UnexpectedValueException('Could not get the number of messages in the mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_num_msg'));
+        if ($result === false) {
+            throw new \UnexpectedValueException('Could not get the number of messages in the mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_num_msg'));
         }
 
         return $result;
@@ -745,7 +727,7 @@ final class Imap
         $result = \imap_renamemailbox($imap_stream, $old_mbox, $new_mbox);
 
         if (!$result) {
-            throw new UnexpectedValueException('Could not rename mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_renamemailbox'));
+            throw new \UnexpectedValueException('Could not rename mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_renamemailbox'));
         }
 
         return $result;
@@ -771,7 +753,7 @@ final class Imap
         $result = \imap_reopen($imap_stream, $mailbox, $options, $n_retries);
 
         if (!$result) {
-            throw new UnexpectedValueException('Could not reopen mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_reopen'));
+            throw new \UnexpectedValueException('Could not reopen mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_reopen'));
         }
 
         return $result;
@@ -799,7 +781,7 @@ final class Imap
         $result = \imap_savebody($imap_stream, $file, $msg_number, $part_number, $options);
 
         if (!$result) {
-            throw new UnexpectedValueException('Could not reopen mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_savebody'));
+            throw new \UnexpectedValueException('Could not reopen mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_savebody'));
         }
 
         return $result;
@@ -815,7 +797,7 @@ final class Imap
     public static function search(
         $imap_stream,
         string $criteria,
-        int $options = SE_FREE,
+        int $options = \SE_FREE,
         ?string $charset = null,
         bool $encodeCriteriaAsUtf7Imap = false
     ): array {
@@ -841,7 +823,7 @@ final class Imap
         if (!$result) {
             $errors = \imap_errors();
 
-            if (false === $errors) {
+            if ($errors === false) {
                 /*
                 * if there were no errors then there were no matches,
                 *  rather than a failure to parse criteria.
@@ -849,7 +831,7 @@ final class Imap
                 return [];
             }
 
-            throw new UnexpectedValueException('Could not search mailbox!', 0, self::HandleErrors($errors, 'imap_search'));
+            throw new \UnexpectedValueException('Could not search mailbox!', 0, self::HandleErrors($errors, 'imap_search'));
         }
 
         /** @psalm-var list<int> */
@@ -866,7 +848,7 @@ final class Imap
         $imap_stream,
         $sequence,
         string $flag,
-        int $options = NIL
+        int $options = \NIL
     ): bool {
         \imap_errors(); // flush errors
 
@@ -883,7 +865,7 @@ final class Imap
         );
 
         if (!$result) {
-            throw new UnexpectedValueException('Could not set flag on messages!', 0, self::HandleErrors(\imap_errors(), 'imap_setflag_full'));
+            throw new \UnexpectedValueException('Could not set flag on messages!', 0, self::HandleErrors(\imap_errors(), 'imap_setflag_full'));
         }
 
         return $result;
@@ -916,15 +898,15 @@ final class Imap
         /** @var int */
         $criteria = $criteria;
 
-        if (PHP_MAJOR_VERSION < 8) {
+        if (\PHP_MAJOR_VERSION < 8) {
             /** @var int */
-            $reverse = (int) $reverse;
+            $reverse = (int)$reverse;
         } else {
             /** @var bool */
             $reverse = $reverse;
         }
 
-        if (null !== $search_criteria && null !== $charset) {
+        if ($search_criteria !== null && $charset !== null) {
             $result = \imap_sort(
                 $imap_stream,
                 $criteria,
@@ -933,7 +915,7 @@ final class Imap
                 self::encodeStringToUtf7Imap($search_criteria),
                 self::encodeStringToUtf7Imap($charset)
             );
-        } elseif (null !== $search_criteria) {
+        } elseif ($search_criteria !== null) {
             $result = \imap_sort(
                 $imap_stream,
                 $criteria,
@@ -950,8 +932,8 @@ final class Imap
             );
         }
 
-        if (false === $result) {
-            throw new UnexpectedValueException('Could not sort messages!', 0, self::HandleErrors(\imap_errors(), 'imap_sort'));
+        if ($result === false) {
+            throw new \UnexpectedValueException('Could not sort messages!', 0, self::HandleErrors(\imap_errors(), 'imap_sort'));
         }
 
         /** @psalm-var list<int> */
@@ -963,7 +945,7 @@ final class Imap
      *
      * @psalm-param SA_MESSAGES|SA_RECENT|SA_UNSEEN|SA_UIDNEXT|SA_UIDVALIDITY|SA_ALL $flags
      */
-    public static function status($imap_stream, string $mailbox, int $options): stdClass
+    public static function status($imap_stream, string $mailbox, int $options): \stdClass
     {
         $imap_stream = self::EnsureConnection($imap_stream, __METHOD__, 1);
 
@@ -974,7 +956,7 @@ final class Imap
         $result = \imap_status($imap_stream, $mailbox, $options);
 
         if (!$result) {
-            throw new UnexpectedValueException('Could not get status of mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_status'));
+            throw new \UnexpectedValueException('Could not get status of mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_status'));
         }
 
         return $result;
@@ -993,8 +975,8 @@ final class Imap
 
         $result = \imap_subscribe($imap_stream, $mailbox);
 
-        if (false === $result) {
-            throw new UnexpectedValueException('Could not subscribe to mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_subscribe'));
+        if ($result === false) {
+            throw new \UnexpectedValueException('Could not subscribe to mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_subscribe'));
         }
     }
 
@@ -1017,8 +999,8 @@ final class Imap
             $timeout
         );
 
-        if (false === $result) {
-            throw new UnexpectedValueException('Could not get/set connection timeout!', 0, self::HandleErrors(\imap_errors(), 'imap_timeout'));
+        if ($result === false) {
+            throw new \UnexpectedValueException('Could not get/set connection timeout!', 0, self::HandleErrors(\imap_errors(), 'imap_timeout'));
         }
 
         return $result;
@@ -1039,8 +1021,8 @@ final class Imap
 
         $result = \imap_unsubscribe($imap_stream, $mailbox);
 
-        if (false === $result) {
-            throw new UnexpectedValueException('Could not unsubscribe from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_unsubscribe'));
+        if ($result === false) {
+            throw new \UnexpectedValueException('Could not unsubscribe from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_unsubscribe'));
         }
     }
 
@@ -1056,7 +1038,7 @@ final class Imap
         $out = \mb_convert_encoding($str, 'UTF7-IMAP', \mb_detect_encoding($str, 'UTF-8, ISO-8859-1, ISO-8859-15', true));
 
         if (!\is_string($out)) {
-            throw new UnexpectedValueException('mb_convert_encoding($str, \'UTF-8\', {detected}) could not convert $str');
+            throw new \UnexpectedValueException('mb_convert_encoding($str, \'UTF-8\', {detected}) could not convert $str');
         }
 
         return $out;
@@ -1074,7 +1056,7 @@ final class Imap
         $out = \mb_convert_encoding($str, 'UTF-8', 'UTF7-IMAP');
 
         if (!\is_string($out)) {
-            throw new UnexpectedValueException('mb_convert_encoding($str, \'UTF-8\', \'UTF7-IMAP\') could not convert $str');
+            throw new \UnexpectedValueException('mb_convert_encoding($str, \'UTF-8\', \'UTF7-IMAP\') could not convert $str');
         }
 
         return $out;
@@ -1083,7 +1065,7 @@ final class Imap
     /**
      * @param false|resource $maybe
      *
-     * @throws InvalidArgumentException if $maybe is not a valid resource
+     * @throws \InvalidArgumentException if $maybe is not a valid resource
      *
      * @return resource
      *
@@ -1092,7 +1074,7 @@ final class Imap
     private static function EnsureResource($maybe, string $method, int $argument)
     {
         if (!$maybe || (!\is_resource($maybe) && !$maybe instanceof \IMAP\Connection)) {
-            throw new InvalidArgumentException('Argument '.(string) $argument.' passed to '.$method.' must be a valid resource!');
+            throw new \InvalidArgumentException('Argument ' . (string)$argument . ' passed to ' . $method . ' must be a valid resource!');
         }
 
         /** @var resource */
@@ -1110,8 +1092,8 @@ final class Imap
     {
         try {
             return self::EnsureResource($maybe, $method, $argument);
-        } catch (Throwable $e) {
-            throw new Exceptions\ConnectionException('Argument '.(string) $argument.' passed to '.$method.' must be valid resource!', 0, $e);
+        } catch (\Throwable $e) {
+            throw new Exceptions\ConnectionException('Argument ' . (string)$argument . ' passed to ' . $method . ' must be valid resource!', 0, $e);
         }
     }
 
@@ -1120,13 +1102,13 @@ final class Imap
      *
      * @psalm-pure
      */
-    private static function HandleErrors($errors, string $method): UnexpectedValueException
+    private static function HandleErrors($errors, string $method): \UnexpectedValueException
     {
         if ($errors) {
-            return new UnexpectedValueException('IMAP method '.$method.'() failed with error: '.\implode('. ', $errors));
+            return new \UnexpectedValueException('IMAP method ' . $method . '() failed with error: ' . \implode('. ', $errors));
         }
 
-        return new UnexpectedValueException('IMAP method '.$method.'() failed!');
+        return new \UnexpectedValueException('IMAP method ' . $method . '() failed!');
     }
 
     /**
@@ -1141,7 +1123,7 @@ final class Imap
         bool $allow_sequence = false
     ): string {
         if (!\is_int($msg_number) && !\is_string($msg_number)) {
-            throw new InvalidArgumentException('Argument 1 passed to '.__METHOD__.'() must be an integer or a string!');
+            throw new \InvalidArgumentException('Argument 1 passed to ' . __METHOD__ . '() must be an integer or a string!');
         }
 
         $regex = '/^\d+:\d+$/';
@@ -1154,8 +1136,9 @@ final class Imap
 
         if (\is_int($msg_number) || \preg_match('/^\d+$/', $msg_number)) {
             return \sprintf('%1$s:%1$s', $msg_number);
-        } elseif (1 !== \preg_match($regex, $msg_number)) {
-            throw new InvalidArgumentException('Argument '.(string) $argument.' passed to '.$method.$suffix);
+        }
+        if (\preg_match($regex, $msg_number) !== 1) {
+            throw new \InvalidArgumentException('Argument ' . (string)$argument . ' passed to ' . $method . $suffix);
         }
 
         return $msg_number;

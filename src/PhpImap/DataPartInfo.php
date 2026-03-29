@@ -4,11 +4,6 @@ declare(strict_types=1);
 
 namespace PhpImap;
 
-use const ENC8BIT;
-use const ENCBASE64;
-use const ENCBINARY;
-use const ENCQUOTEDPRINTABLE;
-
 /**
  * @see https://github.com/barbushin/php-imap
  *
@@ -76,10 +71,10 @@ class DataPartInfo
 
     public function fetch(): string
     {
-        if (0 === $this->part) {
+        if ($this->part === 0) {
             $this->data = Imap::body($this->mail->getImapStream(), $this->id, $this->options);
         } else {
-            if (null !== $this->data) {
+            if ($this->data !== null) {
                 return $this->data;
             }
             $this->data = Imap::fetchbody($this->mail->getImapStream(), $this->id, $this->part, $this->options);
@@ -91,17 +86,17 @@ class DataPartInfo
     public function decodeAfterFetch(string $data): string
     {
         switch ($this->encoding) {
-            case ENC8BIT:
-                $this->data = \imap_utf8((string) $data);
+            case \ENC8BIT:
+                $this->data = \imap_utf8((string)$data);
                 break;
-            case ENCBINARY:
-                $this->data = \imap_binary((string) $data);
+            case \ENCBINARY:
+                $this->data = \imap_binary((string)$data);
                 break;
-            case ENCBASE64:
-                $this->data = \base64_decode((string) $data, false);
+            case \ENCBASE64:
+                $this->data = \base64_decode((string)$data, false);
                 break;
-            case ENCQUOTEDPRINTABLE:
-                $this->data = \quoted_printable_decode((string) $data);
+            case \ENCQUOTEDPRINTABLE:
+                $this->data = \quoted_printable_decode((string)$data);
                 break;
         }
 
@@ -112,7 +107,7 @@ class DataPartInfo
     {
         if (isset($this->charset) && !empty(\trim($this->charset))) {
             $this->data = $this->mail->decodeMimeStr(
-                (string) $this->data // Data to convert
+                (string)$this->data // Data to convert
             );
 
             $this->data = $this->mail->convertToUtf8(
@@ -121,6 +116,6 @@ class DataPartInfo
             );
         }
 
-        return (null === $this->data) ? '' : $this->data;
+        return ($this->data === null) ? '' : $this->data;
     }
 }

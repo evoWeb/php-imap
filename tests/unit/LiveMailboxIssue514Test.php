@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Live Mailbox - PHPUnit tests.
  *
@@ -10,12 +11,7 @@ declare(strict_types=1);
 
 namespace PhpImap;
 
-use const ENCBASE64;
 use ParagonIE\HiddenString\HiddenString;
-use Throwable;
-use const TYPEIMAGE;
-use const TYPEMULTIPART;
-use const TYPETEXT;
 
 /**
  * @psalm-import-type COMPOSE_ENVELOPE from AbstractLiveMailboxTest
@@ -35,29 +31,29 @@ class LiveMailboxIssue514Test extends AbstractLiveMailboxTest
         string $attachmentsDir,
         string $serverEncoding = 'UTF-8'
     ): void {
-        /** @var Throwable|null */
+        /** @var \Throwable|null */
         $exception = null;
 
         $mailboxDeleted = false;
 
         /** @psalm-var COMPOSE_ENVELOPE */
         $envelope = [
-            'subject' => 'barbushin/php-imap#514--'.\bin2hex(\random_bytes(16)),
+            'subject' => 'barbushin/php-imap#514--' . \bin2hex(\random_bytes(16)),
         ];
 
         [$search_criteria] = $this->SubjectSearchCriteriaAndSubject($envelope);
 
         $body = [
             [
-                'type' => TYPEMULTIPART,
+                'type' => \TYPEMULTIPART,
             ],
             [
-                'type' => TYPETEXT,
+                'type' => \TYPETEXT,
                 'subtype' => 'plain',
                 'contents.data' => 'foo',
             ],
             [
-                'type' => TYPETEXT,
+                'type' => \TYPETEXT,
                 'subtype' => 'html',
                 'contents.data' => \implode('', [
                     '<img alt="png" width="5" height="1" src="cid:foo.png">',
@@ -65,29 +61,29 @@ class LiveMailboxIssue514Test extends AbstractLiveMailboxTest
                 ]),
             ],
             [
-                'type' => TYPEIMAGE,
+                'type' => \TYPEIMAGE,
                 'subtype' => 'png',
-                'encoding' => ENCBASE64,
+                'encoding' => \ENCBASE64,
                 'id' => 'foo.png',
                 'description' => 'foo.png',
                 'disposition' => ['filename' => 'foo.png'],
                 'disposition.type' => 'inline',
                 'type.parameters' => ['name' => 'foo.png'],
                 'contents.data' => \base64_encode(
-                    \file_get_contents(__DIR__.'/Fixtures/rgbkw5x1.png')
+                    \file_get_contents(__DIR__ . '/Fixtures/rgbkw5x1.png')
                 ),
             ],
             [
-                'type' => TYPEIMAGE,
+                'type' => \TYPEIMAGE,
                 'subtype' => 'webp',
-                'encoding' => ENCBASE64,
+                'encoding' => \ENCBASE64,
                 'id' => 'foo.webp',
                 'description' => 'foo.webp',
                 'disposition' => ['filename' => 'foo.webp'],
                 'disposition.type' => 'inline',
                 'type.parameters' => ['name' => 'foo.webp'],
                 'contents.data' => \base64_encode(
-                    \file_get_contents(__DIR__.'/Fixtures/rgbkw5x1.webp')
+                    \file_get_contents(__DIR__ . '/Fixtures/rgbkw5x1.webp')
                 ),
             ],
         ];
@@ -110,12 +106,12 @@ class LiveMailboxIssue514Test extends AbstractLiveMailboxTest
         try {
             $search = $mailbox->searchMailbox($search_criteria);
 
-            $this->assertCount(
+            self::assertCount(
                 0,
                 $search,
                 (
-                    'If a subject was found,'.
-                    ' then the message is insufficiently unique to assert that'.
+                    'If a subject was found,' .
+                    ' then the message is insufficiently unique to assert that' .
                     ' a newly-appended message was actually created.'
                 )
             );
@@ -124,12 +120,12 @@ class LiveMailboxIssue514Test extends AbstractLiveMailboxTest
 
             $search = $mailbox->searchMailbox($search_criteria);
 
-            $this->assertCount(
+            self::assertCount(
                 1,
                 $search,
                 (
-                    'If a subject was not found, '.
-                    ' then Mailbox::appendMessageToMailbox() failed'.
+                    'If a subject was not found, ' .
+                    ' then Mailbox::appendMessageToMailbox() failed' .
                     ' despite not throwing an exception.'
                 )
             );
@@ -140,18 +136,18 @@ class LiveMailboxIssue514Test extends AbstractLiveMailboxTest
             $counts = [];
 
             foreach ($result->getAttachments() as $attachment) {
-                if (!isset($counts[(string) $attachment->contentId])) {
-                    $counts[(string) $attachment->contentId] = 0;
+                if (!isset($counts[(string)$attachment->contentId])) {
+                    $counts[(string)$attachment->contentId] = 0;
                 }
 
-                ++$counts[(string) $attachment->contentId];
+                ++$counts[(string)$attachment->contentId];
             }
 
-            $this->assertCount(
+            self::assertCount(
                 2,
                 $counts,
                 (
-                    'counts should only contain foo.png and foo.webp, found: '.
+                    'counts should only contain foo.png and foo.webp, found: ' .
                     \implode(
                         ', ',
                         \array_keys($counts)
@@ -160,14 +156,14 @@ class LiveMailboxIssue514Test extends AbstractLiveMailboxTest
             );
 
             foreach ($counts as $cid => $count) {
-                $this->assertSame(
+                self::assertSame(
                     1,
                     $count,
-                    $cid.' had '.(string) $count.', expected 1.'
+                    $cid . ' had ' . (string)$count . ', expected 1.'
                 );
             }
 
-            $this->assertSame(
+            self::assertSame(
                 'foo',
                 $result->textPlain,
                 'plain text body did not match expected result!'
@@ -184,7 +180,7 @@ class LiveMailboxIssue514Test extends AbstractLiveMailboxTest
                 '">',
             ]);
 
-            $this->assertSame(
+            self::assertSame(
                 [
                     'foo.png' => 'cid:foo.png',
                     'foo.webp' => 'cid:foo.webp',
@@ -203,28 +199,28 @@ class LiveMailboxIssue514Test extends AbstractLiveMailboxTest
             ]);
 
             foreach ($result->getAttachments() as $attachment) {
-                if ('foo.png' === $attachment->contentId) {
+                if ($attachment->contentId === 'foo.png') {
                     $replaced = \str_replace(
                         'foo.png',
-                        '/'.\basename($attachment->filePath),
+                        '/' . \basename($attachment->filePath),
                         $replaced
                     );
-                } elseif ('foo.webp' === $attachment->contentId) {
+                } elseif ($attachment->contentId === 'foo.webp') {
                     $replaced = \str_replace(
                         'foo.webp',
-                        '/'.\basename($attachment->filePath),
+                        '/' . \basename($attachment->filePath),
                         $replaced
                     );
                 }
             }
 
-            $this->assertSame(
+            self::assertSame(
                 $replaced,
                 $result->replaceInternalLinks(''),
                 'replaced html body did not match expected result!'
             );
 
-            $this->assertSame(
+            self::assertSame(
                 $body[2]['contents.data'],
                 $result->textHtml,
                 'unembeded html body did not match expected result!'
@@ -232,14 +228,14 @@ class LiveMailboxIssue514Test extends AbstractLiveMailboxTest
 
             $result->embedImageAttachments();
 
-            $this->assertSame(
+            self::assertSame(
                 $embedded,
                 $result->textHtml,
                 'embeded html body did not match expected result!'
             );
 
             $mailbox->deleteMail($search[0]);
-        } catch (Throwable $ex) {
+        } catch (\Throwable $ex) {
             $exception = $ex;
         } finally {
             $mailbox->switchMailbox($path->getString());
@@ -251,7 +247,7 @@ class LiveMailboxIssue514Test extends AbstractLiveMailboxTest
             $mailbox->disconnect();
         }
 
-        if (null !== $exception) {
+        if ($exception !== null) {
             throw $exception;
         }
     }

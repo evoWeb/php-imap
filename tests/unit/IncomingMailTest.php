@@ -1,4 +1,5 @@
 <?php
+
 /**
 * @author BAPCLTD-Marv
 */
@@ -6,8 +7,6 @@ declare(strict_types=1);
 
 namespace PhpImap;
 
-use const DATE_RFC3339;
-use const ENCOTHER;
 use PHPUnit\Framework\TestCase;
 
 class IncomingMailTest extends TestCase
@@ -23,8 +22,8 @@ class IncomingMailTest extends TestCase
         $mail->isDraft = true;
         $header->isDraft = false;
 
-        $mail->date = \date(DATE_RFC3339, 0);
-        $header->date = \date(DATE_RFC3339, 60 * 60 * 24);
+        $mail->date = \date(\DATE_RFC3339, 0);
+        $header->date = \date(\DATE_RFC3339, 60 * 60 * 24);
 
         $mail->setHeader($header);
 
@@ -37,7 +36,7 @@ class IncomingMailTest extends TestCase
         ) {
             /** @var scalar|array|object|resource|null */
             $headerPropertyValue = $header->$property;
-            $this->assertSame($headerPropertyValue, $mail->$property);
+            self::assertSame($headerPropertyValue, $mail->$property);
         }
     }
 
@@ -46,48 +45,48 @@ class IncomingMailTest extends TestCase
         $mail = new IncomingMail();
         $mailbox = new Mailbox('', '', '');
 
-        $data_part = new Fixtures\DataPartInfo($mailbox, 1, 0, ENCOTHER, 0);
+        $data_part = new Fixtures\DataPartInfo($mailbox, 1, 0, \ENCOTHER, 0);
         $data_part->setData('foo');
 
-        $this->assertSame('foo', $data_part->fetch());
+        self::assertSame('foo', $data_part->fetch());
 
         $mail->addDataPartInfo($data_part, DataPartInfo::TEXT_PLAIN);
 
-        $this->assertSame('foo', $mail->textPlain);
+        self::assertSame('foo', $mail->textPlain);
 
-        $this->assertTrue($mail->__isset('textPlain'));
+        self::assertTrue($mail->__isset('textPlain'));
     }
 
     public function testAttachments(): void
     {
         $mail = new IncomingMail();
 
-        $this->assertFalse($mail->hasAttachments());
-        $this->assertSame([], $mail->getAttachments());
+        self::assertFalse($mail->hasAttachments());
+        self::assertSame([], $mail->getAttachments());
 
         $attachments = [
             new IncomingMailAttachment(),
         ];
 
         foreach ($attachments as $i => $attachment) {
-            $attachment->id = (string) $i;
+            $attachment->id = (string)$i;
             $mail->addAttachment($attachment);
         }
 
-        $this->assertTrue($mail->hasAttachments());
-        $this->assertSame($attachments, $mail->getAttachments());
+        self::assertTrue($mail->hasAttachments());
+        self::assertSame($attachments, $mail->getAttachments());
 
         foreach ($attachments as $attachment) {
-            $this->assertIsString($attachment->id);
-            $this->assertTrue($mail->removeAttachment($attachment->id));
+            self::assertIsString($attachment->id);
+            self::assertTrue($mail->removeAttachment($attachment->id));
         }
 
-        $this->assertFalse($mail->hasAttachments());
-        $this->assertSame([], $mail->getAttachments());
+        self::assertFalse($mail->hasAttachments());
+        self::assertSame([], $mail->getAttachments());
 
         foreach ($attachments as $attachment) {
-            $this->assertIsString($attachment->id);
-            $this->assertFalse($mail->removeAttachment($attachment->id));
+            self::assertIsString($attachment->id);
+            self::assertFalse($mail->removeAttachment($attachment->id));
         }
     }
 }

@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace PhpImap;
 
-use const FILEINFO_NONE;
-use finfo;
-use UnexpectedValueException;
-
 /**
  * @see https://github.com/barbushin/php-imap
  *
@@ -84,7 +80,7 @@ class IncomingMailAttachment
      */
     public function __get(string $name)
     {
-        if ('filePath' !== $name) {
+        if ($name !== 'filePath') {
             \trigger_error("Undefined property: IncomingMailAttachment::$name");
         }
 
@@ -128,9 +124,9 @@ class IncomingMailAttachment
      *
      * @psalm-param fileinfoconst $fileinfo_const
      */
-    public function getFileInfo(int $fileinfo_const = FILEINFO_NONE): string
+    public function getFileInfo(int $fileinfo_const = \FILEINFO_NONE): string
     {
-        $finfo = new finfo($fileinfo_const);
+        $finfo = new \finfo($fileinfo_const);
 
         return $finfo->buffer($this->getContents());
     }
@@ -140,8 +136,8 @@ class IncomingMailAttachment
      */
     public function getContents(): string
     {
-        if (null === $this->dataInfo) {
-            throw new UnexpectedValueException(static::class.'::$dataInfo has not been set by calling '.self::class.'::addDataPartInfo()');
+        if ($this->dataInfo === null) {
+            throw new \UnexpectedValueException(static::class . '::$dataInfo has not been set by calling ' . self::class . '::addDataPartInfo()');
         }
 
         return $this->dataInfo->fetch();
@@ -154,11 +150,11 @@ class IncomingMailAttachment
      */
     public function saveToDisk(): bool
     {
-        if (null === $this->dataInfo) {
+        if ($this->dataInfo === null) {
             return false;
         }
 
-        if (false === \file_put_contents($this->__get('filePath'), $this->dataInfo->fetch())) {
+        if (\file_put_contents($this->__get('filePath'), $this->dataInfo->fetch()) === false) {
             unset($this->filePath, $this->file_path);
 
             return false;

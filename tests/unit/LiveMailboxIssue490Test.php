@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Live Mailbox - PHPUnit tests.
  *
@@ -10,10 +11,7 @@ declare(strict_types=1);
 
 namespace PhpImap;
 
-use Exception;
 use ParagonIE\HiddenString\HiddenString;
-use const TYPEMULTIPART;
-use const TYPETEXT;
 
 /**
  * @psalm-type MAILBOX_ARGS = array{
@@ -51,7 +49,7 @@ class LiveMailboxIssue490Test extends AbstractLiveMailboxTest
 
         try {
             $envelope = [
-                'subject' => 'barbushin/php-imap#501: '.\bin2hex(\random_bytes(16)),
+                'subject' => 'barbushin/php-imap#501: ' . \bin2hex(\random_bytes(16)),
             ];
 
             [$search_criteria] = $this->SubjectSearchCriteriaAndSubject(
@@ -60,12 +58,12 @@ class LiveMailboxIssue490Test extends AbstractLiveMailboxTest
 
             $search = $mailbox->searchMailbox($search_criteria);
 
-            $this->assertCount(
+            self::assertCount(
                 0,
                 $search,
                 (
-                    'If a subject was found,'.
-                    ' then the message is insufficiently unique to assert that'.
+                    'If a subject was found,' .
+                    ' then the message is insufficiently unique to assert that' .
                     ' a newly-appended message was actually created.'
                 )
             );
@@ -74,14 +72,14 @@ class LiveMailboxIssue490Test extends AbstractLiveMailboxTest
                 $envelope,
                 [
                     [
-                        'type' => TYPEMULTIPART,
+                        'type' => \TYPEMULTIPART,
                     ],
                     [
-                        'type' => TYPETEXT,
+                        'type' => \TYPETEXT,
                         'contents.data' => 'foo',
                     ],
                     [
-                        'type' => TYPEMULTIPART,
+                        'type' => \TYPEMULTIPART,
                         'subtype' => 'plain',
                         'description' => 'bar.txt',
                         'disposition.type' => 'attachment',
@@ -90,7 +88,7 @@ class LiveMailboxIssue490Test extends AbstractLiveMailboxTest
                         'contents.data' => 'bar',
                     ],
                     [
-                        'type' => TYPEMULTIPART,
+                        'type' => \TYPEMULTIPART,
                         'subtype' => 'plain',
                         'description' => 'baz.txt',
                         'disposition.type' => 'attachment',
@@ -105,28 +103,28 @@ class LiveMailboxIssue490Test extends AbstractLiveMailboxTest
 
             $search = $mailbox->searchMailbox($search_criteria);
 
-            $this->assertCount(
+            self::assertCount(
                 1,
                 $search,
                 (
-                    'If a subject was not found, '.
-                    ' then Mailbox::appendMessageToMailbox() failed'.
+                    'If a subject was not found, ' .
+                    ' then Mailbox::appendMessageToMailbox() failed' .
                     ' despite not throwing an exception.'
                 )
             );
 
             $mail = $mailbox->getMail($search[0], false);
 
-            $this->assertSame('foo', $mail->textPlain);
+            self::assertSame('foo', $mail->textPlain);
 
             $attachments = $mail->getAttachments();
             $keys = \array_keys($attachments);
 
-            $this->assertCount(2, $attachments);
+            self::assertCount(2, $attachments);
 
-            $this->assertSame('bar', $attachments[$keys[0]]->getContents());
-            $this->assertSame('baz', $attachments[$keys[1]]->getContents());
-        } catch (Exception $ex) {
+            self::assertSame('bar', $attachments[$keys[0]]->getContents());
+            self::assertSame('baz', $attachments[$keys[1]]->getContents());
+        } catch (\Exception $ex) {
             $exception = $ex;
         } finally {
             $mailbox->switchMailbox($imapPath->getString());
@@ -134,7 +132,7 @@ class LiveMailboxIssue490Test extends AbstractLiveMailboxTest
             $mailbox->disconnect();
         }
 
-        if (null !== $exception) {
+        if ($exception !== null) {
             throw $exception;
         }
     }

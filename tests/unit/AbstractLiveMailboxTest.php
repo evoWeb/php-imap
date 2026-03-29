@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Live Mailbox - PHPUnit tests.
  *
@@ -13,7 +14,6 @@ namespace PhpImap;
 use Generator;
 use ParagonIE\HiddenString\HiddenString;
 use PHPUnit\Framework\TestCase;
-use Throwable;
 
 /**
  * @psalm-type MAILBOX_ARGS = array{
@@ -46,7 +46,7 @@ abstract class AbstractLiveMailboxTest extends TestCase
     /**
      * @psalm-return Generator<empty, empty, mixed, void>
      */
-    public static function ComposeProvider(): Generator
+    public static function ComposeProvider(): \Generator
     {
         yield from [];
     }
@@ -60,7 +60,7 @@ abstract class AbstractLiveMailboxTest extends TestCase
      *	4:bool
      * }, mixed, void>
      */
-    public static function AppendProvider(): Generator
+    public static function AppendProvider(): \Generator
     {
         foreach (self::MailBoxProvider() as $mailbox_args) {
             foreach (self::ComposeProvider() as $compose_args) {
@@ -106,7 +106,7 @@ abstract class AbstractLiveMailboxTest extends TestCase
             $mailbox_args
         );
 
-        /** @var Throwable|null */
+        /** @var \Throwable|null */
         $exception = null;
 
         $mailboxDeleted = false;
@@ -114,12 +114,12 @@ abstract class AbstractLiveMailboxTest extends TestCase
         try {
             $search = $mailbox->searchMailbox($search_criteria);
 
-            $this->assertCount(
+            self::assertCount(
                 0,
                 $search,
                 (
-                    'If a subject was found,'.
-                    ' then the message is insufficiently unique to assert that'.
+                    'If a subject was found,' .
+                    ' then the message is insufficiently unique to assert that' .
                     ' a newly-appended message was actually created.'
                 )
             );
@@ -134,12 +134,12 @@ abstract class AbstractLiveMailboxTest extends TestCase
 
             $search = $mailbox->searchMailbox($search_criteria);
 
-            $this->assertCount(
+            self::assertCount(
                 1,
                 $search,
                 (
-                    'If a subject was not found, '.
-                    ' then Mailbox::appendMessageToMailbox() failed'.
+                    'If a subject was not found, ' .
+                    ' then Mailbox::appendMessageToMailbox() failed' .
                     ' despite not throwing an exception.'
                 )
             );
@@ -152,15 +152,15 @@ abstract class AbstractLiveMailboxTest extends TestCase
             $mailbox->deleteMailbox($remove_mailbox);
             $mailboxDeleted = true;
 
-            $this->assertCount(
+            self::assertCount(
                 0,
                 $mailbox->searchMailbox($search_criteria),
                 (
-                    'If a subject was found,'.
+                    'If a subject was found,' .
                     ' then the message is was not expunged as requested.'
                 )
             );
-        } catch (Throwable $ex) {
+        } catch (\Throwable $ex) {
             $exception = $ex;
         } finally {
             $mailbox->switchMailbox($path->getString());
@@ -170,7 +170,7 @@ abstract class AbstractLiveMailboxTest extends TestCase
             $mailbox->disconnect();
         }
 
-        if (null !== $exception) {
+        if ($exception !== null) {
             throw $exception;
         }
     }
@@ -187,7 +187,7 @@ abstract class AbstractLiveMailboxTest extends TestCase
         /** @var string|null */
         $subject = $envelope['subject'] ?? null;
 
-        $this->assertIsString($subject);
+        self::assertIsString($subject);
 
         $search_criteria = \sprintf('SUBJECT "%s"', $subject);
 
@@ -198,7 +198,7 @@ abstract class AbstractLiveMailboxTest extends TestCase
     protected function MaybeSkipAppendTest(array $envelope): bool
     {
         if (!isset($envelope['subject'])) {
-            $this->markTestSkipped(
+            self::markTestSkipped(
                 'Cannot search for message by subject, no subject specified!'
             );
 

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Live Mailbox - PHPUnit tests.
  *
@@ -10,10 +11,7 @@ declare(strict_types=1);
 
 namespace PhpImap;
 
-use const ENC8BIT;
-use const ENCBASE64;
 use PHPUnit\Framework\TestCase;
-use const TYPEIMAGE;
 
 class Issue519Test extends TestCase
 {
@@ -130,7 +128,7 @@ class Issue519Test extends TestCase
             $mailbox,
             0,
             0,
-            ENCBASE64,
+            \ENCBASE64,
             0
         );
 
@@ -138,19 +136,19 @@ class Issue519Test extends TestCase
             $mailbox,
             0,
             0,
-            ENC8BIT,
+            \ENC8BIT,
             0
         );
 
-        $html_string = '<img src="'.self::CID.'">';
+        $html_string = '<img src="' . self::CID . '">';
 
         $html->setData($html_string);
         $part->setData('');
 
         $attachment->id = self::ID;
         $attachment->contentId = self::ID;
-        $attachment->type = TYPEIMAGE;
-        $attachment->encoding = ENCBASE64;
+        $attachment->type = \TYPEIMAGE;
+        $attachment->encoding = \ENCBASE64;
         $attachment->subtype = self::SUBTYPE;
         $attachment->description = self::ID;
         $attachment->name = self::ID;
@@ -163,22 +161,22 @@ class Issue519Test extends TestCase
         $mail->addDataPartInfo($html, DataPartInfo::TEXT_HTML);
         $mail->addAttachment($attachment);
 
-        $this->assertTrue($mail->hasAttachments());
+        self::assertTrue($mail->hasAttachments());
 
-        $this->assertCount(
+        self::assertCount(
             self::EXPECTED_ATTACHMENT_COUNT,
             $mail->getAttachments()
         );
 
-        $this->assertSame($html_string, $mail->textHtml);
+        self::assertSame($html_string, $mail->textHtml);
 
         $mail->embedImageAttachments();
 
-        $this->assertCount(
+        self::assertCount(
             self::EXPECTED_ATTACHMENT_COUNT_AFTER_EMBED,
             $mail->getAttachments()
         );
 
-        $this->assertSame(self::HTML_EMBED, $mail->textHtml);
+        self::assertSame(self::HTML_EMBED, $mail->textHtml);
     }
 }

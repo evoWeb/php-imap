@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Live Mailbox - PHPUnit tests.
  *
@@ -10,8 +11,6 @@ declare(strict_types=1);
 
 namespace PhpImap;
 
-use const ENCQUOTEDPRINTABLE;
-use Generator;
 use PHPUnit\Framework\TestCase;
 
 class LiveMailboxStringDecodingConvertingTest extends TestCase
@@ -19,10 +18,10 @@ class LiveMailboxStringDecodingConvertingTest extends TestCase
     /**
      * Provides data for testing string decoding.
      */
-    public static function stringDecodeProvider(): Generator
+    public static function stringDecodeProvider(): \Generator
     {
         yield 'Issue #250 iso-8859-1' => [
-            ENCQUOTEDPRINTABLE,
+            \ENCQUOTEDPRINTABLE,
             'iso-8859-1',
             'mountainguan',
             'mountainguan',
@@ -30,7 +29,7 @@ class LiveMailboxStringDecodingConvertingTest extends TestCase
         ];
 
         yield 'Issue #250 utf-7' => [
-            ENCQUOTEDPRINTABLE,
+            \ENCQUOTEDPRINTABLE,
             'utf-7',
             '+bUuL1Q-',
             '测试',
@@ -38,7 +37,7 @@ class LiveMailboxStringDecodingConvertingTest extends TestCase
         ];
 
         yield 'Issue #250 utf-7 with chinese' => [
-            ENCQUOTEDPRINTABLE,
+            \ENCQUOTEDPRINTABLE,
             'utf-7',
             'mountainguan+bUuL1Q-',
             'mountainguan测试',
@@ -46,7 +45,7 @@ class LiveMailboxStringDecodingConvertingTest extends TestCase
         ];
 
         yield 'Issue #250 utf-8 with chinese' => [
-            ENCQUOTEDPRINTABLE,
+            \ENCQUOTEDPRINTABLE,
             'utf-8',
             'mountainguan=E6=B5=8B=E8=AF=95',
             'mountainguan测试',
@@ -54,7 +53,7 @@ class LiveMailboxStringDecodingConvertingTest extends TestCase
         ];
 
         yield 'Issue #657' => [
-            ENCQUOTEDPRINTABLE,
+            \ENCQUOTEDPRINTABLE,
             'iso-8859-2',
             '=EC=B9=E8=F8=BE=FD=E1=ED=E9',
             'ěščřžýáíé',
@@ -62,7 +61,7 @@ class LiveMailboxStringDecodingConvertingTest extends TestCase
         ];
 
         yield 'Emoji utf-8' => [
-            ENCQUOTEDPRINTABLE,
+            \ENCQUOTEDPRINTABLE,
             'utf-8',
             'Some subject here =F0=9F=98=98',
             'Some subject here 😘',
@@ -84,8 +83,8 @@ class LiveMailboxStringDecodingConvertingTest extends TestCase
 
         $decoded = $dataInfo->decodeAfterFetch($iso_8859_2);
 
-        $this->assertSame($utf8, $decoded);
+        self::assertSame($utf8, $decoded);
 
-        $this->assertSame($sha256, \hash('sha256', $decoded));
+        self::assertSame($sha256, \hash('sha256', $decoded));
     }
 }

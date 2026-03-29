@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Live Mailbox - PHPUnit tests.
  *
@@ -12,13 +13,12 @@ namespace PhpImap;
 
 use ParagonIE\HiddenString\HiddenString;
 
-
 trait LiveMailboxTestingTrait
 {
     /**
      * Provides constructor arguments for a live mailbox.
      *
-     * @psalm-return array{'CI ENV'?: array{0: \ParagonIE\HiddenString\HiddenString, 1: \ParagonIE\HiddenString\HiddenString, 2: \ParagonIE\HiddenString\HiddenString, 3: string}}
+     * @psalm-return array{'CI_ENV'?: array{0: \ParagonIE\HiddenString\HiddenString, 1: \ParagonIE\HiddenString\HiddenString, 2: \ParagonIE\HiddenString\HiddenString, 3: string}}
      *
      * @return (\ParagonIE\HiddenString\HiddenString|string)[][]
      */
@@ -51,7 +51,7 @@ trait LiveMailboxTestingTrait
     {
         $mailbox = new Mailbox($imapPath->getString(), $login->getString(), $password->getString(), $attachmentsDir, $serverEncoding);
 
-        $random = 'test-box-'.\date('c').\bin2hex(\random_bytes(4));
+        $random = 'test-box-' . \date('c') . \bin2hex(\random_bytes(4));
 
         $mailbox->createMailbox($random);
 

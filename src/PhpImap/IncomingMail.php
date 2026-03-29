@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace PhpImap;
 
-use const FILEINFO_MIME_TYPE;
-use InvalidArgumentException;
-
 /**
  * The PhpImap IncomingMail class.
  *
@@ -51,16 +48,16 @@ class IncomingMail extends IncomingMailHeader
     public function __get(string $name): string
     {
         $type = false;
-        if ('textPlain' == $name) {
+        if ($name == 'textPlain') {
             $type = DataPartInfo::TEXT_PLAIN;
         }
-        if ('textHtml' == $name) {
+        if ($name == 'textHtml') {
             $type = DataPartInfo::TEXT_HTML;
         }
-        if (('textPlain' === $name || 'textHtml' === $name) && isset($this->$name)) {
-            return (string) $this->$name;
+        if (($name === 'textPlain' || $name === 'textHtml') && isset($this->$name)) {
+            return (string)$this->$name;
         }
-        if (false === $type) {
+        if ($type === false) {
             \trigger_error("Undefined property: IncomingMail::$name");
         }
         if (!isset($this->$name)) {
@@ -109,7 +106,7 @@ class IncomingMail extends IncomingMailHeader
     public function addAttachment(IncomingMailAttachment $attachment): void
     {
         if (!\is_string($attachment->id)) {
-            throw new InvalidArgumentException('Argument 1 passed to '.__METHOD__.'() does not have an id specified!');
+            throw new \InvalidArgumentException('Argument 1 passed to ' . __METHOD__ . '() does not have an id specified!');
         }
         $this->attachments[$attachment->id] = $attachment;
 
@@ -155,7 +152,7 @@ class IncomingMail extends IncomingMailHeader
 
         unset($this->attachments[$id]);
 
-        $this->setHasAttachments([] !== $this->attachments);
+        $this->setHasAttachments($this->attachments !== []);
 
         return true;
     }
@@ -181,7 +178,7 @@ class IncomingMail extends IncomingMailHeader
 
     public function replaceInternalLinks(string $baseUri): string
     {
-        $baseUri = \rtrim($baseUri, '\\/').'/';
+        $baseUri = \rtrim($baseUri, '\\/') . '/';
         $fetchedHtml = $this->textHtml;
         $search = [];
         $replace = [];
@@ -189,10 +186,10 @@ class IncomingMail extends IncomingMailHeader
             foreach ($this->attachments as $attachment) {
                 if ($attachment->contentId == $attachmentId) {
                     if (!\is_string($attachment->id)) {
-                        throw new InvalidArgumentException('Argument 1 passed to '.__METHOD__.'() does not have an id specified!');
+                        throw new \InvalidArgumentException('Argument 1 passed to ' . __METHOD__ . '() does not have an id specified!');
                     }
                     $search[] = $placeholder;
-                    $replace[] = $baseUri.\basename($this->attachments[$attachment->id]->filePath);
+                    $replace[] = $baseUri . \basename($this->attachments[$attachment->id]->filePath);
                 }
             }
         }
@@ -223,18 +220,19 @@ class IncomingMail extends IncomingMailHeader
                      * Inline images can contain a "Content-Disposition: inline", but only a "Content-ID" is also enough.
                      * See https://github.com/barbushin/php-imap/issues/569.
                      */
-                    if ($attachment->contentId == $cid || 'inline' == \mb_strtolower((string) $attachment->disposition)) {
+                    if ($attachment->contentId == $cid || \mb_strtolower((string)$attachment->disposition) == 'inline') {
                         $contents = $attachment->getContents();
-                        $contentType = $attachment->getFileInfo(FILEINFO_MIME_TYPE);
+                        $contentType = $attachment->getFileInfo(\FILEINFO_MIME_TYPE);
 
                         if (!\strstr($contentType, 'image')) {
                             continue;
-                        } elseif (!\is_string($attachment->id)) {
-                            throw new InvalidArgumentException('Argument 1 passed to '.__METHOD__.'() does not have an id specified!');
+                        }
+                        if (!\is_string($attachment->id)) {
+                            throw new \InvalidArgumentException('Argument 1 passed to ' . __METHOD__ . '() does not have an id specified!');
                         }
 
                         $base64encoded = \base64_encode($contents);
-                        $replacement = 'data:'.$contentType.';base64, '.$base64encoded;
+                        $replacement = 'data:' . $contentType . ';base64, ' . $base64encoded;
 
                         $this->textHtml = \str_replace($match, $replacement, $this->textHtml);
 

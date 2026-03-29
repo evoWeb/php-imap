@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Live Mailbox - PHPUnit tests.
  *
@@ -12,7 +13,6 @@ namespace PhpImap;
 
 use Generator;
 use ParagonIE\HiddenString\HiddenString;
-use const TYPETEXT;
 
 /**
  * @psalm-type MAILBOX_ARGS = array{
@@ -39,24 +39,24 @@ class LiveMailboxIssue250Test extends AbstractLiveMailboxTest
     /**
      * @psalm-return Generator<int, array{0: array{subject: string}, 1: array{0: array{type: 0, 'contents.data': 'test'}}, 2: string}, mixed, void>
      */
-    public static function ComposeProvider(): Generator
+    public static function ComposeProvider(): \Generator
     {
-        $random_subject = 'barbushin/php-imap#250 测试: '.\bin2hex(\random_bytes(16));
+        $random_subject = 'barbushin/php-imap#250 测试: ' . \bin2hex(\random_bytes(16));
 
         yield [
             ['subject' => $random_subject],
             [
                 [
-                    'type' => TYPETEXT,
+                    'type' => \TYPETEXT,
                     'contents.data' => 'test',
                 ],
             ],
             (
-                'Subject: '.$random_subject."\r\n".
-                'MIME-Version: 1.0'."\r\n".
-                'Content-Type: TEXT/PLAIN; CHARSET=US-ASCII'."\r\n".
-                "\r\n".
-                'test'."\r\n"
+                'Subject: ' . $random_subject . "\r\n" .
+                'MIME-Version: 1.0' . "\r\n" .
+                'Content-Type: TEXT/PLAIN; CHARSET=US-ASCII' . "\r\n" .
+                "\r\n" .
+                'test' . "\r\n"
             ),
         ];
     }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Mailbox - PHPUnit tests.
  *
@@ -8,23 +9,11 @@ declare(strict_types=1);
 
 namespace PhpImap;
 
-use const CL_EXPUNGE;
 use DateTime;
 use Generator;
-use const IMAP_CLOSETIMEOUT;
-use const IMAP_OPENTIMEOUT;
-use const IMAP_READTIMEOUT;
-use const IMAP_WRITETIMEOUT;
-use const OP_ANONYMOUS;
-use const OP_DEBUG;
-use const OP_HALFOPEN;
-use const OP_PROTOTYPE;
-use const OP_READONLY;
-use const OP_SECURE;
-use const OP_SHORTCACHE;
-use const OP_SILENT;
 use PhpImap\Exceptions\InvalidParameterException;
 use PHPUnit\Framework\TestCase;
+
 use const SE_FREE;
 use const SE_UID;
 
@@ -84,11 +73,11 @@ final class MailboxTest extends TestCase
 
         $mailbox = new Fixtures\Mailbox($imapPath, $login, $password, $attachmentsDir, $serverEncoding);
 
-        $this->assertSame('{imap.example.com:993/imap/ssl}INBOX', $mailbox->getImapPath());
-        $this->assertSame('php-imap@example.com', $mailbox->getLogin());
-        $this->assertSame('  v3rY!53cEt&P4sSWöRd$', $mailbox->getImapPassword());
-        $this->assertSame(\realpath('.'), $mailbox->getAttachmentsDir());
-        $this->assertSame('UTF-8', $mailbox->getServerEncoding());
+        self::assertSame('{imap.example.com:993/imap/ssl}INBOX', $mailbox->getImapPath());
+        self::assertSame('php-imap@example.com', $mailbox->getLogin());
+        self::assertSame('  v3rY!53cEt&P4sSWöRd$', $mailbox->getImapPassword());
+        self::assertSame(\realpath('.'), $mailbox->getAttachmentsDir());
+        self::assertSame('UTF-8', $mailbox->getServerEncoding());
     }
 
     /**
@@ -134,7 +123,7 @@ final class MailboxTest extends TestCase
 
         $encoding = \strtoupper(\trim($encoding));
 
-        $this->assertEquals($mailbox->getServerEncoding(), $encoding);
+        self::assertEquals($mailbox->getServerEncoding(), $encoding);
     }
 
     /**
@@ -144,7 +133,7 @@ final class MailboxTest extends TestCase
     {
         // Default character encoding should be set
         $mailbox = new Mailbox($this->imapPath, $this->login, $this->password, $this->attachmentsDir);
-        $this->assertSame('UTF-8', $mailbox->getServerEncoding());
+        self::assertSame('UTF-8', $mailbox->getServerEncoding());
     }
 
     /**
@@ -154,11 +143,11 @@ final class MailboxTest extends TestCase
     {
         // Server encoding should be always upper formatted
         $mailbox = new Mailbox($this->imapPath, $this->login, $this->password, $this->attachmentsDir, 'utf-8');
-        $this->assertSame('UTF-8', $mailbox->getServerEncoding());
+        self::assertSame('UTF-8', $mailbox->getServerEncoding());
 
         $mailbox = new Mailbox($this->imapPath, $this->login, $this->password, $this->attachmentsDir, 'UTF7-IMAP');
         $mailbox->setServerEncoding('uTf-8');
-        $this->assertSame('UTF-8', $mailbox->getServerEncoding());
+        self::assertSame('UTF-8', $mailbox->getServerEncoding());
     }
 
     /**
@@ -202,11 +191,11 @@ final class MailboxTest extends TestCase
 
         if ($bool) {
             $mailbox->setServerEncoding($encoding);
-            $this->assertEquals($encoding, $mailbox->getServerEncoding());
+            self::assertEquals($encoding, $mailbox->getServerEncoding());
         } else {
             $this->expectException(InvalidParameterException::class);
             $mailbox->setServerEncoding($encoding);
-            $this->assertNotEquals($encoding, $mailbox->getServerEncoding());
+            self::assertNotEquals($encoding, $mailbox->getServerEncoding());
         }
     }
 
@@ -217,7 +206,7 @@ final class MailboxTest extends TestCase
      */
     public function testImapSearchOptionHasADefault(): void
     {
-        $this->assertEquals($this->getMailbox()->getImapSearchOption(), 1);
+        self::assertEquals($this->getMailbox()->getImapSearchOption(), 1);
     }
 
     /**
@@ -229,14 +218,14 @@ final class MailboxTest extends TestCase
     {
         $mailbox = $this->getMailbox();
 
-        $mailbox->setImapSearchOption(SE_FREE);
-        $this->assertEquals($mailbox->getImapSearchOption(), 2);
+        $mailbox->setImapSearchOption(\SE_FREE);
+        self::assertEquals($mailbox->getImapSearchOption(), 2);
 
         $this->expectException(InvalidParameterException::class);
         $mailbox->setImapSearchOption(self::ANYTHING);
 
-        $mailbox->setImapSearchOption(SE_UID);
-        $this->assertEquals($mailbox->getImapSearchOption(), 1);
+        $mailbox->setImapSearchOption(\SE_UID);
+        self::assertEquals($mailbox->getImapSearchOption(), 1);
     }
 
     /**
@@ -244,7 +233,7 @@ final class MailboxTest extends TestCase
      */
     public function testGetLogin(): void
     {
-        $this->assertEquals($this->getMailbox()->getLogin(), 'php-imap@example.com');
+        self::assertEquals($this->getMailbox()->getLogin(), 'php-imap@example.com');
     }
 
     /**
@@ -252,7 +241,7 @@ final class MailboxTest extends TestCase
      */
     public function testPathDelimiterHasADefault(): void
     {
-        $this->assertNotEmpty($this->getMailbox()->getPathDelimiter());
+        self::assertNotEmpty($this->getMailbox()->getPathDelimiter());
     }
 
     /**
@@ -338,7 +327,7 @@ final class MailboxTest extends TestCase
         $mailbox = $this->getMailbox();
 
         if (\in_array($str, $supported_delimiters)) {
-            $this->assertTrue($mailbox->validatePathDelimiter($str));
+            self::assertTrue($mailbox->validatePathDelimiter($str));
         } else {
             $this->expectException(InvalidParameterException::class);
             $mailbox->setPathDelimiter($str);
@@ -353,10 +342,10 @@ final class MailboxTest extends TestCase
         $mailbox = $this->getMailbox();
 
         $mailbox->setPathDelimiter('.');
-        $this->assertEquals($mailbox->getPathDelimiter(), '.');
+        self::assertEquals($mailbox->getPathDelimiter(), '.');
 
         $mailbox->setPathDelimiter('/');
-        $this->assertEquals($mailbox->getPathDelimiter(), '/');
+        self::assertEquals($mailbox->getPathDelimiter(), '/');
     }
 
     /**
@@ -364,7 +353,7 @@ final class MailboxTest extends TestCase
      */
     public function testGetAttachmentsAreNotIgnoredByDefault(): void
     {
-        $this->assertEquals($this->getMailbox()->getAttachmentsIgnore(), false);
+        self::assertEquals($this->getMailbox()->getAttachmentsIgnore(), false);
     }
 
     /**
@@ -390,7 +379,7 @@ final class MailboxTest extends TestCase
     {
         $mailbox = $this->getMailbox();
         $mailbox->setAttachmentsIgnore($paramValue);
-        $this->assertEquals($mailbox->getAttachmentsIgnore(), $paramValue);
+        self::assertEquals($mailbox->getAttachmentsIgnore(), $paramValue);
     }
 
     /**
@@ -448,7 +437,7 @@ final class MailboxTest extends TestCase
         $utf7_encoded_str = $mailbox->encodeStringToUtf7Imap($str);
         $utf8_decoded_str = $mailbox->decodeStringFromUtf7ImapToUtf8($utf7_encoded_str);
 
-        $this->assertEquals($utf8_decoded_str, $str);
+        self::assertEquals($utf8_decoded_str, $str);
     }
 
     /**
@@ -458,7 +447,7 @@ final class MailboxTest extends TestCase
      */
     public function testMimeDecodingReturnsCorrectValues(string $str): void
     {
-        $this->assertEquals($this->getMailbox()->decodeMimeStr($str), $str);
+        self::assertEquals($this->getMailbox()->decodeMimeStr($str), $str);
     }
 
     /**
@@ -496,8 +485,8 @@ final class MailboxTest extends TestCase
     public function testParsedDateDifferentTimeZones(string $dateToParse, int $epochToCompare): void
     {
         $parsedDt = $this->getMailbox()->parseDateTime($dateToParse);
-        $parsedDateTime = new DateTime($parsedDt);
-        $this->assertEquals((int) $parsedDateTime->format('U'), $epochToCompare);
+        $parsedDateTime = new \DateTime($parsedDt);
+        self::assertEquals((int)$parsedDateTime->format('U'), $epochToCompare);
     }
 
     /**
@@ -524,7 +513,7 @@ final class MailboxTest extends TestCase
     public function testParsedDateWithUnparseableDateTime(string $dateToParse): void
     {
         $parsedDt = $this->getMailbox()->parseDateTime($dateToParse);
-        $this->assertEquals($parsedDt, $dateToParse);
+        self::assertEquals($parsedDt, $dateToParse);
     }
 
     /**
@@ -567,7 +556,7 @@ final class MailboxTest extends TestCase
     {
         $mailbox = $this->getMailbox();
 
-        $this->assertEquals($mailbox->decodeMimeStr($str), $expected);
+        self::assertEquals($mailbox->decodeMimeStr($str), $expected);
     }
 
     /**
@@ -579,11 +568,11 @@ final class MailboxTest extends TestCase
     {
         /** @psalm-var array<string, array{0:'assertNull'|'expectException', 1:int, 2:list<int>}> */
         return [
-            'array(IMAP_OPENTIMEOUT)' => ['assertNull', 1, [IMAP_OPENTIMEOUT]],
-            'array(IMAP_READTIMEOUT)' => ['assertNull', 1, [IMAP_READTIMEOUT]],
-            'array(IMAP_WRITETIMEOUT)' => ['assertNull', 1, [IMAP_WRITETIMEOUT]],
-            'array(IMAP_CLOSETIMEOUT)' => ['assertNull', 1, [IMAP_CLOSETIMEOUT]],
-            'array(IMAP_OPENTIMEOUT, IMAP_READTIMEOUT, IMAP_WRITETIMEOUT, IMAP_CLOSETIMEOUT)' => ['assertNull', 1, [IMAP_OPENTIMEOUT, IMAP_READTIMEOUT, IMAP_WRITETIMEOUT, IMAP_CLOSETIMEOUT]],
+            'array(IMAP_OPENTIMEOUT)' => ['assertNull', 1, [\IMAP_OPENTIMEOUT]],
+            'array(IMAP_READTIMEOUT)' => ['assertNull', 1, [\IMAP_READTIMEOUT]],
+            'array(IMAP_WRITETIMEOUT)' => ['assertNull', 1, [\IMAP_WRITETIMEOUT]],
+            'array(IMAP_CLOSETIMEOUT)' => ['assertNull', 1, [\IMAP_CLOSETIMEOUT]],
+            'array(IMAP_OPENTIMEOUT, IMAP_READTIMEOUT, IMAP_WRITETIMEOUT, IMAP_CLOSETIMEOUT)' => ['assertNull', 1, [\IMAP_OPENTIMEOUT, \IMAP_READTIMEOUT, \IMAP_WRITETIMEOUT, \IMAP_CLOSETIMEOUT]],
         ];
     }
 
@@ -601,11 +590,11 @@ final class MailboxTest extends TestCase
     {
         $mailbox = $this->getMailbox();
 
-        if ('expectException' == $assertMethod) {
+        if ($assertMethod == 'expectException') {
             $this->expectException(InvalidParameterException::class);
             $mailbox->setTimeouts($timeout, $types);
         } else {
-            $this->assertNull($mailbox->setTimeouts($timeout, $types));
+            self::assertNull($mailbox->setTimeouts($timeout, $types));
         }
     }
 
@@ -614,39 +603,39 @@ final class MailboxTest extends TestCase
      *
      * @psalm-return Generator<string, array{0: 'assertNull'|'expectException', 1: int, 2: 0, 3: array<empty, empty>}, mixed, void>
      */
-    public static function connectionArgsProvider(): Generator
+    public static function connectionArgsProvider(): \Generator
     {
         yield from [
-            'readonly, disable gssapi' => ['assertNull', OP_READONLY, 0, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
-            'anonymous, disable gssapi' => ['assertNull', OP_ANONYMOUS, 0, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
-            'half open, disable gssapi' => ['assertNull', OP_HALFOPEN, 0, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
-            'expunge on close, disable gssapi' => ['assertNull', CL_EXPUNGE, 0, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
-            'debug, disable gssapi' => ['assertNull', OP_DEBUG, 0, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
-            'short cache, disable gssapi' => ['assertNull', OP_SHORTCACHE, 0, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
-            'silent, disable gssapi' => ['assertNull', OP_SILENT, 0, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
-            'return driver prototype, disable gssapi' => ['assertNull', OP_PROTOTYPE, 0, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
-            'don\'t do non-secure authentication, disable gssapi' => ['assertNull', OP_SECURE, 0, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
-            'readonly, disable gssapi, 1 retry' => ['assertNull', OP_READONLY, 1, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
-            'readonly, disable gssapi, 3 retries' => ['assertNull', OP_READONLY, 3, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
-            'readonly, disable gssapi, 12 retries' => ['assertNull', OP_READONLY, 12, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
-            'readonly debug, disable gssapi' => ['assertNull', OP_READONLY | OP_DEBUG, 0, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
-            'readonly, -1 retries' => ['expectException', OP_READONLY, -1, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
-            'readonly, -3 retries' => ['expectException', OP_READONLY, -3, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
-            'readonly, -12 retries' => ['expectException', OP_READONLY, -12, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
-            'readonly, null options' => ['expectException', OP_READONLY, 0, [null]],
+            'readonly, disable gssapi' => ['assertNull', \OP_READONLY, 0, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
+            'anonymous, disable gssapi' => ['assertNull', \OP_ANONYMOUS, 0, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
+            'half open, disable gssapi' => ['assertNull', \OP_HALFOPEN, 0, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
+            'expunge on close, disable gssapi' => ['assertNull', \CL_EXPUNGE, 0, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
+            'debug, disable gssapi' => ['assertNull', \OP_DEBUG, 0, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
+            'short cache, disable gssapi' => ['assertNull', \OP_SHORTCACHE, 0, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
+            'silent, disable gssapi' => ['assertNull', \OP_SILENT, 0, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
+            'return driver prototype, disable gssapi' => ['assertNull', \OP_PROTOTYPE, 0, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
+            'don\'t do non-secure authentication, disable gssapi' => ['assertNull', \OP_SECURE, 0, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
+            'readonly, disable gssapi, 1 retry' => ['assertNull', \OP_READONLY, 1, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
+            'readonly, disable gssapi, 3 retries' => ['assertNull', \OP_READONLY, 3, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
+            'readonly, disable gssapi, 12 retries' => ['assertNull', \OP_READONLY, 12, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
+            'readonly debug, disable gssapi' => ['assertNull', \OP_READONLY | \OP_DEBUG, 0, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
+            'readonly, -1 retries' => ['expectException', \OP_READONLY, -1, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
+            'readonly, -3 retries' => ['expectException', \OP_READONLY, -3, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
+            'readonly, -12 retries' => ['expectException', \OP_READONLY, -12, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
+            'readonly, null options' => ['expectException', \OP_READONLY, 0, [null]],
         ];
 
         /** @psalm-var list<array{0:int, 1:string}> */
         $options = [
-            [OP_DEBUG, 'debug'], // 1
-            [OP_READONLY, 'readonly'], // 2
-            [OP_ANONYMOUS, 'anonymous'], // 4
-            [OP_SHORTCACHE, 'short cache'], // 8
-            [OP_SILENT, 'silent'], // 16
-            [OP_PROTOTYPE, 'return driver prototype'], // 32
-            [OP_HALFOPEN, 'half-open'], // 64
-            [OP_SECURE, 'don\'t do non-secure authnetication'], // 256
-            [CL_EXPUNGE, 'expunge on close'], // 32768
+            [\OP_DEBUG, 'debug'], // 1
+            [\OP_READONLY, 'readonly'], // 2
+            [\OP_ANONYMOUS, 'anonymous'], // 4
+            [\OP_SHORTCACHE, 'short cache'], // 8
+            [\OP_SILENT, 'silent'], // 16
+            [\OP_PROTOTYPE, 'return driver prototype'], // 32
+            [\OP_HALFOPEN, 'half-open'], // 64
+            [\OP_SECURE, 'don\'t do non-secure authnetication'], // 256
+            [\CL_EXPUNGE, 'expunge on close'], // 32768
         ];
 
         foreach ($options as $i => $option) {
@@ -666,7 +655,7 @@ final class MailboxTest extends TestCase
                 $key = \implode(', ', $fields);
 
                 yield $key => ['assertNull', $value, 0, []];
-                yield ('INVALID + '.$key) => ['expectException', $value | 128, 0, []];
+                yield ('INVALID + ' . $key) => ['expectException', $value | 128, 0, []];
             }
         }
     }
@@ -682,12 +671,12 @@ final class MailboxTest extends TestCase
     {
         $mailbox = $this->getMailbox();
 
-        if ('expectException' == $assertMethod) {
+        if ($assertMethod == 'expectException') {
             $this->expectException(InvalidParameterException::class);
             $mailbox->setConnectionArgs($option, $retriesNum, $param);
-            $this->assertSame($option, $mailbox->getImapOptions());
-        } elseif ('assertNull' == $assertMethod) {
-            $this->assertNull($mailbox->setConnectionArgs($option, $retriesNum, $param));
+            self::assertSame($option, $mailbox->getImapOptions());
+        } elseif ($assertMethod == 'assertNull') {
+            self::assertNull($mailbox->setConnectionArgs($option, $retriesNum, $param));
         }
 
         $mailbox->disconnect();
@@ -727,7 +716,7 @@ final class MailboxTest extends TestCase
         $mailbox = $this->getMailbox();
 
         $mailbox->setServerEncoding($serverEncoding);
-        $this->assertEquals($mailbox->decodeMimeStr($str), $expectedStr);
+        self::assertEquals($mailbox->decodeMimeStr($str), $expectedStr);
     }
 
     /**
@@ -755,8 +744,8 @@ final class MailboxTest extends TestCase
      */
     public function testBase64Decode(string $input, string $expected): void
     {
-        $this->assertSame($expected, \imap_base64(\preg_replace('~[^a-zA-Z0-9+=/]+~s', '', $input)));
-        $this->assertSame($expected, \base64_decode($input, false));
+        self::assertSame($expected, \imap_base64(\preg_replace('~[^a-zA-Z0-9+=/]+~s', '', $input)));
+        self::assertSame($expected, \base64_decode($input, false));
     }
 
     /**
@@ -783,7 +772,7 @@ final class MailboxTest extends TestCase
                 __DIR__,
                 __FILE__,
                 InvalidParameterException::class,
-                'Directory "'.__FILE__.'" not found',
+                'Directory "' . __FILE__ . '" not found',
             ],
         ];
     }
@@ -799,7 +788,7 @@ final class MailboxTest extends TestCase
     {
         $mailbox = new Mailbox('', '', '', $initialDir);
 
-        $this->assertSame(\trim($initialDir), $mailbox->getAttachmentsDir());
+        self::assertSame(\trim($initialDir), $mailbox->getAttachmentsDir());
 
         $this->expectException($expectedException);
         $this->expectExceptionMessage($expectedExceptionMessage);

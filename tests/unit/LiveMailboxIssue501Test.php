@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Live Mailbox - PHPUnit tests.
  *
@@ -10,9 +11,7 @@ declare(strict_types=1);
 
 namespace PhpImap;
 
-use Exception;
 use ParagonIE\HiddenString\HiddenString;
-use const TYPETEXT;
 
 /**
  * @psalm-type MAILBOX_ARGS = array{
@@ -31,7 +30,7 @@ class LiveMailboxIssue501Test extends AbstractLiveMailboxTest
      */
     public function testDecodeMimeStrEmpty(): void
     {
-        $this->assertSame([], \imap_mime_header_decode(''));
+        self::assertSame([], \imap_mime_header_decode(''));
 
         // example credentials nabbed from MailboxTest::testConstructorTrimsPossibleVariables()
         $imapPath = ' {imap.example.com:993/imap/ssl}INBOX     ';
@@ -43,7 +42,7 @@ class LiveMailboxIssue501Test extends AbstractLiveMailboxTest
 
         $mailbox = new Mailbox($imapPath, $login, $password, $attachmentsDir, $serverEncoding);
 
-        $this->assertSame('', $mailbox->decodeMimeStr(''));
+        self::assertSame('', $mailbox->decodeMimeStr(''));
     }
 
     /**
@@ -71,7 +70,7 @@ class LiveMailboxIssue501Test extends AbstractLiveMailboxTest
 
         try {
             $envelope = [
-                'subject' => 'barbushin/php-imap#501: '.\bin2hex(\random_bytes(16)),
+                'subject' => 'barbushin/php-imap#501: ' . \bin2hex(\random_bytes(16)),
             ];
 
             [$search_criteria] = $this->SubjectSearchCriteriaAndSubject(
@@ -80,12 +79,12 @@ class LiveMailboxIssue501Test extends AbstractLiveMailboxTest
 
             $search = $mailbox->searchMailbox($search_criteria);
 
-            $this->assertCount(
+            self::assertCount(
                 0,
                 $search,
                 (
-                    'If a subject was found,'.
-                    ' then the message is insufficiently unique to assert that'.
+                    'If a subject was found,' .
+                    ' then the message is insufficiently unique to assert that' .
                     ' a newly-appended message was actually created.'
                 )
             );
@@ -94,7 +93,7 @@ class LiveMailboxIssue501Test extends AbstractLiveMailboxTest
                 $envelope,
                 [
                     [
-                        'type' => TYPETEXT,
+                        'type' => \TYPETEXT,
                         'contents.data' => '',
                     ],
                 ]
@@ -102,20 +101,20 @@ class LiveMailboxIssue501Test extends AbstractLiveMailboxTest
 
             $search = $mailbox->searchMailbox($search_criteria);
 
-            $this->assertCount(
+            self::assertCount(
                 1,
                 $search,
                 (
-                    'If a subject was not found, '.
-                    ' then Mailbox::appendMessageToMailbox() failed'.
+                    'If a subject was not found, ' .
+                    ' then Mailbox::appendMessageToMailbox() failed' .
                     ' despite not throwing an exception.'
                 )
             );
 
             $mail = $mailbox->getMail($search[0], false);
 
-            $this->assertSame('', $mail->textPlain);
-        } catch (Exception $ex) {
+            self::assertSame('', $mail->textPlain);
+        } catch (\Exception $ex) {
             $exception = $ex;
         } finally {
             $mailbox->switchMailbox($imapPath->getString());
@@ -123,7 +122,7 @@ class LiveMailboxIssue501Test extends AbstractLiveMailboxTest
             $mailbox->disconnect();
         }
 
-        if (null !== $exception) {
+        if ($exception !== null) {
             throw $exception;
         }
     }

@@ -1,5 +1,7 @@
 # PHP IMAP
 
+## <mark>Based on works until December 2022 in [barbushin/php-imap](https://github.com/barbushin/php-imap) with merged pull requests</mark>
+
 [![GitHub release](https://img.shields.io/github/release/barbushin/php-imap.svg?style=flat-square)](https://packagist.org/packages/php-imap/php-imap)
 [![Supported PHP Version](https://img.shields.io/packagist/php-v/php-imap/php-imap.svg)](README.md)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)

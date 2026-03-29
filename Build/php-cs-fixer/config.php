@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This document has been generated with
  * https://mlocati.github.io/php-cs-fixer-configurator/#version:3.0.0-rc.1|configurator
@@ -9,12 +10,12 @@ return (new \PhpCsFixer\Config())
     ->setFinder(
         (new PhpCsFixer\Finder())
             ->ignoreVCSIgnored(true)
-            ->in(__DIR__ . '/../php-imap')
+            ->in(__DIR__ . '/../../')
             ->exclude([
-                '.ddev',
-                '.github',
-                'Build',
-                'vendor',
+                '../../Build',
+                '../../.ddev',
+                '../../.github',
+                '../../vendor',
             ])
     )
     ->setRiskyAllowed(true)

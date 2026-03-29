@@ -1,4 +1,5 @@
 <?php
+
 /**
 * @author BAPCLTD-Marv
 */
@@ -10,7 +11,6 @@ use Generator;
 use ParagonIE\HiddenString\HiddenString;
 use PhpImap\Exceptions\ConnectionException;
 use PHPUnit\Framework\TestCase as Base;
-use const SORTARRIVAL;
 use Throwable;
 
 /**
@@ -37,7 +37,7 @@ class ImapTest extends Base
     /**
      * @psalm-return Generator<'CI ENV with invalid password'|'empty mailbox/username/password', array{0: ConnectionException::class, 1: '/^[AUTHENTICATIONFAILED]/'|'Can't open mailbox : no such mailbox', 2: array{0: HiddenString, 1: HiddenString, 2: HiddenString, 3: 0, 4: 0, 5: array<empty, empty>}, 3?: true}, mixed, void>
      */
-    public static function OpenFailure(): Generator
+    public static function OpenFailure(): \Generator
     {
         yield 'empty mailbox/username/password' => [
             ConnectionException::class,
@@ -120,22 +120,22 @@ class ImapTest extends Base
             \sys_get_temp_dir(),
         ]);
 
-        /** @var Throwable|null */
+        /** @var \Throwable|null */
         $exception = null;
 
         $mailboxDeleted = false;
 
         try {
-            $this->assertSame(
+            self::assertSame(
                 [],
                 Imap::sort(
                     $mailbox->getImapStream(),
-                    SORTARRIVAL,
+                    \SORTARRIVAL,
                     false,
                     0
                 )
             );
-        } catch (Throwable $ex) {
+        } catch (\Throwable $ex) {
             $exception = $ex;
         } finally {
             $mailbox->switchMailbox($path->getString());
@@ -145,7 +145,7 @@ class ImapTest extends Base
             $mailbox->disconnect();
         }
 
-        if (null !== $exception) {
+        if ($exception !== null) {
             throw $exception;
         }
     }
