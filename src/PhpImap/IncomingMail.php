@@ -19,23 +19,20 @@ class IncomingMail extends IncomingMailHeader
     /**
      * @var IncomingMailAttachment[]
      */
-    protected $attachments = [];
+    protected array $attachments = [];
 
-    /** @var bool */
-    protected $hasAttachments = false;
+    protected bool $hasAttachments = false;
 
     /**
      * @var DataPartInfo[][]
      *
      * @phpstan-var array{0:list<DataPartInfo>, 1:list<DataPartInfo>}
      */
-    protected $dataInfo = [[], []];
+    protected array $dataInfo = [[], []];
 
-    /** @var string|null */
-    private $textPlain;
+    private ?string $textPlain;
 
-    /** @var string|null */
-    private $textHtml;
+    private ?string $textHtml;
 
     /**
      * __get() is utilized for reading data from inaccessible (protected
@@ -54,8 +51,11 @@ class IncomingMail extends IncomingMailHeader
         if ($name == 'textHtml') {
             $type = DataPartInfo::TEXT_HTML;
         }
-        if (($name === 'textPlain' || $name === 'textHtml') && isset($this->$name)) {
-            return (string)$this->$name;
+        if ($name === 'textPlain' && isset($this->textPlain)) {
+            return (string)$this->textPlain;
+        }
+        if ($name === 'textHtml' && isset($this->textHtml)) {
+            return (string)$this->textHtml;
         }
         if ($type === false) {
             \trigger_error("Undefined property: IncomingMail::$name");
@@ -88,7 +88,7 @@ class IncomingMail extends IncomingMailHeader
 
     public function setHeader(IncomingMailHeader $header): void
     {
-        /** @phpstan-var array<string, scalar|array|object|null> */
+        /** @phpstan-var array<string, scalar|array|object|null> $array */
         $array = \get_object_vars($header);
         foreach ($array as $property => $value) {
             $this->$property = $value;
@@ -168,10 +168,8 @@ class IncomingMail extends IncomingMailHeader
     {
         $fetchedHtml = $this->__get('textHtml');
 
-        $match = \preg_match_all('/=["\'](ci?d:([\w\.%*@-]+))["\']/i', $fetchedHtml, $matches);
-
         /** @phpstan-var array{list<string>, list<non-falsy-string>, list<non-empty-string>} $matches */
-        $matches = $matches;
+        $match = \preg_match_all('/=["\'](ci?d:([\w.%*@-]+))["\']/i', $fetchedHtml, $matches);
 
         return $match ? \array_combine($matches[2], $matches[1]) : [];
     }
@@ -200,7 +198,7 @@ class IncomingMail extends IncomingMailHeader
 
     /**
      * Embed inline image attachments as base64 to allow for
-     * email html to display inline images automatically.
+     * email HTML to display inline images automatically.
      */
     public function embedImageAttachments(): void
     {
@@ -242,7 +240,7 @@ class IncomingMail extends IncomingMailHeader
                     $contents = $matched->getContents();
                     $contentType = $matched->getFileInfo(\FILEINFO_MIME_TYPE);
 
-                    if (\strstr($contentType, 'image')) {
+                    if (str_contains($contentType, 'image')) {
                         if (!\is_string($matched->id)) {
                             throw new \InvalidArgumentException('Argument 1 passed to ' . __METHOD__ . '() does not have an id specified!');
                         }

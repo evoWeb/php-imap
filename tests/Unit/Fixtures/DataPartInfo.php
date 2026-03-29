@@ -8,8 +8,7 @@ use PhpImap\DataPartInfo as Base;
 
 class DataPartInfo extends Base
 {
-    /** @var string|null */
-    protected $data;
+    protected ?string $data;
 
     public function fetch(): string
     {

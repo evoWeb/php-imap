@@ -34,11 +34,11 @@ foreach ($mail_ids as $mail_id) {
         false // Do NOT mark emails as seen (optional)
     );
 
-    echo 'from-name: ' . (string)($email->fromName ?? $email->fromAddress) . "\n";
-    echo 'from-email: ' . (string)$email->fromAddress . "\n";
-    echo 'to: ' . (string)$email->toString . "\n";
-    echo 'subject: ' . (string)$email->subject . "\n";
-    echo 'message_id: ' . (string)$email->messageId . "\n";
+    echo 'from-name: ' . ($email->fromName ?? $email->fromAddress) . "\n";
+    echo 'from-email: ' . $email->fromAddress . "\n";
+    echo 'to: ' . $email->toString . "\n";
+    echo 'subject: ' . $email->subject . "\n";
+    echo 'message_id: ' . $email->messageId . "\n";
 
     echo 'mail has attachments? ';
     if ($email->hasAttachments()) {
@@ -48,7 +48,7 @@ foreach ($mail_ids as $mail_id) {
     }
 
     if (!empty($email->getAttachments())) {
-        echo \count($email->getAttachments()) . " attachements\n";
+        echo count($email->getAttachments()) . " attachements\n";
     }
 
     // Save attachments one by one
@@ -56,11 +56,11 @@ foreach ($mail_ids as $mail_id) {
         $attachments = $email->getAttachments();
 
         foreach ($attachments as $attachment) {
-            echo '--> Saving ' . (string)$attachment->name . '...';
+            echo '--> Saving ' . $attachment->name . '...';
 
             // Set individually filePath for each single attachment
             // In this case, every file will get the current Unix timestamp
-            $attachment->setFilePath(__DIR__ . '/files/' . \time());
+            $attachment->setFilePath(__DIR__ . '/files/' . time());
 
             if ($attachment->saveToDisk()) {
                 echo "OK, saved!\n";

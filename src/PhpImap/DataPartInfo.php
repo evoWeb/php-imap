@@ -15,58 +15,17 @@ class DataPartInfo
 
     public const TEXT_HTML = 1;
 
-    /**
-     * @var int
-     *
-     * @readonly
-     */
-    public $id;
+    public ?string $charset;
 
-    /**
-     * @var int|mixed
-     *
-     * @readonly
-     */
-    public $encoding;
+    protected ?string $data = null;
 
-    /** @var string|null */
-    public $charset;
-
-    /**
-     * @var int|string
-     *
-     * @readonly
-     */
-    public $part;
-
-    /**
-     * @var Mailbox
-     *
-     * @readonly
-     */
-    public $mail;
-
-    /**
-     * @var int
-     *
-     * @readonly
-     */
-    public $options;
-
-    /** @var string|null */
-    protected $data;
-
-    /**
-     * @param int|string  $part
-     * @param int|mixed $encoding
-     */
-    public function __construct(Mailbox $mail, int $id, $part, $encoding, int $options)
-    {
-        $this->mail = $mail;
-        $this->id = $id;
-        $this->part = $part;
-        $this->encoding = $encoding;
-        $this->options = $options;
+    public function __construct(
+        public readonly Mailbox $mail,
+        public readonly int $id,
+        public readonly string|int $part,
+        public readonly mixed $encoding,
+        public readonly int $options
+    ) {
     }
 
     public function fetch(): string
@@ -87,16 +46,16 @@ class DataPartInfo
     {
         switch ($this->encoding) {
             case \ENC8BIT:
-                $this->data = \imap_utf8((string)$data);
+                $this->data = \imap_utf8($data);
                 break;
             case \ENCBINARY:
-                $this->data = \imap_binary((string)$data);
+                $this->data = \imap_binary($data);
                 break;
             case \ENCBASE64:
-                $this->data = \base64_decode((string)$data, false);
+                $this->data = \base64_decode($data);
                 break;
             case \ENCQUOTEDPRINTABLE:
-                $this->data = \quoted_printable_decode((string)$data);
+                $this->data = \quoted_printable_decode($data);
                 break;
         }
 
@@ -110,10 +69,7 @@ class DataPartInfo
                 (string)$this->data // Data to convert
             );
 
-            $this->data = $this->mail->convertToUtf8(
-                $this->data,
-                $this->charset
-            );
+            $this->data = $this->mail->convertToUtf8($this->data, $this->charset);
         }
 
         return ($this->data === null) ? '' : $this->data;

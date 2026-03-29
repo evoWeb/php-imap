@@ -131,7 +131,7 @@ final class Imap
 
     /**
      * @param false|resource $imap_stream
-     * @param int|string     $sequence
+     * @param int|string $sequence
      *
      * @return true
      */
@@ -173,9 +173,6 @@ final class Imap
     {
         \imap_errors(); // flush errors
 
-        /** @var int */
-        $flag = $flag;
-
         $result = \imap_close(self::EnsureConnection($imap_stream, __METHOD__, 1), $flag);
 
         if ($result === false) {
@@ -215,7 +212,7 @@ final class Imap
 
     /**
      * @param false|resource $imap_stream
-     * @param string|int     $msg_number
+     * @param string|int $msg_number
      *
      * @return true
      */
@@ -288,7 +285,7 @@ final class Imap
 
     /**
      * @param false|resource $imap_stream
-     * @param int|string     $sequence
+     * @param int|string $sequence
      *
      * @return object[]
      *
@@ -322,7 +319,7 @@ final class Imap
 
     /**
      * @param false|resource $imap_stream
-     * @param string|int     $section
+     * @param string|int $section
      */
     public static function fetchbody(
         $imap_stream,
@@ -398,8 +395,6 @@ final class Imap
 
     /**
      * @param false|resource $imap_stream
-     *
-     * @todo add return array shape pending resolution of https://github.com/vimeo/psalm/issues/2620
      */
     public static function get_quotaroot(
         $imap_stream,
@@ -537,18 +532,16 @@ final class Imap
      * @param mixed[] $body An indexed array of bodies
      *
      * @phpstan-param array{
-     *	subject?:string
+     *    subject?:string
      * } $envelope An associative array of headers fields (docblock is not complete)
      * @phpstan-param list<array{
-     *	type?:int,
-     *	encoding?:int,
-     *	charset?:string,
-     *	subtype?:string,
-     *	description?:string,
-     *	disposition?:array{filename:string}
+     *    type?:int,
+     *    encoding?:int,
+     *    charset?:string,
+     *    subtype?:string,
+     *    description?:string,
+     *    disposition?:array{filename:string}
      * }> $body An indexed array of bodies (docblock is not complete)
-     *
-     * @todo flesh out array shape pending resolution of https://github.com/vimeo/psalm/issues/1518
      */
     public static function mail_compose(array $envelope, array $body): string
     {
@@ -557,7 +550,7 @@ final class Imap
 
     /**
      * @param false|resource $imap_stream
-     * @param int|string     $msglist
+     * @param int|string $msglist
      *
      * @return true
      */
@@ -590,7 +583,7 @@ final class Imap
 
     /**
      * @param false|resource $imap_stream
-     * @param int|string     $msglist
+     * @param int|string $msglist
      *
      * @return true
      */
@@ -669,7 +662,7 @@ final class Imap
         int $n_retries = 0,
         array $params = []
     ) {
-        if (\preg_match("/^\{.*\}(.*)$/", $mailbox, $matches)) {
+        if (\preg_match("/^\{.*}(.*)$/", $mailbox, $matches)) {
             $mailbox_name = $matches[1];
 
             if (!\mb_detect_encoding($mailbox_name, 'ASCII', true)) {
@@ -749,7 +742,7 @@ final class Imap
     }
 
     /**
-     * @param false|resource        $imap_stream
+     * @param false|resource $imap_stream
      * @param string|false|resource $file
      *
      * @return true
@@ -829,7 +822,7 @@ final class Imap
 
     /**
      * @param false|resource $imap_stream
-     * @param int|string     $sequence
+     * @param int|string $sequence
      *
      * @return true
      */
@@ -958,14 +951,8 @@ final class Imap
      *
      * @return true|int
      */
-    public static function timeout(
-        int $timeout_type,
-        int $timeout = -1
-    ) {
+    public static function timeout(int $timeout_type, int $timeout = -1) {
         \imap_errors(); // flush errors
-
-        /** @var int */
-        $timeout_type = $timeout_type;
 
         $result = \imap_timeout(
             $timeout_type,
@@ -1034,9 +1021,9 @@ final class Imap
     /**
      * @param false|resource|Connection $maybe
      *
+     * @return Connection
      * @throws \InvalidArgumentException if $maybe is not a valid resource
      *
-     * @return Connection
      */
     private static function EnsureResource($maybe, string $method, int $argument)
     {
@@ -1049,9 +1036,9 @@ final class Imap
     /**
      * @param false|resource|Connection $maybe
      *
+     * @return Connection
      * @throws Exceptions\ConnectionException if $maybe is not a valid resource
      *
-     * @return Connection
      */
     private static function EnsureConnection($maybe, string $method, int $argument)
     {

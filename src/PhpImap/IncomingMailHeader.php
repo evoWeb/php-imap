@@ -11,139 +11,106 @@ namespace PhpImap;
  */
 class IncomingMailHeader
 {
-    /** @var int|null The IMAP message ID - not the "Message-ID:"-header of the email */
-    public $id;
+    /**
+     * The IMAP message ID - not the "Message-ID:"-header of the email
+     */
+    public ?int $id;
 
-    /** @var string|null */
-    public $imapPath;
+    public ?string $imapPath;
 
-    /** @var string|null */
-    public $mailboxFolder;
+    public ?string $mailboxFolder;
 
-    /** @var bool */
-    public $isSeen = false;
+    public bool $isSeen = false;
 
-    /** @var bool */
-    public $isAnswered = false;
+    public bool $isAnswered = false;
 
-    /** @var bool */
-    public $isRecent = false;
+    public bool $isRecent = false;
 
-    /** @var bool */
-    public $isFlagged = false;
+    public bool $isFlagged = false;
 
-    /** @var bool */
-    public $isDeleted = false;
+    public bool $isDeleted = false;
 
-    /** @var bool */
-    public $isDraft = false;
+    public bool $isDraft = false;
 
-    /** @var string|null */
-    public $date;
+    public ?string $date;
 
-    /** @var string|null */
-    public $headersRaw;
+    public ?string $headersRaw;
 
-    /** @var object|null */
-    public $headers;
+    public ?object $headers;
 
-    /** @var string|null */
-    public $mimeVersion;
+    public ?string $mimeVersion;
 
-    /** @var string|null */
-    public $xVirusScanned;
+    public ?string $xVirusScanned;
 
-    /** @var string|null */
-    public $organization;
+    public ?string $organization;
 
-    /** @var string|null */
-    public $contentType;
+    public ?string $contentType;
 
-    /** @var string|null */
-    public $xMailer;
+    public ?string $xMailer;
 
-    /** @var string|null */
-    public $contentLanguage;
+    public ?string $contentLanguage;
 
-    /** @var string|null */
-    public $xSenderIp;
+    public ?string $xSenderIp;
 
-    /** @var string|null */
-    public $priority;
+    public ?string $priority;
 
-    /** @var string|null */
-    public $importance;
+    public ?string $importance;
 
-    /** @var string|null */
-    public $sensitivity;
+    public ?string $sensitivity;
 
-    /** @var string|null */
-    public $autoSubmitted;
+    public ?string $autoSubmitted;
 
-    /** @var string|null */
-    public $precedence;
+    public ?string $precedence;
 
-    /** @var string|null */
-    public $failedRecipients;
+    public ?string $failedRecipients;
 
-    /** @var string|null */
-    public $subject;
+    public ?string $subject;
 
-    /** @var string|null */
-    public $fromHost;
+    public ?string $fromHost;
 
-    /** @var string|null */
-    public $fromName;
+    public ?string $fromName;
 
-    /** @var string|null */
-    public $fromAddress;
+    public ?string $fromAddress;
 
-    /** @var string|null */
-    public $senderHost;
+    public ?string $senderHost;
 
-    /** @var string|null */
-    public $senderName;
+    public ?string $senderName;
 
-    /** @var string|null */
-    public $senderAddress;
+    public ?string $senderAddress;
 
-    /** @var string|null */
-    public $xOriginalTo;
+    public ?string $xOriginalTo;
 
     /**
      * @var (string|null)[]
      *
      * @phpstan-var array<string, string|null>
      */
-    public $to = [];
+    public array $to = [];
 
-    /** @var string|null */
-    public $toString;
-
-    /**
-     * @var (string|null)[]
-     *
-     * @phpstan-var array<string, string|null>
-     */
-    public $cc = [];
-
-    /** @var string|null */
-    public $ccString;
+    public ?string $toString;
 
     /**
      * @var (string|null)[]
      *
      * @phpstan-var array<string, string|null>
      */
-    public $bcc = [];
+    public array $cc = [];
+
+    public ?string $ccString;
 
     /**
      * @var (string|null)[]
      *
      * @phpstan-var array<string, string|null>
      */
-    public $replyTo = [];
+    public array $bcc = [];
 
-    /** @var string|null */
-    public $messageId;
+    /**
+     * @var (string|null)[]
+     *
+     * @phpstan-var array<string, string|null>
+     */
+    public array $replyTo = [];
+
+    public ?string $messageId;
 }

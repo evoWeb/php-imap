@@ -23,7 +23,7 @@ $mailbox = new Mailbox(
 try {
     $mail_ids = $mailbox->searchMailbox('UNSEEN');
 } catch (ConnectionException $ex) {
-    exit('IMAP connection failed: ' . $ex->getErrors('first'));
+    exit('IMAP connection failed: ' . $ex->getErrors());
 } catch (Exception $ex) {
     exit('An error occured: ' . $ex->getMessage());
 }
@@ -36,11 +36,11 @@ foreach ($mail_ids as $mail_id) {
         false // Do NOT mark emails as seen (optional)
     );
 
-    echo 'from-name: ' . (string)($email->fromName ?? $email->fromAddress) . "\n";
-    echo 'from-email: ' . (string)$email->fromAddress . "\n";
-    echo 'to: ' . (string)$email->toString . "\n";
-    echo 'subject: ' . (string)$email->subject . "\n";
-    echo 'message_id: ' . (string)$email->messageId . "\n";
+    echo 'from-name: ' . ($email->fromName ?? $email->fromAddress) . "\n";
+    echo 'from-email: ' . $email->fromAddress . "\n";
+    echo 'to: ' . $email->toString . "\n";
+    echo 'subject: ' . $email->subject . "\n";
+    echo 'message_id: ' . $email->messageId . "\n";
 
     echo 'mail has attachments? ';
     if ($email->hasAttachments()) {
@@ -50,7 +50,7 @@ foreach ($mail_ids as $mail_id) {
     }
 
     if (!empty($email->getAttachments())) {
-        echo \count($email->getAttachments()) . " attachements\n";
+        echo count($email->getAttachments()) . " attachements\n";
     }
     if ($email->textHtml) {
         echo "Message HTML:\n" . $email->textHtml;

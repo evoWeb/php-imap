@@ -15,65 +15,45 @@ namespace PhpImap;
  */
 class IncomingMailAttachment
 {
-    /** @var string|null */
-    public $id;
+    public ?string $id;
 
-    /** @var string|null */
-    public $contentId;
+    public ?string $contentId;
 
-    /** @var int|null */
-    public $type;
+    public ?int $type;
 
-    /** @var int|null */
-    public $encoding;
+    public ?int $encoding;
 
-    /** @var string|null */
-    public $subtype;
+    public ?string $subtype;
 
-    /** @var string|null */
-    public $description;
+    public ?string $description;
 
-    /** @var string|null */
-    public $name;
+    public ?string $name;
 
-    /** @var int|null */
-    public $sizeInBytes;
+    public ?int $sizeInBytes;
 
-    /** @var string|null */
-    public $disposition;
+    public ?string $disposition;
 
-    /** @var string|null */
-    public $charset;
+    public ?string $charset;
 
-    /** @var bool|null */
-    public $emlOrigin;
+    public ?bool $emlOrigin;
 
-    /** @var string|null */
-    public $fileInfoRaw;
+    public ?string $fileInfoRaw;
 
-    /** @var string|null */
-    public $fileInfo;
+    public ?string $fileInfo;
 
-    /** @var string|null */
-    public $mime;
+    public ?string $mime;
 
-    /** @var string|null */
-    public $mimeEncoding;
+    public ?string $mimeEncoding;
 
-    /** @var string|null */
-    public $fileExtension;
+    public ?string $fileExtension;
 
-    /** @var string|null */
-    public $mimeType;
+    public ?string $mimeType;
 
-    /** @var string|null */
-    private $file_path;
+    private ?string $file_path;
 
-    /** @var DataPartInfo|null */
-    private $dataInfo;
+    private ?DataPartInfo $dataInfo;
 
-    /** @var string|null */
-    private $filePath;
+    private ?string $filePath;
 
     /**
      * @return false|string

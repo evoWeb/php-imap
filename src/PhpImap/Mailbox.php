@@ -29,15 +29,15 @@ use stdClass;
  * @phpstan-type HOSTNAMEANDADDRESS_ENTRY = object{host?:string, personal?:string, mailbox:string}
  * @phpstan-type HOSTNAMEANDADDRESS = array{0:HOSTNAMEANDADDRESS_ENTRY, 1?:HOSTNAMEANDADDRESS_ENTRY}
  * @phpstan-type COMPOSE_ENVELOPE = array{
- *	subject?:string
+ *    subject?:string
  * }
  * @phpstan-type COMPOSE_BODY = list<array{
- *	type?:int,
- *	encoding?:int,
- *	charset?:string,
- *	subtype?:string,
- *	description?:string,
- *	disposition?:array{filename:string}
+ *    type?:int,
+ *    encoding?:int,
+ *    charset?:string,
+ *    subtype?:string,
+ *    description?:string,
+ *    disposition?:array{filename:string}
  * }>
  *
  * @todo see @todo of Imap::mail_compose()
@@ -62,63 +62,42 @@ class Mailbox
         | \OP_SECURE // 256
     ;
 
-    /** @var string */
-    public $decodeMimeStrDefaultCharset = 'default';
+    public string $decodeMimeStrDefaultCharset = 'default';
 
-    /** @var string */
-    protected $imapPath;
+    protected string $imapPath;
 
-    /** @var string */
-    protected $imapLogin;
+    protected string $imapLogin;
 
-    /** @var string */
-    protected $imapPassword;
+    protected string $imapPassword;
 
-    /** @var int */
-    protected $imapSearchOption = \SE_UID;
+    protected int $imapSearchOption = \SE_UID;
 
-    /** @var int */
-    protected $connectionRetry = 0;
+    protected int $connectionRetry = 0;
 
-    /** @var int */
-    protected $connectionRetryDelay = 100;
+    protected int $connectionRetryDelay = 100;
 
-    /** @var int */
-    protected $imapOptions = 0;
+    protected int $imapOptions = 0;
 
-    /** @var int */
-    protected $imapRetriesNum = 0;
+    protected int $imapRetriesNum = 0;
 
     /** @phpstan-var array{DISABLE_AUTHENTICATOR?:string} */
-    protected $imapParams = [];
+    protected array $imapParams = [];
 
-    /** @var string */
-    protected $serverEncoding = 'UTF-8';
+    protected string $serverEncoding = 'UTF-8';
 
-    /** @var string|null */
-    protected $attachmentsDir;
+    protected ?string $attachmentsDir;
 
-    /** @var bool */
-    protected $expungeOnDisconnect = true;
+    protected bool $expungeOnDisconnect = true;
 
-    /**
-     * @var int[]
-     *
-     * @phpstan-var array{1?:int, 2?:int, 3?:int, 4?:int}
-     */
-    protected $timeouts = [];
+    protected array $timeouts = [];
 
-    /** @var bool */
-    protected $attachmentsIgnore = false;
+    protected bool $attachmentsIgnore = false;
 
-    /** @var string */
-    protected $pathDelimiter = '.';
+    protected string $pathDelimiter = '.';
 
-    /** @var string */
-    protected $mailboxFolder;
+    protected string $mailboxFolder;
 
-    /** @var bool|false */
-    protected $attachmentFilenameMode = false;
+    protected bool $attachmentFilenameMode = false;
 
     /** @var resource|null|Connection */
     private $imapStream;
@@ -126,8 +105,15 @@ class Mailbox
     /**
      * @throws InvalidParameterException
      */
-    public function __construct(string $imapPath, string $login, string $password, ?string $attachmentsDir = null, string $serverEncoding = 'UTF-8', bool $trimImapPath = true, bool $attachmentFilenameMode = false)
-    {
+    public function __construct(
+        string $imapPath,
+        string $login,
+        string $password,
+        ?string $attachmentsDir = null,
+        string $serverEncoding = 'UTF-8',
+        bool $trimImapPath = true,
+        bool $attachmentFilenameMode = false
+    ) {
         $this->imapPath = ($trimImapPath == true) ? \trim($imapPath) : $imapPath;
         $this->imapLogin = \trim($login);
         $this->imapPassword = $password;
@@ -295,15 +281,16 @@ class Mailbox
     /**
      * Sets the timeout of all or one specific type.
      *
-     * @param int   $timeout Timeout in seconds
-     * @param array $types   One of the following: IMAP_OPENTIMEOUT, IMAP_READTIMEOUT, IMAP_WRITETIMEOUT, IMAP_CLOSETIMEOUT
+     * @param int $timeout Timeout in seconds
+     * @param array $types One of the following: IMAP_OPENTIMEOUT, IMAP_READTIMEOUT, IMAP_WRITETIMEOUT, IMAP_CLOSETIMEOUT
      *
      * @phpstan-param list<int> $types
      *
      * @throws InvalidParameterException
      */
-    public function setTimeouts(int $timeout, array $types = [\IMAP_OPENTIMEOUT, \IMAP_READTIMEOUT, \IMAP_WRITETIMEOUT, \IMAP_CLOSETIMEOUT]): void
-    {
+    public function setTimeouts(
+        int $timeout, array $types = [\IMAP_OPENTIMEOUT, \IMAP_READTIMEOUT, \IMAP_WRITETIMEOUT, \IMAP_CLOSETIMEOUT]
+    ): void {
         $supported_types = [\IMAP_OPENTIMEOUT, \IMAP_READTIMEOUT, \IMAP_WRITETIMEOUT, \IMAP_CLOSETIMEOUT];
 
         $found_types = \array_intersect($types, $supported_types);
@@ -596,8 +583,8 @@ class Mailbox
      * This function uses imap_search() to perform a search on the mailbox currently opened in the given IMAP stream.
      * For example, to match all unanswered mails sent by Mom, you'd use: "UNANSWERED FROM mom".
      *
-     * @param string $criteria              See http://php.net/imap_search for a complete list of available criteria
-     * @param bool   $disableServerEncoding Disables server encoding while searching for mails (can be useful on Exchange servers)
+     * @param string $criteria See http://php.net/imap_search for a complete list of available criteria
+     * @param bool $disableServerEncoding Disables server encoding while searching for mails (can be useful on Exchange servers)
      *
      * @return int[] mailsIds (or empty array)
      *
@@ -617,11 +604,11 @@ class Mailbox
     /**
      * Search the mailbox for emails from multiple, specific senders.
      *
-     * @see Mailbox::searchMailboxFromWithOrWithoutDisablingServerEncoding()
-     *
      * @return int[]
      *
      * @phpstan-return list<int>
+     * @see Mailbox::searchMailboxFromWithOrWithoutDisablingServerEncoding()
+     *
      */
     public function searchMailboxFrom(string $criteria, string $sender, string ...$senders): array
     {
@@ -631,11 +618,11 @@ class Mailbox
     /**
      * Search the mailbox for emails from multiple, specific senders whilst not using server encoding.
      *
-     * @see Mailbox::searchMailboxFromWithOrWithoutDisablingServerEncoding()
-     *
      * @return int[]
      *
      * @phpstan-return list<int>
+     * @see Mailbox::searchMailboxFromWithOrWithoutDisablingServerEncoding()
+     *
      */
     public function searchMailboxFromDisableServerEncoding(string $criteria, string $sender, string ...$senders): array
     {
@@ -699,8 +686,8 @@ class Mailbox
     /**
      * Moves mails listed in mailId into new mailbox.
      *
-     * @param string|int $mailId  a range or message number
-     * @param string     $mailBox Mailbox name
+     * @param string|int $mailId a range or message number
+     * @param string $mailBox Mailbox name
      *
      * @see imap_mail_move()
      */
@@ -713,8 +700,8 @@ class Mailbox
     /**
      * Copies mails listed in mailId into new mailbox.
      *
-     * @param string|int $mailId  a range or message number
-     * @param string     $mailBox Mailbox name
+     * @param string|int $mailId a range or message number
+     * @param string $mailBox Mailbox name
      *
      * @see imap_mail_copy()
      */
@@ -797,8 +784,8 @@ class Mailbox
     /**
      * Check, if the specified flag for the mail is set or not.
      *
-     * @param int    $mailId A single mail ID
-     * @param string $flag   Which you can get are \Seen, \Answered, \Flagged, \Deleted, and \Draft as defined by RFC2060
+     * @param int $mailId A single mail ID
+     * @param string $flag Which you can get are \Seen, \Answered, \Flagged, \Deleted, and \Draft as defined by RFC2060
      *
      * @return bool True, when the flag is set, false when not
      *
@@ -820,8 +807,8 @@ class Mailbox
     /**
      * Causes a store to add the specified flag to the flags set for the mails in the specified sequence.
      *
-     * @param array  $mailsIds Array of mail IDs
-     * @param string $flag     Which you can set are \Seen, \Answered, \Flagged, \Deleted, and \Draft as defined by RFC2060
+     * @param array $mailsIds Array of mail IDs
+     * @param string $flag Which you can set are \Seen, \Answered, \Flagged, \Deleted, and \Draft as defined by RFC2060
      *
      * @phpstan-param list<int> $mailsIds
      */
@@ -833,8 +820,8 @@ class Mailbox
     /**
      * Causes a store to delete the specified flag to the flags set for the mails in the specified sequence.
      *
-     * @param array  $mailsIds Array of mail IDs
-     * @param string $flag     Which you can delete are \Seen, \Answered, \Flagged, \Deleted, and \Draft as defined by RFC2060
+     * @param array $mailsIds Array of mail IDs
+     * @param string $flag Which you can delete are \Seen, \Answered, \Flagged, \Deleted, and \Draft as defined by RFC2060
      */
     public function clearFlag(array $mailsIds, string $flag): void
     {
@@ -956,8 +943,8 @@ class Mailbox
      *  SORTCC - mailbox in first cc address
      *  SORTSIZE - size of mail in octets
      *
-     * @param int         $criteria       Sorting criteria (eg. SORTARRIVAL)
-     * @param bool        $reverse        Sort reverse or not
+     * @param int $criteria Sorting criteria (eg. SORTARRIVAL)
+     * @param bool $reverse Sort reverse or not
      * @param string|null $searchCriteria See http://php.net/imap_search for a complete list of available criteria
      *
      * @phpstan-param value-of<Imap::SORT_CRITERIA> $criteria
@@ -1023,7 +1010,7 @@ class Mailbox
     /**
      * Get raw mail data.
      *
-     * @param int  $msgId      ID of the message
+     * @param int $msgId ID of the message
      * @param bool $markAsSeen Mark the email as seen, when set to true
      *
      * @return string Message of the fetched body
@@ -1041,7 +1028,7 @@ class Mailbox
     /**
      * Get mail header field value.
      *
-     * @param string $headersRaw        RAW headers as single string
+     * @param string $headersRaw RAW headers as single string
      * @param string $header_field_name Name of the required header field
      *
      * @return string Value of the header field
@@ -1229,8 +1216,9 @@ class Mailbox
      *
      * @phpstan-return array<string, stdClass>
      */
-    public function flattenParts(array $messageParts, array $flattenedParts = [], string $prefix = '', int $index = 1, bool $fullPrefix = true): array
-    {
+    public function flattenParts(
+        array $messageParts, array $flattenedParts = [], string $prefix = '', int $index = 1, bool $fullPrefix = true
+    ): array {
         foreach ($messageParts as $part) {
             $flattenedParts[$prefix . $index] = $part;
             if (isset($part->parts)) {
@@ -1256,7 +1244,7 @@ class Mailbox
     /**
      * Get mail data.
      *
-     * @param int  $mailId     ID of the mail
+     * @param int $mailId ID of the mail
      * @param bool $markAsSeen Mark the email as seen, when set to true
      */
     public function getMail(int $mailId, bool $markAsSeen = true): IncomingMail
@@ -1286,17 +1274,18 @@ class Mailbox
     /**
      * Download attachment.
      *
-     * @param array  $params        Array of params of mail
+     * @param array $params Array of params of mail
      * @param object $partStructure Part of mail
-     * @param bool   $emlOrigin     True, if it indicates, that the attachment comes from an EML (mail) file
+     * @param bool $emlOrigin True, if it indicates, that the attachment comes from an EML (mail) file
      *
      * @phpstan-param array<string, string> $params
      * @phpstan-param PARTSTRUCTURE $partStructure
      *
      * @return IncomingMailAttachment $attachment
      */
-    public function downloadAttachment(DataPartInfo $dataInfo, array $params, object $partStructure, bool $emlOrigin = false): IncomingMailAttachment
-    {
+    public function downloadAttachment(
+        DataPartInfo $dataInfo, array $params, object $partStructure, bool $emlOrigin = false
+    ): IncomingMailAttachment {
         $dispositionAttachment = (isset($partStructure->disposition) &&
             \is_string($partStructure->disposition) &&
             \mb_strtolower($partStructure->disposition) === 'attachment');
@@ -1389,7 +1378,7 @@ class Mailbox
     /**
      * Converts a string to UTF-8.
      *
-     * @param string $string      MIME string to decode
+     * @param string $string MIME string to decode
      * @param string $fromCharset Charset to convert from
      *
      * @return string Converted string if conversion was successful, or the original string if not
@@ -1659,9 +1648,9 @@ class Mailbox
     /**
      * Open an IMAP stream to a mailbox.
      *
+     * @return Connection IMAP stream on success
      * @throws \Exception if an error occured
      *
-     * @return Connection IMAP stream on success
      */
     protected function initImapStream()
     {
@@ -1686,8 +1675,9 @@ class Mailbox
      *
      * @phpstan-param PARTSTRUCTURE $partStructure
      */
-    protected function initMailPart(IncomingMail $mail, object $partStructure, string|int $partNum, bool $markAsSeen = true, bool $emlParse = false): void
-    {
+    protected function initMailPart(
+        IncomingMail $mail, object $partStructure, string|int $partNum, bool $markAsSeen = true, bool $emlParse = false
+    ): void {
         if (!isset($mail->id)) {
             throw new \InvalidArgumentException('Argument 1 passeed to ' . __METHOD__ . '() did not have the id property set!');
         }
@@ -1825,8 +1815,8 @@ class Mailbox
      * Have the imapPath a folder added to the connection info, then will the $folder added as subfolder.
      * If the parameter $absolute TRUE, then will the connection new builded only with this folder as root element.
      *
-     * @param string $folder   Folder, the will added to the path
-     * @param bool   $absolute Add folder as root element to the connection and remove all other from this
+     * @param string $folder Folder, the will added to the path
+     * @param bool $absolute Add folder as root element to the connection and remove all other from this
      *
      * @return string Return the new path
      */
@@ -1982,16 +1972,17 @@ class Mailbox
      *
      * @phpstan-return list<int>
      */
-    protected function searchMailboxFromWithOrWithoutDisablingServerEncoding(string $criteria, bool $disableServerEncoding, string $sender, string ...$senders): array
-    {
+    protected function searchMailboxFromWithOrWithoutDisablingServerEncoding(
+        string $criteria, bool $disableServerEncoding, string $sender, string ...$senders
+    ): array {
         \array_unshift($senders, $sender);
 
         $senders = \array_values(\array_unique(\array_map(
-            /**
-             * @param string $sender
-             *
-             * @return string
-             */
+        /**
+         * @param string $sender
+         *
+         * @return string
+         */
             static function ($sender) use ($criteria): string {
                 return $criteria . ' FROM ' . \mb_strtolower($sender);
             },
@@ -2007,7 +1998,7 @@ class Mailbox
     /**
      * Search the mailbox using different criteria, then merge the results.
      *
-     * @param bool   $disableServerEncoding
+     * @param bool $disableServerEncoding
      * @param string $single_criteria
      * @param string ...$criteria
      *
@@ -2015,8 +2006,9 @@ class Mailbox
      *
      * @phpstan-return list<int>
      */
-    protected function searchMailboxMergeResultsWithOrWithoutDisablingServerEncoding($disableServerEncoding, $single_criteria, ...$criteria)
-    {
+    protected function searchMailboxMergeResultsWithOrWithoutDisablingServerEncoding(
+        $disableServerEncoding, $single_criteria, ...$criteria
+    ) {
         \array_unshift($criteria, $single_criteria);
 
         $criteria = \array_values(\array_unique($criteria));
