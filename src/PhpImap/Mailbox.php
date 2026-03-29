@@ -1358,6 +1358,7 @@ class Mailbox
             $fileName = $this->decodeMimeStr($fileName);
             $fileName = $this->decodeRFC2231($fileName);
         }
+        $fileName = str_replace('/', '_', $fileName);
 
         /** @var scalar|array|object|null */
         $sizeInBytes = $partStructure->bytes ?? null;
