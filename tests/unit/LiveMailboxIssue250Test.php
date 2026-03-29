@@ -39,7 +39,7 @@ class LiveMailboxIssue250Test extends AbstractLiveMailboxTest
     /**
      * @psalm-return Generator<int, array{0: array{subject: string}, 1: array{0: array{type: 0, 'contents.data': 'test'}}, 2: string}, mixed, void>
      */
-    public function ComposeProvider(): Generator
+    public static function ComposeProvider(): Generator
     {
         $random_subject = 'barbushin/php-imap#250 测试: '.\bin2hex(\random_bytes(16));
 
@@ -75,14 +75,14 @@ class LiveMailboxIssue250Test extends AbstractLiveMailboxTest
         array $mailbox_args,
         array $envelope,
         array $body,
-        string $expected_compose_result,
+        string $_expected_compose_result,
         bool $pre_compose
     ): void {
         parent::testAppend(
             $mailbox_args,
             $envelope,
             $body,
-            $expected_compose_result,
+            $_expected_compose_result,
             $pre_compose
         );
     }

@@ -27,7 +27,7 @@ class LiveMailboxWithManualSetupTest extends AbstractLiveMailboxTest
     /**
      * @psalm-return Generator<int, array{0: '.issue-499.Éléments envoyés'}, mixed, void>
      */
-    public function RelativeToRootPathProvider(): Generator
+    public static function RelativeToRootPathProvider(): Generator
     {
         yield [
             '.issue-499.Éléments envoyés',
@@ -37,10 +37,10 @@ class LiveMailboxWithManualSetupTest extends AbstractLiveMailboxTest
     /**
      * @psalm-return Generator<int, array{0: array{0: HiddenString, 1: HiddenString, 2: HiddenString, 3: string, 4?: string}}, mixed, void>
      */
-    public function statusProviderAbsolutePath(): Generator
+    public static function statusProviderAbsolutePath(): Generator
     {
-        foreach ($this->RelativeToRootPathProvider() as $path_args) {
-            foreach ($this->MailBoxProvider() as $args) {
+        foreach (self::RelativeToRootPathProvider() as $path_args) {
+            foreach (self::MailBoxProvider() as $args) {
                 $args[0] = new HiddenString($args[0]->getString().$path_args[0]);
 
                 yield [$args];

@@ -46,7 +46,7 @@ abstract class AbstractLiveMailboxTest extends TestCase
     /**
      * @psalm-return Generator<empty, empty, mixed, void>
      */
-    public function ComposeProvider(): Generator
+    public static function ComposeProvider(): Generator
     {
         yield from [];
     }
@@ -60,16 +60,16 @@ abstract class AbstractLiveMailboxTest extends TestCase
      *	4:bool
      * }, mixed, void>
      */
-    public function AppendProvider(): Generator
+    public static function AppendProvider(): Generator
     {
-        foreach ($this->MailBoxProvider() as $mailbox_args) {
-            foreach ($this->ComposeProvider() as $compose_args) {
+        foreach (self::MailBoxProvider() as $mailbox_args) {
+            foreach (self::ComposeProvider() as $compose_args) {
                 [$envelope, $body, $expected_compose_result] = $compose_args;
 
                 yield [$mailbox_args, $envelope, $body, $expected_compose_result, false];
             }
 
-            foreach ($this->ComposeProvider() as $compose_args) {
+            foreach (self::ComposeProvider() as $compose_args) {
                 [$envelope, $body, $expected_compose_result] = $compose_args;
 
                 yield [$mailbox_args, $envelope, $body, $expected_compose_result, true];

@@ -12,15 +12,7 @@ namespace PhpImap;
 
 use ParagonIE\HiddenString\HiddenString;
 
-/**
- * @psalm-type MAILBOX_ARGS = array{
- *	0:HiddenString,
- *	1:HiddenString,
- *	2:HiddenString,
- *	3:string,
- *	4?:string
- * }
- */
+
 trait LiveMailboxTestingTrait
 {
     /**
@@ -30,7 +22,7 @@ trait LiveMailboxTestingTrait
      *
      * @return (\ParagonIE\HiddenString\HiddenString|string)[][]
      */
-    public function MailBoxProvider(): array
+    public static function MailBoxProvider(): array
     {
         $sets = [];
 

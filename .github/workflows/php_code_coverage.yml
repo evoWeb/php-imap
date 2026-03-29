@@ -12,8 +12,8 @@ jobs:
     runs-on: ${{ matrix.operating-system }}
     strategy:
       matrix:
-        operating-system: ['ubuntu-20.04']
-        php-versions: ['8.1']
+        operating-system: ['ubuntu-latest']
+        php-versions: ['8.2', '8.3', '8.4', '8.5']
 
     steps:
     - name: Setup PHP
@@ -22,7 +22,7 @@ jobs:
         php-version: ${{ matrix.php-versions }}
         coverage: xdebug
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v6
 
     - name: Validate composer.json and composer.lock
       run: composer validate
@@ -30,10 +30,10 @@ jobs:
     - name: Get Composer Cache Directory
       id: composer-cache
       run: |
-        echo "::set-output name=dir::$(composer config cache-files-dir)"
+        echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
     - name: Cache Files
-      uses: actions/cache@v2
+      uses: actions/cache@v5
       with:
         path: |
           ${{ steps.composer-cache.outputs.dir }}
@@ -46,7 +46,7 @@ jobs:
       run: composer install --prefer-dist --no-progress --no-suggest
 
     - name: Run tests
-      uses: paambaati/codeclimate-action@v2.7.2
+      uses: paambaati/codeclimate-action@v9.0.0
       env:
         CC_TEST_REPORTER_ID: "945dfb58a832d233a3caeb84e3e6d3be212e8c7abcb48117fce63b9adcb43647"
       with:

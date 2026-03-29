@@ -145,7 +145,7 @@ class LiveMailboxTest extends AbstractLiveMailboxTest
     /**
      * @psalm-return Generator<int, array{0: array{subject: string}, 1: array{0: array{type: 0|1|3, 'contents.data'?: string, encoding?: 3, subtype?: 'octet-stream', description?: '.gitignore'|'gitignore.', 'disposition.type'?: 'attachment', disposition?: array{filename: '.gitignore'|'gitignore.'}, 'type.parameters'?: array{name: '.gitignore'|'gitignore.'}}, 1?: array{type: 0, 'contents.data': 'test'}, 2?: array{type: 3, encoding: 3, subtype: 'octet-stream', description: 'foo.bin', 'disposition.type': 'attachment', disposition: array{filename: 'foo.bin'}, 'type.parameters': array{name: 'foo.bin'}, 'contents.data': string}, 3?: array{type: 3, encoding: 3, subtype: 'octet-stream', description: 'foo.bin', 'disposition.type': 'attachment', disposition: array{filename: 'foo.bin'}, 'type.parameters': array{name: 'foo.bin'}, 'contents.data': string}}, 2: string}, mixed, void>
      */
-    public function ComposeProvider(): Generator
+    public static function ComposeProvider(): Generator
     {
         $random_subject = 'test: '.\bin2hex(\random_bytes(16));
 
