@@ -13,12 +13,21 @@ namespace PhpImap;
 
 use ParagonIE\HiddenString\HiddenString;
 
+/**
+ * @phpstan-type MAILBOX_ARGS = array{
+ *	0:HiddenString,
+ *	1:HiddenString,
+ *	2:HiddenString,
+ *	3:string,
+ *	4?:string
+ * }
+ */
 trait LiveMailboxTestingTrait
 {
     /**
      * Provides constructor arguments for a live mailbox.
      *
-     * @psalm-return array{'CI_ENV'?: array{0: \ParagonIE\HiddenString\HiddenString, 1: \ParagonIE\HiddenString\HiddenString, 2: \ParagonIE\HiddenString\HiddenString, 3: string}}
+     * @phpstan-return array{'CI_ENV'?: array{0: \ParagonIE\HiddenString\HiddenString, 1: \ParagonIE\HiddenString\HiddenString, 2: \ParagonIE\HiddenString\HiddenString, 3: string}}
      *
      * @return (\ParagonIE\HiddenString\HiddenString|string)[][]
      */
@@ -45,7 +54,7 @@ trait LiveMailboxTestingTrait
      *
      * @return (Mailbox|\ParagonIE\HiddenString\HiddenString|string)[]
      *
-     * @psalm-return array{0: Mailbox, 1: string, 2: \ParagonIE\HiddenString\HiddenString}
+     * @phpstan-return array{0: Mailbox, 1: string, 2: \ParagonIE\HiddenString\HiddenString}
      */
     protected function getMailbox(HiddenString $imapPath, HiddenString $login, HiddenString $password, $attachmentsDir, $serverEncoding = 'UTF-8'): array
     {
@@ -61,11 +70,11 @@ trait LiveMailboxTestingTrait
     }
 
     /**
-     * @psalm-param MAILBOX_ARGS $mailbox_args
+     * @phpstan-param MAILBOX_ARGS $mailbox_args
      *
      * @return mixed[]
      *
-     * @psalm-return array{0:Mailbox, 1:string, 2:HiddenString}
+     * @phpstan-return array{0:Mailbox, 1:string, 2:HiddenString}
      */
     protected function getMailboxFromArgs(array $mailbox_args): array
     {

@@ -14,7 +14,7 @@ namespace PhpImap;
 use ParagonIE\HiddenString\HiddenString;
 
 /**
- * @psalm-import-type COMPOSE_ENVELOPE from AbstractLiveMailboxTest
+ * @phpstan-import-type COMPOSE_ENVELOPE from AbstractLiveMailboxTest
  */
 class LiveMailboxIssue514Test extends AbstractLiveMailboxTest
 {
@@ -34,9 +34,7 @@ class LiveMailboxIssue514Test extends AbstractLiveMailboxTest
         /** @var \Throwable|null */
         $exception = null;
 
-        $mailboxDeleted = false;
-
-        /** @psalm-var COMPOSE_ENVELOPE */
+        /** @phpstan-var COMPOSE_ENVELOPE */
         $envelope = [
             'subject' => 'barbushin/php-imap#514--' . \bin2hex(\random_bytes(16)),
         ];
@@ -239,11 +237,7 @@ class LiveMailboxIssue514Test extends AbstractLiveMailboxTest
             $exception = $ex;
         } finally {
             $mailbox->switchMailbox($path->getString());
-
-            if (!$mailboxDeleted) {
-                $mailbox->deleteMailbox($remove_mailbox);
-            }
-
+            $mailbox->deleteMailbox($remove_mailbox);
             $mailbox->disconnect();
         }
 

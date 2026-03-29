@@ -33,7 +33,7 @@ class DataPartInfo
     public $charset;
 
     /**
-     * @var 0|string
+     * @var int|string
      *
      * @readonly
      */
@@ -57,7 +57,7 @@ class DataPartInfo
     protected $data;
 
     /**
-     * @param 0|string  $part
+     * @param int|string  $part
      * @param int|mixed $encoding
      */
     public function __construct(Mailbox $mail, int $id, $part, $encoding, int $options)

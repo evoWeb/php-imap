@@ -7,35 +7,33 @@ declare(strict_types=1);
 
 namespace PhpImap;
 
-use Generator;
 use ParagonIE\HiddenString\HiddenString;
 use PhpImap\Exceptions\ConnectionException;
 use PHPUnit\Framework\TestCase as Base;
-use Throwable;
 
 /**
- * @psalm-type MAILBOX_ARGS = array{
+ * @phpstan-type MAILBOX_ARGS = array{
  *	0:HiddenString,
  *	1:HiddenString,
  *	2:HiddenString,
  *	3:string,
  *	4?:string
  * }
- * @psalm-type PSALM_OPEN_ARGS = array{
+ * @phpstan-type PSALM_OPEN_ARGS = array{
  *  0:HiddenString,
  *  1:HiddenString,
  *  2:HiddenString,
  *  3:int,
  *  4:int,
  *  5:array{DISABLE_AUTHENTICATOR:string}|array<empty, empty>
- * } $args
+ * }
  */
 class ImapTest extends Base
 {
     use LiveMailboxTestingTrait;
 
     /**
-     * @psalm-return Generator<'CI ENV with invalid password'|'empty mailbox/username/password', array{0: ConnectionException::class, 1: '/^[AUTHENTICATIONFAILED]/'|'Can't open mailbox : no such mailbox', 2: array{0: HiddenString, 1: HiddenString, 2: HiddenString, 3: 0, 4: 0, 5: array<empty, empty>}, 3?: true}, mixed, void>
+     * @phpstan-return \Generator<'CI ENV with invalid password'|'empty mailbox/username/password', array{0: class-string<ConnectionException>, 1: non-empty-string, 2: array{0: HiddenString, 1: HiddenString, 2: HiddenString, 3: 0, 4: 0, 5: array<empty, empty>}, 3?: true}, mixed, void>
      */
     public static function OpenFailure(): \Generator
     {
@@ -76,8 +74,8 @@ class ImapTest extends Base
     /**
      * @dataProvider OpenFailure
      *
-     * @psalm-param class-string<Throwable> $exception
-     * @psalm-param PSALM_OPEN_ARGS $args
+     * @phpstan-param class-string<\Throwable> $exception
+     * @phpstan-param PSALM_OPEN_ARGS $args
      */
     public function testOpenFailure(
         string $exception,
@@ -123,8 +121,6 @@ class ImapTest extends Base
         /** @var \Throwable|null */
         $exception = null;
 
-        $mailboxDeleted = false;
-
         try {
             self::assertSame(
                 [],
@@ -139,9 +135,7 @@ class ImapTest extends Base
             $exception = $ex;
         } finally {
             $mailbox->switchMailbox($path->getString());
-            if (!$mailboxDeleted) {
-                $mailbox->deleteMailbox($remove_mailbox);
-            }
+            $mailbox->deleteMailbox($remove_mailbox);
             $mailbox->disconnect();
         }
 

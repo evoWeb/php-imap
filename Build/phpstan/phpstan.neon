@@ -15,7 +15,7 @@ parameters:
   paths:
     - ../../examples
     - ../../src
-    - ../../Tests
+    - ../../tests
 
   # In 2026, this option does not help that much any more since our code base is moving to PHP 8
   # and native PHP types. It certainly does not hurt to re-check this every once in a while to

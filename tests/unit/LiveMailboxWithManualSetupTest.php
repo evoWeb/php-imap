@@ -15,7 +15,7 @@ use Generator;
 use ParagonIE\HiddenString\HiddenString;
 
 /**
- * @psalm-type MAILBOX_ARGS = array{
+ * @phpstan-type MAILBOX_ARGS = array{
  *	0:HiddenString,
  *	1:HiddenString,
  *	2:HiddenString,
@@ -26,7 +26,7 @@ use ParagonIE\HiddenString\HiddenString;
 class LiveMailboxWithManualSetupTest extends AbstractLiveMailboxTest
 {
     /**
-     * @psalm-return Generator<int, array{0: '.issue-499.Éléments envoyés'}, mixed, void>
+     * @phpstan-return Generator<int, array{0: '.issue-499.Éléments envoyés'}, mixed, void>
      */
     public static function RelativeToRootPathProvider(): \Generator
     {
@@ -36,7 +36,7 @@ class LiveMailboxWithManualSetupTest extends AbstractLiveMailboxTest
     }
 
     /**
-     * @psalm-return Generator<int, array{0: array{0: HiddenString, 1: HiddenString, 2: HiddenString, 3: string, 4?: string}}, mixed, void>
+     * @phpstan-return Generator<int, array{0: array{0: HiddenString, 1: HiddenString, 2: HiddenString, 3: string, 4?: string}}, mixed, void>
      */
     public static function statusProviderAbsolutePath(): \Generator
     {
@@ -57,15 +57,13 @@ class LiveMailboxWithManualSetupTest extends AbstractLiveMailboxTest
      * @group live
      * @group live-manual
      *
-     * @psalm-param MAILBOX_ARGS $mailbox_args
+     * @phpstan-param MAILBOX_ARGS $mailbox_args
      */
     public function testAbsolutePathStatusFromConstruction(
         array $mailbox_args
     ): void {
         [$mailbox] = $this->getMailboxFromArgs($mailbox_args);
 
-        $mailbox->statusMailbox();
-
-        self::assertTrue(true);
+        self::assertNotFalse($mailbox->statusMailbox());
     }
 }

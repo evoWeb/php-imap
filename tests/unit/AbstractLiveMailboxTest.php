@@ -11,22 +11,21 @@ declare(strict_types=1);
 
 namespace PhpImap;
 
-use Generator;
 use ParagonIE\HiddenString\HiddenString;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @psalm-type MAILBOX_ARGS = array{
+ * @phpstan-type MAILBOX_ARGS = array{
  *	0:HiddenString,
  *	1:HiddenString,
  *	2:HiddenString,
  *	3:string,
  *	4?:string
  * }
- * @psalm-type COMPOSE_ENVELOPE = array{
+ * @phpstan-type COMPOSE_ENVELOPE = array{
  *	subject?:string
  * }
- * @psalm-type COMPOSE_BODY = list<array{
+ * @phpstan-type COMPOSE_BODY = list<array{
  *	type?:int,
  *	encoding?:int,
  *	charset?:string,
@@ -44,7 +43,7 @@ abstract class AbstractLiveMailboxTest extends TestCase
     use LiveMailboxTestingTrait;
 
     /**
-     * @psalm-return Generator<empty, empty, mixed, void>
+     * @phpstan-return \Generator<int, array{COMPOSE_ENVELOPE, COMPOSE_BODY, string}, mixed, void>
      */
     public static function ComposeProvider(): \Generator
     {
@@ -52,7 +51,7 @@ abstract class AbstractLiveMailboxTest extends TestCase
     }
 
     /**
-     * @psalm-return Generator<int, array{
+     * @phpstan-return \Generator<int, array{
      *	0:MAILBOX_ARGS,
      *	1:COMPOSE_ENVELOPE,
      *	2:COMPOSE_BODY,
@@ -85,9 +84,9 @@ abstract class AbstractLiveMailboxTest extends TestCase
      * @depends testGetImapStream
      * @depends testMailCompose
      *
-     * @psalm-param MAILBOX_ARGS $mailbox_args
-     * @psalm-param COMPOSE_ENVELOPE $envelope
-     * @psalm-param COMPOSE_BODY $body
+     * @phpstan-param MAILBOX_ARGS $mailbox_args
+     * @phpstan-param COMPOSE_ENVELOPE $envelope
+     * @phpstan-param COMPOSE_BODY $body
      */
     public function testAppend(
         array $mailbox_args,
@@ -178,9 +177,9 @@ abstract class AbstractLiveMailboxTest extends TestCase
     /**
      * Get subject search criteria and subject.
      *
-     * @psalm-param array{subject?:mixed} $envelope
+     * @phpstan-param array{subject?:mixed} $envelope
      *
-     * @psalm-return array{0:string, 1:string}
+     * @phpstan-return array{0:string, 1:string}
      */
     protected function SubjectSearchCriteriaAndSubject(array $envelope): array
     {
@@ -191,7 +190,7 @@ abstract class AbstractLiveMailboxTest extends TestCase
 
         $search_criteria = \sprintf('SUBJECT "%s"', $subject);
 
-        /** @psalm-var array{0:string, 1:string} */
+        /** @phpstan-var array{0:string, 1:string} */
         return [$search_criteria, $subject];
     }
 
@@ -201,8 +200,6 @@ abstract class AbstractLiveMailboxTest extends TestCase
             self::markTestSkipped(
                 'Cannot search for message by subject, no subject specified!'
             );
-
-            return true;
         }
 
         return false;

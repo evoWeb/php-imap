@@ -14,7 +14,7 @@ namespace PhpImap;
 use ParagonIE\HiddenString\HiddenString;
 
 /**
- * @psalm-type MAILBOX_ARGS = array{
+ * @phpstan-type MAILBOX_ARGS = array{
  *	0:HiddenString,
  *	1:HiddenString,
  *	2:HiddenString,

@@ -27,7 +27,7 @@ class IncomingMail extends IncomingMailHeader
     /**
      * @var DataPartInfo[][]
      *
-     * @psalm-var array{0:list<DataPartInfo>, 1:list<DataPartInfo>}
+     * @phpstan-var array{0:list<DataPartInfo>, 1:list<DataPartInfo>}
      */
     protected $dataInfo = [[], []];
 
@@ -88,7 +88,7 @@ class IncomingMail extends IncomingMailHeader
 
     public function setHeader(IncomingMailHeader $header): void
     {
-        /** @psalm-var array<string, scalar|array|object|null> */
+        /** @phpstan-var array<string, scalar|array|object|null> */
         $array = \get_object_vars($header);
         foreach ($array as $property => $value) {
             $this->$property = $value;
@@ -162,7 +162,7 @@ class IncomingMail extends IncomingMailHeader
      *
      * @return array attachmentId => link placeholder
      *
-     * @psalm-return array<string, string>
+     * @phpstan-return array<string, string>
      */
     public function getInternalLinksPlaceholders(): array
     {
@@ -170,7 +170,7 @@ class IncomingMail extends IncomingMailHeader
 
         $match = \preg_match_all('/=["\'](ci?d:([\w\.%*@-]+))["\']/i', $fetchedHtml, $matches);
 
-        /** @psalm-var array{1:list<string>, 2:list<string>} */
+        /** @phpstan-var array{list<string>, list<non-falsy-string>, list<non-empty-string>} */
         $matches = $matches;
 
         return $match ? \array_combine($matches[2], $matches[1]) : [];
@@ -194,7 +194,7 @@ class IncomingMail extends IncomingMailHeader
             }
         }
 
-        /** @psalm-var string */
+        /** @phpstan-var string */
         return \str_replace($search, $replace, $fetchedHtml);
     }
 
@@ -208,8 +208,7 @@ class IncomingMail extends IncomingMailHeader
 
         \preg_match_all("/\bcid:[^'\"\s]{1,256}/mi", $fetchedHtml, $matches);
 
-        if (isset($matches[0]) && \is_array($matches[0]) && \count($matches[0])) {
-            /** @var list<string> */
+        if (\count($matches[0])) {
             $matches = $matches[0];
             $attachments = $this->getAttachments();
             foreach ($matches as $match) {

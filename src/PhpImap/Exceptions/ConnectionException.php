@@ -11,7 +11,7 @@ namespace PhpImap\Exceptions;
  */
 class ConnectionException extends \Exception
 {
-    public function __construct(array $message, int $code = 0, ?\Exception $previous = null)
+    public function __construct(array $message, int $code = 0, ?\Throwable $previous = null)
     {
         parent::__construct(json_encode($message), $code, $previous);
     }
@@ -23,18 +23,15 @@ class ConnectionException extends \Exception
         switch (strtolower($select)) {
             case 'all':
                 return json_decode($message);
-                break;
+
+            case 'last':
+                $message = json_decode($message);
+                return $message[\count($message) - 1];
+
             default:
             case 'first':
                 $message = json_decode($message);
-
                 return $message[0];
-                break;
-            case 'last':
-                $message = json_decode($message);
-
-                return $message[\count($message) - 1];
-                break;
         }
     }
 }

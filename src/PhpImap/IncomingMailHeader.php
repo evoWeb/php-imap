@@ -113,7 +113,7 @@ class IncomingMailHeader
     /**
      * @var (string|null)[]
      *
-     * @psalm-var array<string, string|null>
+     * @phpstan-var array<string, string|null>
      */
     public $to = [];
 
@@ -123,7 +123,7 @@ class IncomingMailHeader
     /**
      * @var (string|null)[]
      *
-     * @psalm-var array<string, string|null>
+     * @phpstan-var array<string, string|null>
      */
     public $cc = [];
 
@@ -133,14 +133,14 @@ class IncomingMailHeader
     /**
      * @var (string|null)[]
      *
-     * @psalm-var array<string, string|null>
+     * @phpstan-var array<string, string|null>
      */
     public $bcc = [];
 
     /**
      * @var (string|null)[]
      *
-     * @psalm-var array<string, string|null>
+     * @phpstan-var array<string, string|null>
      */
     public $replyTo = [];
 

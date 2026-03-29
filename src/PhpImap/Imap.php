@@ -8,11 +8,12 @@ declare(strict_types=1);
 
 namespace PhpImap;
 
+use IMAP\Connection;
 use PhpImap\Exceptions\ConnectionException;
 
 /**
- * @psalm-type PARTSTRUCTURE_PARAM = object{attribute:string, value?:string}
- * @psalm-type PARTSTRUCTURE = object{
+ * @phpstan-type PARTSTRUCTURE_PARAM = object{attribute:string, value?:string}
+ * @phpstan-type PARTSTRUCTURE = object{
  *  id?:string,
  *  encoding:int|mixed,
  *  partStructure:object[],
@@ -25,7 +26,7 @@ use PhpImap\Exceptions\ConnectionException;
  */
 final class Imap
 {
-    /** @psalm-var list<int> */
+    /** @phpstan-var list<int> */
     public const SORT_CRITERIA = [
         \SORTARRIVAL,
         \SORTCC,
@@ -36,7 +37,7 @@ final class Imap
         \SORTTO,
     ];
 
-    /** @psalm-var list<int> */
+    /** @phpstan-var list<int> */
     public const TIMEOUT_TYPES = [
         \IMAP_CLOSETIMEOUT,
         \IMAP_OPENTIMEOUT,
@@ -44,14 +45,14 @@ final class Imap
         \IMAP_WRITETIMEOUT,
     ];
 
-    /** @psalm-var list<int> */
+    /** @phpstan-var list<int> */
     public const CLOSE_FLAGS = [
         0,
         \CL_EXPUNGE,
     ];
 
     /**
-     * @param resource|false $imap_stream
+     * @param resource|false|Connection $imap_stream
      *
      * @return true
      *
@@ -113,9 +114,9 @@ final class Imap
     }
 
     /**
-     * @param false|resource $imap_stream
+     * @param false|resource|Connection $imap_stream
      */
-    public static function check($imap_stream): object
+    public static function check($imap_stream): \stdClass
     {
         \imap_errors(); // flush errors
 
@@ -125,7 +126,6 @@ final class Imap
             throw new \UnexpectedValueException('Could not check imap mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_check'));
         }
 
-        /** @var object */
         return $result;
     }
 
@@ -165,7 +165,7 @@ final class Imap
     /**
      * @param false|resource $imap_stream
      *
-     * @psalm-param value-of<self::CLOSE_FLAGS> $flag
+     * @phpstan-param value-of<self::CLOSE_FLAGS> $flag
      *
      * @return true
      */
@@ -224,11 +224,6 @@ final class Imap
         $msg_number,
         int $options = 0
     ): bool {
-        /**
-         * @var int
-         *
-         * @todo remove docblock pending resolution of https://github.com/vimeo/psalm/issues/2620
-         */
         $msg_number = self::encodeStringToUtf7Imap(self::EnsureRange(
             $msg_number,
             __METHOD__,
@@ -297,7 +292,7 @@ final class Imap
      *
      * @return object[]
      *
-     * @psalm-return list<object>
+     * @phpstan-return list<object>
      */
     public static function fetch_overview(
         $imap_stream,
@@ -321,7 +316,7 @@ final class Imap
             throw new \UnexpectedValueException('Could not fetch overview for message from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_fetch_overview'));
         }
 
-        /** @psalm-var list<object> */
+        /** @phpstan-var list<object> $result */
         return $result;
     }
 
@@ -379,15 +374,13 @@ final class Imap
     }
 
     /**
-     * @param false|resource $imap_stream
-     *
-     * @psalm-return PARTSTRUCTURE
+     * @param false|resource|Connection $imap_stream
      */
     public static function fetchstructure(
         $imap_stream,
         int $msg_number,
         int $options = 0
-    ): object {
+    ): \stdClass {
         \imap_errors(); // flush errors
 
         $result = \imap_fetchstructure(
@@ -400,7 +393,6 @@ final class Imap
             throw new \UnexpectedValueException('Could not fetch message structure from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_fetchstructure'));
         }
 
-        /** @psalm-var PARTSTRUCTURE */
         return $result;
     }
 
@@ -432,7 +424,7 @@ final class Imap
      *
      * @return object[]
      *
-     * @psalm-return list<object>
+     * @phpstan-return list<object>
      */
     public static function getmailboxes(
         $imap_stream,
@@ -461,7 +453,7 @@ final class Imap
             throw new \UnexpectedValueException('Call to imap_getmailboxes() with supplied arguments returned false, not array!', 0, self::HandleErrors(\imap_errors(), 'imap_getmailboxes'));
         }
 
-        /** @psalm-var list<object> */
+        /** @phpstan-var list<object> */
         return $result;
     }
 
@@ -470,7 +462,7 @@ final class Imap
      *
      * @return object[]
      *
-     * @psalm-return list<object>
+     * @phpstan-return list<object>
      */
     public static function getsubscribed(
         $imap_stream,
@@ -489,7 +481,7 @@ final class Imap
             throw new \UnexpectedValueException('Call to imap_getsubscribed() with supplied arguments returned false, not array!', 0, self::HandleErrors(\imap_errors(), 'imap_getsubscribed'));
         }
 
-        /** @psalm-var list<object> */
+        /** @phpstan-var list<object> */
         return $result;
     }
 
@@ -516,7 +508,7 @@ final class Imap
      *
      * @return string[]
      *
-     * @psalm-return list<string>
+     * @phpstan-return list<string>
      */
     public static function listOfMailboxes($imap_stream, string $ref, string $pattern): array
     {
@@ -541,13 +533,13 @@ final class Imap
     }
 
     /**
-     * @param mixed[] An associative array of headers fields
-     * @param mixed[] An indexed array of bodies
+     * @param mixed[] $envelope An associative array of headers fields
+     * @param mixed[] $body An indexed array of bodies
      *
-     * @psalm-param array{
+     * @phpstan-param array{
      *	subject?:string
      * } $envelope An associative array of headers fields (docblock is not complete)
-     * @psalm-param list<array{
+     * @phpstan-param list<array{
      *	type?:int,
      *	encoding?:int,
      *	charset?:string,
@@ -557,8 +549,6 @@ final class Imap
      * }> $body An indexed array of bodies (docblock is not complete)
      *
      * @todo flesh out array shape pending resolution of https://github.com/vimeo/psalm/issues/1518
-     *
-     * @psalm-pure
      */
     public static function mail_compose(array $envelope, array $body): string
     {
@@ -632,7 +622,7 @@ final class Imap
     }
 
     /**
-     * @param false|resource $imap_stream
+     * @param false|resource|Connection $imap_stream
      */
     public static function mailboxmsginfo($imap_stream): \stdClass
     {
@@ -642,6 +632,7 @@ final class Imap
             self::EnsureConnection($imap_stream, __METHOD__, 1)
         );
 
+        // @phpstan-ignore identical.alwaysFalse (imap_mailboxmsginfo can return false per PHP docs, but PHPStan stub types it as stdClass only)
         if ($result === false) {
             throw new \UnexpectedValueException('Could not fetch mailboxmsginfo from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_mailboxmsginfo'));
         }
@@ -666,9 +657,9 @@ final class Imap
     }
 
     /**
-     * @psalm-param array{DISABLE_AUTHENTICATOR:string}|array<empty, empty> $params
+     * @phpstan-param array{DISABLE_AUTHENTICATOR:string}|array<empty, empty> $params
      *
-     * @return resource
+     * @return Connection
      */
     public static function open(
         string $mailbox,
@@ -679,7 +670,7 @@ final class Imap
         array $params = []
     ) {
         if (\preg_match("/^\{.*\}(.*)$/", $mailbox, $matches)) {
-            $mailbox_name = $matches[1] ?? '';
+            $mailbox_name = $matches[1];
 
             if (!\mb_detect_encoding($mailbox_name, 'ASCII', true)) {
                 $mailbox = static::encodeStringToUtf7Imap($mailbox);
@@ -698,13 +689,11 @@ final class Imap
     }
 
     /**
-     * @param resource|false $imap_stream
-     *
-     * @psalm-pure
+     * @param resource|false|Connection $imap_stream
      */
     public static function ping($imap_stream): bool
     {
-        return (\is_resource($imap_stream) || $imap_stream instanceof \IMAP\Connection) && \imap_ping($imap_stream);
+        return (\is_resource($imap_stream) || $imap_stream instanceof Connection) && \imap_ping($imap_stream);
     }
 
     /**
@@ -792,7 +781,7 @@ final class Imap
      *
      * @return int[]
      *
-     * @psalm-return list<int>
+     * @phpstan-return list<int>
      */
     public static function search(
         $imap_stream,
@@ -834,7 +823,7 @@ final class Imap
             throw new \UnexpectedValueException('Could not search mailbox!', 0, self::HandleErrors($errors, 'imap_search'));
         }
 
-        /** @psalm-var list<int> */
+        /** @phpstan-var list<int> */
         return $result;
     }
 
@@ -848,7 +837,7 @@ final class Imap
         $imap_stream,
         $sequence,
         string $flag,
-        int $options = \NIL
+        int $options = 0
     ): bool {
         \imap_errors(); // flush errors
 
@@ -872,16 +861,13 @@ final class Imap
     }
 
     /**
-     * @param false|resource $imap_stream
+     * @param false|resource|Connection $imap_stream
      *
-     * @psalm-param value-of<self::SORT_CRITERIA> $criteria
-     * @psalm-suppress InvalidArgument
-     *
-     * @todo InvalidArgument, although it's correct: Argument 3 of imap_sort expects int, bool provided https://www.php.net/manual/de/function.imap-sort.php
+     * @phpstan-param value-of<self::SORT_CRITERIA> $criteria
      *
      * @return int[]
      *
-     * @psalm-return list<int>
+     * @phpstan-return list<int>
      */
     public static function sort(
         $imap_stream,
@@ -894,17 +880,6 @@ final class Imap
         \imap_errors(); // flush errors
 
         $imap_stream = self::EnsureConnection($imap_stream, __METHOD__, 1);
-
-        /** @var int */
-        $criteria = $criteria;
-
-        if (\PHP_MAJOR_VERSION < 8) {
-            /** @var int */
-            $reverse = (int)$reverse;
-        } else {
-            /** @var bool */
-            $reverse = $reverse;
-        }
 
         if ($search_criteria !== null && $charset !== null) {
             $result = \imap_sort(
@@ -936,14 +911,12 @@ final class Imap
             throw new \UnexpectedValueException('Could not sort messages!', 0, self::HandleErrors(\imap_errors(), 'imap_sort'));
         }
 
-        /** @psalm-var list<int> */
+        /** @phpstan-var list<int> */
         return $result;
     }
 
     /**
-     * @param false|resource $imap_stream
-     *
-     * @psalm-param SA_MESSAGES|SA_RECENT|SA_UNSEEN|SA_UIDNEXT|SA_UIDVALIDITY|SA_ALL $flags
+     * @param false|resource|Connection $imap_stream
      */
     public static function status($imap_stream, string $mailbox, int $options): \stdClass
     {
@@ -981,7 +954,7 @@ final class Imap
     }
 
     /**
-     * @psalm-param value-of<self::TIMEOUT_TYPES> $timeout_type
+     * @phpstan-param value-of<self::TIMEOUT_TYPES> $timeout_type
      *
      * @return true|int
      */
@@ -1030,8 +1003,6 @@ final class Imap
      * Returns the provided string in UTF7-IMAP encoded format.
      *
      * @return string $str UTF-7 encoded string
-     *
-     * @psalm-pure
      */
     public static function encodeStringToUtf7Imap(string $str): string
     {
@@ -1048,8 +1019,6 @@ final class Imap
      * Returns the provided string in UTF-8 encoded format.
      *
      * @return string $str, but UTF-8 encoded
-     *
-     * @psalm-pure
      */
     public static function decodeStringFromUtf7ImapToUtf8(string $str): string
     {
@@ -1063,44 +1032,38 @@ final class Imap
     }
 
     /**
-     * @param false|resource $maybe
+     * @param false|resource|Connection $maybe
      *
      * @throws \InvalidArgumentException if $maybe is not a valid resource
      *
-     * @return resource
-     *
-     * @psalm-pure
+     * @return Connection
      */
     private static function EnsureResource($maybe, string $method, int $argument)
     {
-        if (!$maybe || (!\is_resource($maybe) && !$maybe instanceof \IMAP\Connection)) {
+        if (!$maybe || (!\is_resource($maybe) && !$maybe instanceof Connection)) {
             throw new \InvalidArgumentException('Argument ' . (string)$argument . ' passed to ' . $method . ' must be a valid resource!');
         }
-
-        /** @var resource */
         return $maybe;
     }
 
     /**
-     * @param false|resource $maybe
+     * @param false|resource|Connection $maybe
      *
      * @throws Exceptions\ConnectionException if $maybe is not a valid resource
      *
-     * @return resource
+     * @return Connection
      */
     private static function EnsureConnection($maybe, string $method, int $argument)
     {
         try {
             return self::EnsureResource($maybe, $method, $argument);
         } catch (\Throwable $e) {
-            throw new Exceptions\ConnectionException('Argument ' . (string)$argument . ' passed to ' . $method . ' must be valid resource!', 0, $e);
+            throw new Exceptions\ConnectionException(['Argument ' . (string)$argument . ' passed to ' . $method . ' must be valid resource!'], 0, $e);
         }
     }
 
     /**
      * @param array|false $errors
-     *
-     * @psalm-pure
      */
     private static function HandleErrors($errors, string $method): \UnexpectedValueException
     {
@@ -1113,8 +1076,6 @@ final class Imap
 
     /**
      * @param scalar $msg_number
-     *
-     * @psalm-pure
      */
     private static function EnsureRange(
         $msg_number,

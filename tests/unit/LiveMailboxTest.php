@@ -17,17 +17,17 @@ use ParagonIE\HiddenString\HiddenString;
 use function date;
 
 /**
- * @psalm-type MAILBOX_ARGS = array{
+ * @phpstan-type MAILBOX_ARGS = array{
  *	0:HiddenString,
  *	1:HiddenString,
  *	2:HiddenString,
  *	3:string,
  *	4?:string
  * }
- * @psalm-type COMPOSE_ENVELOPE = array{
+ * @phpstan-type COMPOSE_ENVELOPE = array{
  *	subject?:string
  * }
- * @psalm-type COMPOSE_BODY = list<array{
+ * @phpstan-type COMPOSE_BODY = list<array{
  *	type?:int,
  *	encoding?:int,
  *	charset?:string,
@@ -71,8 +71,6 @@ class LiveMailboxTest extends AbstractLiveMailboxTest
 
             $mailboxes = $mailbox->getMailboxes();
             \shuffle($mailboxes);
-
-            $mailboxes = \array_values($mailboxes);
 
             $limit = \min(\count($mailboxes), self::RANDOM_MAILBOX_SAMPLE_SIZE);
 
@@ -139,7 +137,7 @@ class LiveMailboxTest extends AbstractLiveMailboxTest
     }
 
     /**
-     * @psalm-return Generator<int, array{0: array{subject: string}, 1: array{0: array{type: 0|1|3, 'contents.data'?: string, encoding?: 3, subtype?: 'octet-stream', description?: '.gitignore'|'gitignore.', 'disposition.type'?: 'attachment', disposition?: array{filename: '.gitignore'|'gitignore.'}, 'type.parameters'?: array{name: '.gitignore'|'gitignore.'}}, 1?: array{type: 0, 'contents.data': 'test'}, 2?: array{type: 3, encoding: 3, subtype: 'octet-stream', description: 'foo.bin', 'disposition.type': 'attachment', disposition: array{filename: 'foo.bin'}, 'type.parameters': array{name: 'foo.bin'}, 'contents.data': string}, 3?: array{type: 3, encoding: 3, subtype: 'octet-stream', description: 'foo.bin', 'disposition.type': 'attachment', disposition: array{filename: 'foo.bin'}, 'type.parameters': array{name: 'foo.bin'}, 'contents.data': string}}, 2: string}, mixed, void>
+     * @phpstan-return Generator<int, array{0: array{subject: string}, 1: array{0: array{type: 0|1|3, 'contents.data'?: string, encoding?: 3, subtype?: 'octet-stream', description?: '.gitignore'|'gitignore.', 'disposition.type'?: 'attachment', disposition?: array{filename: '.gitignore'|'gitignore.'}, 'type.parameters'?: array{name: '.gitignore'|'gitignore.'}}, 1?: array{type: 0, 'contents.data': 'test'}, 2?: array{type: 3, encoding: 3, subtype: 'octet-stream', description: 'foo.bin', 'disposition.type': 'attachment', disposition: array{filename: 'foo.bin'}, 'type.parameters': array{name: 'foo.bin'}, 'contents.data': string}, 3?: array{type: 3, encoding: 3, subtype: 'octet-stream', description: 'foo.bin', 'disposition.type': 'attachment', disposition: array{filename: 'foo.bin'}, 'type.parameters': array{name: 'foo.bin'}, 'contents.data': string}}, 2: string}, mixed, void>
      */
     public static function ComposeProvider(): \Generator
     {
@@ -295,8 +293,8 @@ class LiveMailboxTest extends AbstractLiveMailboxTest
      *
      * @group compose
      *
-     * @psalm-param COMPOSE_ENVELOPE $envelope
-     * @psalm-param COMPOSE_BODY $body
+     * @phpstan-param COMPOSE_ENVELOPE $envelope
+     * @phpstan-param COMPOSE_BODY $body
      */
     public function testMailCompose(array $envelope, array $body, string $expected_result): void
     {
@@ -317,9 +315,9 @@ class LiveMailboxTest extends AbstractLiveMailboxTest
      *
      * @depends testAppend
      *
-     * @psalm-param MAILBOX_ARGS $mailbox_args
-     * @psalm-param COMPOSE_ENVELOPE $envelope
-     * @psalm-param COMPOSE_BODY $body
+     * @phpstan-param MAILBOX_ARGS $mailbox_args
+     * @phpstan-param COMPOSE_ENVELOPE $envelope
+     * @phpstan-param COMPOSE_BODY $body
      */
     public function testAppendNudgesMailboxCount(
         array $mailbox_args,
@@ -406,9 +404,9 @@ class LiveMailboxTest extends AbstractLiveMailboxTest
      *
      * @depends testAppend
      *
-     * @psalm-param MAILBOX_ARGS $mailbox_args
-     * @psalm-param COMPOSE_ENVELOPE $envelope
-     * @psalm-param COMPOSE_BODY $body
+     * @phpstan-param MAILBOX_ARGS $mailbox_args
+     * @phpstan-param COMPOSE_ENVELOPE $envelope
+     * @phpstan-param COMPOSE_BODY $body
      */
     public function testAppendSingleSearchMatchesSort(
         array $mailbox_args,
@@ -504,9 +502,9 @@ class LiveMailboxTest extends AbstractLiveMailboxTest
      *
      * @depends testAppend
      *
-     * @psalm-param MAILBOX_ARGS $mailbox_args
-     * @psalm-param COMPOSE_ENVELOPE $envelope
-     * @psalm-param COMPOSE_BODY $body
+     * @phpstan-param MAILBOX_ARGS $mailbox_args
+     * @phpstan-param COMPOSE_ENVELOPE $envelope
+     * @phpstan-param COMPOSE_BODY $body
      */
     public function testAppendRetrievalMatchesExpected(
         array $mailbox_args,
@@ -648,8 +646,6 @@ class LiveMailboxTest extends AbstractLiveMailboxTest
      * @param string $actual_result
      *
      * @return string
-     *
-     * @psalm-pure
      */
     protected function ReplaceBoundaryHere(
         $expected_result,

@@ -11,7 +11,7 @@ namespace PhpImap;
  *
  * @property string|false|null $filePath lazy attachment data file
  *
- * @psalm-type fileinfoconst = 0|2|16|1024|1040|8|32|128|256|16777216
+ * @phpstan-type fileinfoconst = 0|2|16|1024|1040|8|32|128|256|16777216
  */
 class IncomingMailAttachment
 {
@@ -122,7 +122,7 @@ class IncomingMailAttachment
      *
      * @param int $fileinfo_const Any predefined constant. See https://www.php.net/manual/en/fileinfo.constants.php
      *
-     * @psalm-param fileinfoconst $fileinfo_const
+     * @phpstan-param fileinfoconst $fileinfo_const
      */
     public function getFileInfo(int $fileinfo_const = \FILEINFO_NONE): string
     {

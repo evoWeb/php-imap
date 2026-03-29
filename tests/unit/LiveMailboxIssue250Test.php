@@ -15,17 +15,17 @@ use Generator;
 use ParagonIE\HiddenString\HiddenString;
 
 /**
- * @psalm-type MAILBOX_ARGS = array{
+ * @phpstan-type MAILBOX_ARGS = array{
  *	0:HiddenString,
  *	1:HiddenString,
  *	2:HiddenString,
  *	3:string,
  *	4?:string
  * }
- * @psalm-type COMPOSE_ENVELOPE = array{
+ * @phpstan-type COMPOSE_ENVELOPE = array{
  *	subject?:string
  * }
- * @psalm-type COMPOSE_BODY = list<array{
+ * @phpstan-type COMPOSE_BODY = list<array{
  *	type?:int,
  *	encoding?:int,
  *	charset?:string,
@@ -37,7 +37,7 @@ use ParagonIE\HiddenString\HiddenString;
 class LiveMailboxIssue250Test extends AbstractLiveMailboxTest
 {
     /**
-     * @psalm-return Generator<int, array{0: array{subject: string}, 1: array{0: array{type: 0, 'contents.data': 'test'}}, 2: string}, mixed, void>
+     * @phpstan-return Generator<int, array{0: array{subject: string}, 1: array{0: array{type: 0, 'contents.data': 'test'}}, 2: string}, mixed, void>
      */
     public static function ComposeProvider(): \Generator
     {
@@ -67,9 +67,9 @@ class LiveMailboxIssue250Test extends AbstractLiveMailboxTest
      * @group live
      * @group live-issue-250
      *
-     * @psalm-param MAILBOX_ARGS $mailbox_args
-     * @psalm-param COMPOSE_ENVELOPE $envelope
-     * @psalm-param COMPOSE_BODY $body
+     * @phpstan-param MAILBOX_ARGS $mailbox_args
+     * @phpstan-param COMPOSE_ENVELOPE $envelope
+     * @phpstan-param COMPOSE_BODY $body
      */
     public function testAppend(
         array $mailbox_args,

@@ -4,43 +4,34 @@ declare(strict_types=1);
 
 namespace PhpImap;
 
-use DateTime;
+use IMAP\Connection;
 use PhpImap\Exceptions\ConnectionException;
 use PhpImap\Exceptions\InvalidParameterException;
 use stdClass;
-
-use function count;
-
-use const IMAP_CLOSETIMEOUT;
-use const IMAP_OPENTIMEOUT;
-use const IMAP_READTIMEOUT;
-use const IMAP_WRITETIMEOUT;
-use const SE_UID;
-use const SORTARRIVAL;
 
 /**
  * @see https://github.com/barbushin/php-imap
  *
  * @author Barbushin Sergey http://linkedin.com/in/barbushin
  *
- * @psalm-type PARTSTRUCTURE_PARAM = object{attribute:string, value?:string}
+ * @phpstan-type PARTSTRUCTURE_PARAM = object{attribute:string, value?:string}
  *
- * @psalm-type PARTSTRUCTURE = object{
+ * @phpstan-type PARTSTRUCTURE = object{
  *  id?:string,
  *  encoding:int|mixed,
  *  partStructure:object[],
  *  parameters:PARTSTRUCTURE_PARAM[],
  *  dparameters:object{attribute:string, value:string}[],
- *  parts:array<int, object{disposition?:string}>,
+ *  parts:array<int, \stdClass>,
  *  type:int,
  *  subtype:string
  * }
- * @psalm-type HOSTNAMEANDADDRESS_ENTRY = object{host?:string, personal?:string, mailbox:string}
- * @psalm-type HOSTNAMEANDADDRESS = array{0:HOSTNAMEANDADDRESS_ENTRY, 1?:HOSTNAMEANDADDRESS_ENTRY}
- * @psalm-type COMPOSE_ENVELOPE = array{
+ * @phpstan-type HOSTNAMEANDADDRESS_ENTRY = object{host?:string, personal?:string, mailbox:string}
+ * @phpstan-type HOSTNAMEANDADDRESS = array{0:HOSTNAMEANDADDRESS_ENTRY, 1?:HOSTNAMEANDADDRESS_ENTRY}
+ * @phpstan-type COMPOSE_ENVELOPE = array{
  *	subject?:string
  * }
- * @psalm-type COMPOSE_BODY = list<array{
+ * @phpstan-type COMPOSE_BODY = list<array{
  *	type?:int,
  *	encoding?:int,
  *	charset?:string,
@@ -98,7 +89,7 @@ class Mailbox
     /** @var int */
     protected $imapRetriesNum = 0;
 
-    /** @psalm-var array{DISABLE_AUTHENTICATOR?:string} */
+    /** @phpstan-var array{DISABLE_AUTHENTICATOR?:string} */
     protected $imapParams = [];
 
     /** @var string */
@@ -113,7 +104,7 @@ class Mailbox
     /**
      * @var int[]
      *
-     * @psalm-var array{1?:int, 2?:int, 3?:int, 4?:int}
+     * @phpstan-var array{1?:int, 2?:int, 3?:int, 4?:int}
      */
     protected $timeouts = [];
 
@@ -129,7 +120,7 @@ class Mailbox
     /** @var bool|false */
     protected $attachmentFilenameMode = false;
 
-    /** @var resource|null */
+    /** @var resource|null|Connection */
     private $imapStream;
 
     /**
@@ -189,8 +180,6 @@ class Mailbox
      * @param string $delimiter Path delimiter
      *
      * @return bool true (supported) or false (unsupported)
-     *
-     * @psalm-pure
      */
     public function validatePathDelimiter(string $delimiter): bool
     {
@@ -252,10 +241,6 @@ class Mailbox
      */
     public function setAttachmentFilenameMode(bool $attachmentFilenameMode): void
     {
-        if (!\is_bool($attachmentFilenameMode)) {
-            throw new InvalidParameterException('"' . $attachmentFilenameMode . '" is not supported by setOriginalAttachmentFilename(). Only boolean values are allowed: true (use original filename), false (use random generated filename)');
-        }
-
         $this->attachmentFilenameMode = $attachmentFilenameMode;
     }
 
@@ -274,7 +259,7 @@ class Mailbox
      *
      * @param int $imapSearchOption IMAP search option (eg. 'SE_UID')
      *
-     * @psalm-param 1|2 $imapSearchOption
+     * @phpstan-param int $imapSearchOption
      *
      * @throws InvalidParameterException
      */
@@ -313,7 +298,7 @@ class Mailbox
      * @param int   $timeout Timeout in seconds
      * @param array $types   One of the following: IMAP_OPENTIMEOUT, IMAP_READTIMEOUT, IMAP_WRITETIMEOUT, IMAP_CLOSETIMEOUT
      *
-     * @psalm-param list<1|2|3|4> $types
+     * @phpstan-param list<int> $types
      *
      * @throws InvalidParameterException
      */
@@ -327,7 +312,6 @@ class Mailbox
             throw new InvalidParameterException('You have provided at least one unsupported timeout type. Supported types are: IMAP_OPENTIMEOUT, IMAP_READTIMEOUT, IMAP_WRITETIMEOUT, IMAP_CLOSETIMEOUT');
         }
 
-        /** @var array{1?:int, 2?:int, 3?:int, 4?:int} */
         $this->timeouts = \array_fill_keys($types, $timeout);
     }
 
@@ -346,7 +330,7 @@ class Mailbox
      *
      * @param string[]|null $params
      *
-     * @psalm-param array{DISABLE_AUTHENTICATOR?:string}|array<empty, empty>|null $params
+     * @phpstan-param array{DISABLE_AUTHENTICATOR?:string}|array<empty, empty>|null $params
      *
      * @throws InvalidParameterException
      */
@@ -447,7 +431,7 @@ class Mailbox
     public function hasImapStream(): bool
     {
         try {
-            return (\is_resource($this->imapStream) || $this->imapStream instanceof \IMAP\Connection) && \imap_ping($this->imapStream);
+            return (\is_resource($this->imapStream) || $this->imapStream instanceof Connection) && \imap_ping($this->imapStream);
         } catch (\Error $exception) {
             // From PHP 8.1.10 imap_ping() on a closed stream throws a ValueError. See #680.
             $valueError = '\ValueError';
@@ -463,8 +447,6 @@ class Mailbox
      * Returns the provided string in UTF7-IMAP encoded format.
      *
      * @return string $str UTF-7 encoded string
-     *
-     * @psalm-pure
      */
     public function encodeStringToUtf7Imap(string $str): string
     {
@@ -475,8 +457,6 @@ class Mailbox
      * Returns the provided string in UTF-8 encoded format.
      *
      * @return string $str UTF-7 encoded string or same as before, when it's no string
-     *
-     * @psalm-pure
      */
     public function decodeStringFromUtf7ImapToUtf8(string $str): string
     {
@@ -605,7 +585,7 @@ class Mailbox
      *
      * @return string[] listing the folders
      *
-     * @psalm-return list<string>
+     * @phpstan-return list<string>
      */
     public function getListingFolders(string $pattern = '*'): array
     {
@@ -621,16 +601,16 @@ class Mailbox
      *
      * @return int[] mailsIds (or empty array)
      *
-     * @psalm-return list<int>
+     * @phpstan-return list<int>
      */
     public function searchMailbox(string $criteria = 'ALL', bool $disableServerEncoding = false): array
     {
         if ($disableServerEncoding) {
-            /** @psalm-var list<int> */
+            /** @phpstan-var list<int> */
             return Imap::search($this->getImapStream(), $criteria, $this->imapSearchOption);
         }
 
-        /** @psalm-var list<int> */
+        /** @phpstan-var list<int> */
         return Imap::search($this->getImapStream(), $criteria, $this->imapSearchOption, $this->getServerEncoding());
     }
 
@@ -641,7 +621,7 @@ class Mailbox
      *
      * @return int[]
      *
-     * @psalm-return list<int>
+     * @phpstan-return list<int>
      */
     public function searchMailboxFrom(string $criteria, string $sender, string ...$senders): array
     {
@@ -655,7 +635,7 @@ class Mailbox
      *
      * @return int[]
      *
-     * @psalm-return list<int>
+     * @phpstan-return list<int>
      */
     public function searchMailboxFromDisableServerEncoding(string $criteria, string $sender, string ...$senders): array
     {
@@ -670,7 +650,7 @@ class Mailbox
      *
      * @return int[]
      *
-     * @psalm-return list<int>
+     * @phpstan-return list<int>
      */
     public function searchMailboxMergeResults($single_criteria, ...$criteria)
     {
@@ -685,7 +665,7 @@ class Mailbox
      *
      * @return int[]
      *
-     * @psalm-return list<int>
+     * @phpstan-return list<int>
      */
     public function searchMailboxMergeResultsDisableServerEncoding($single_criteria, ...$criteria)
     {
@@ -783,7 +763,7 @@ class Mailbox
      *
      * @param int[] $mailId
      *
-     * @psalm-param list<int> $mailId
+     * @phpstan-param list<int> $mailId
      */
     public function markMailsAsRead(array $mailId): void
     {
@@ -795,7 +775,7 @@ class Mailbox
      *
      * @param int[] $mailId
      *
-     * @psalm-param list<int> $mailId
+     * @phpstan-param list<int> $mailId
      */
     public function markMailsAsUnread(array $mailId): void
     {
@@ -807,7 +787,7 @@ class Mailbox
      *
      * @param int[] $mailId
      *
-     * @psalm-param list<int> $mailId
+     * @phpstan-param list<int> $mailId
      */
     public function markMailsAsImportant(array $mailId): void
     {
@@ -822,7 +802,7 @@ class Mailbox
      *
      * @return bool True, when the flag is set, false when not
      *
-     * @psalm-param int $mailId
+     * @phpstan-param int $mailId
      */
     public function flagIsSet(int $mailId, string $flag): bool
     {
@@ -843,7 +823,7 @@ class Mailbox
      * @param array  $mailsIds Array of mail IDs
      * @param string $flag     Which you can set are \Seen, \Answered, \Flagged, \Deleted, and \Draft as defined by RFC2060
      *
-     * @psalm-param list<int> $mailsIds
+     * @phpstan-param list<int> $mailsIds
      */
     public function setFlag(array $mailsIds, string $flag): void
     {
@@ -885,7 +865,7 @@ class Mailbox
      *
      * @return array $mailsIds Array of mail IDs
      *
-     * @psalm-return list<object>
+     * @phpstan-return list<object>
      *
      * @todo adjust types & conditionals pending resolution of https://github.com/vimeo/psalm/issues/2619
      */
@@ -980,11 +960,11 @@ class Mailbox
      * @param bool        $reverse        Sort reverse or not
      * @param string|null $searchCriteria See http://php.net/imap_search for a complete list of available criteria
      *
-     * @psalm-param value-of<Imap::SORT_CRITERIA> $criteria
+     * @phpstan-param value-of<Imap::SORT_CRITERIA> $criteria
      *
      * @return int[] Mails ids
      *
-     * @psalm-return list<int>
+     * @phpstan-return list<int>
      */
     public function sortMails(
         int $criteria = \SORTARRIVAL,
@@ -1096,7 +1076,7 @@ class Mailbox
             ($this->imapSearchOption === \SE_UID) ? \FT_UID : 0
         );
 
-        /** @var object{
+        /** @var stdClass&object{
          * date?:scalar,
          * Date?:scalar,
          * subject?:scalar,
@@ -1106,7 +1086,7 @@ class Mailbox
          * bcc?:HOSTNAMEANDADDRESS,
          * reply_to?:HOSTNAMEANDADDRESS,
          * sender?:HOSTNAMEANDADDRESS
-         * }
+         * } $head
          */
         $head = \imap_rfc822_parse_headers($headersRaw);
 
@@ -1243,11 +1223,11 @@ class Mailbox
      * @param \stdClass[] $messageParts
      * @param \stdClass[] $flattenedParts
      *
-     * @psalm-param array<string, PARTSTRUCTURE> $flattenedParts
+     * @phpstan-param array<string, PARTSTRUCTURE> $flattenedParts
      *
      * @return \stdClass[]
      *
-     * @psalm-return array<string, stdClass>
+     * @phpstan-return array<string, stdClass>
      */
     public function flattenParts(array $messageParts, array $flattenedParts = [], string $prefix = '', int $index = 1, bool $fullPrefix = true): array
     {
@@ -1310,8 +1290,8 @@ class Mailbox
      * @param object $partStructure Part of mail
      * @param bool   $emlOrigin     True, if it indicates, that the attachment comes from an EML (mail) file
      *
-     * @psalm-param array<string, string> $params
-     * @psalm-param PARTSTRUCTURE $partStructure
+     * @phpstan-param array<string, string> $params
+     * @phpstan-param PARTSTRUCTURE $partStructure
      *
      * @return IncomingMailAttachment $attachment
      */
@@ -1477,9 +1457,6 @@ class Mailbox
         return $newString;
     }
 
-    /**
-     * @psalm-pure
-     */
     public function isUrlEncoded(string $string): bool
     {
         $hasInvalidChars = \preg_match('#[^%a-zA-Z0-9\-_\.\+]#', $string);
@@ -1495,8 +1472,6 @@ class Mailbox
      *
      * @return string RFC 3339 compliant format or original (unchanged) format,
      *                if conversation is not possible
-     *
-     * @psalm-pure
      */
     public function parseDateTime(string $dateHeader): string
     {
@@ -1544,11 +1519,11 @@ class Mailbox
      *
      * @return (false|mixed|string)[][]
      *
-     * @psalm-return list<array{fullpath: string, attributes: mixed, delimiter: mixed, shortpath: false|string}>
+     * @phpstan-return list<array{fullpath: string, attributes: mixed, delimiter: mixed, shortpath: false|string}>
      */
     public function getMailboxes(string $search = '*'): array
     {
-        /** @psalm-var array<int, scalar|array|object{name?:string}|resource|null> */
+        /** @phpstan-var array<int, scalar|array|object{name?:string}|resource|null> */
         $mailboxes = Imap::getmailboxes($this->getImapStream(), $this->imapPath, $search);
 
         return $this->possiblyGetMailboxes($mailboxes);
@@ -1559,11 +1534,11 @@ class Mailbox
      *
      * @return (false|mixed|string)[][]
      *
-     * @psalm-return list<array{fullpath: string, attributes: mixed, delimiter: mixed, shortpath: false|string}>
+     * @phpstan-return list<array{fullpath: string, attributes: mixed, delimiter: mixed, shortpath: false|string}>
      */
     public function getSubscribedMailboxes(string $search = '*'): array
     {
-        /** @psalm-var array<int, scalar|array|object{name?:string}|resource|null> */
+        /** @phpstan-var array<int, scalar|array|object{name?:string}|resource|null> */
         $mailboxes = Imap::getsubscribed($this->getImapStream(), $this->imapPath, $search);
 
         return $this->possiblyGetMailboxes($mailboxes);
@@ -1600,7 +1575,7 @@ class Mailbox
      *
      * @param string|array $message
      *
-     * @psalm-param string|array{0:COMPOSE_ENVELOPE, 1:COMPOSE_BODY} $message
+     * @phpstan-param string|array{0:COMPOSE_ENVELOPE, 1:COMPOSE_BODY} $message
      *
      * @return true
      *
@@ -1638,7 +1613,7 @@ class Mailbox
      *
      * @return string[]
      *
-     * @psalm-return list<string>
+     * @phpstan-return list<string>
      */
     protected function lowercase_mb_list_encodings(): array
     {
@@ -1651,7 +1626,7 @@ class Mailbox
         return $lowercase_encodings;
     }
 
-    /** @return resource */
+    /** @return resource|Connection */
     protected function initImapStreamWithRetry()
     {
         $retry = $this->connectionRetry;
@@ -1660,8 +1635,11 @@ class Mailbox
             try {
                 return $this->initImapStream();
             } catch (ConnectionException $exception) {
+                if ($this->connectionRetryDelay) {
+                    \usleep((int)$this->connectionRetryDelay * 1000);
+                }
             }
-        } while (--$retry > 0 && (!$this->connectionRetryDelay || !\usleep((int)$this->connectionRetryDelay * 1000)));
+        } while (--$retry > 0);
 
         throw $exception;
     }
@@ -1683,7 +1661,7 @@ class Mailbox
      *
      * @throws \Exception if an error occured
      *
-     * @return resource IMAP stream on success
+     * @return Connection IMAP stream on success
      */
     protected function initImapStream()
     {
@@ -1704,14 +1682,11 @@ class Mailbox
     }
 
     /**
-     * @param string|0 $partNum
+     * @param string|int $partNum
      *
-     * @psalm-param PARTSTRUCTURE $partStructure
-     * @psalm-suppress InvalidArgument
-     *
-     * @todo refactor type checking pending resolution of https://github.com/vimeo/psalm/issues/2619
+     * @phpstan-param PARTSTRUCTURE $partStructure
      */
-    protected function initMailPart(IncomingMail $mail, object $partStructure, $partNum, bool $markAsSeen = true, bool $emlParse = false): void
+    protected function initMailPart(IncomingMail $mail, object $partStructure, string|int $partNum, bool $markAsSeen = true, bool $emlParse = false): void
     {
         if (!isset($mail->id)) {
             throw new \InvalidArgumentException('Argument 1 passeed to ' . __METHOD__ . '() did not have the id property set!');
@@ -1737,7 +1712,7 @@ class Mailbox
         }
         if (!empty($partStructure->dparameters)) {
             foreach ($partStructure->dparameters as $param) {
-                $paramName = \strtolower(\preg_match('~^(.*?)\*~', $param->attribute, $matches) ? (!isset($matches[1]) ?: $matches[1]) : $param->attribute);
+                $paramName = \strtolower(\preg_match('~^(.*?)\*~', $param->attribute, $matches) ? $matches[1] : $param->attribute);
                 if (isset($params[$paramName])) {
                     $params[$paramName] .= $param->value;
                 } else {
@@ -1836,7 +1811,7 @@ class Mailbox
     protected function decodeRFC2231(string $string): string
     {
         if (\preg_match("/^(.*?)'.*?'(.*?)$/", $string, $matches)) {
-            $data = $matches[2] ?? '';
+            $data = $matches[2];
             if ($this->isUrlEncoded($data)) {
                 $string = $this->decodeMimeStr(\urldecode($data));
             }
@@ -1878,7 +1853,7 @@ class Mailbox
     }
 
     /**
-     * @psalm-return array{0: string, 1: null|string}|null
+     * @phpstan-return array{0: string, 1: null|string}|null
      *
      * @return (string|null)[]|null
      */
@@ -1917,13 +1892,13 @@ class Mailbox
     }
 
     /**
-     * @psalm-param array<int, scalar|array|object{name?:string}|resource|null> $t
+     * @phpstan-param array<int, scalar|array|object{name?:string}|resource|null> $t
      *
      * @todo revisit implementation pending resolution of https://github.com/vimeo/psalm/issues/2619
      *
      * @return (false|mixed|string)[][]
      *
-     * @psalm-return list<array{fullpath: string, attributes: mixed, delimiter: mixed, shortpath: false|string}>
+     * @phpstan-return list<array{fullpath: string, attributes: mixed, delimiter: mixed, shortpath: false|string}>
      */
     protected function possiblyGetMailboxes(array $t): array
     {
@@ -1962,9 +1937,9 @@ class Mailbox
     }
 
     /**
-     * @psalm-param HOSTNAMEANDADDRESS $t
+     * @phpstan-param HOSTNAMEANDADDRESS $t
      *
-     * @psalm-return array{0:string|null, 1:string|null, 2:string}
+     * @phpstan-return array{0:string|null, 1:string|null, 2:string}
      */
     protected function possiblyGetHostNameAndAddress(array $t): array
     {
@@ -1981,7 +1956,6 @@ class Mailbox
             }
         }
 
-        /** @var string */
         $out[] = \strtolower($t[0]->mailbox . '@' . (string)$out[0]);
 
         /** @var array{0:string|null, 1:string|null, 2:string} */
@@ -2006,7 +1980,7 @@ class Mailbox
      *
      * @return int[]
      *
-     * @psalm-return list<int>
+     * @phpstan-return list<int>
      */
     protected function searchMailboxFromWithOrWithoutDisablingServerEncoding(string $criteria, bool $disableServerEncoding, string $sender, string ...$senders): array
     {
@@ -2039,7 +2013,7 @@ class Mailbox
      *
      * @return int[]
      *
-     * @psalm-return list<int>
+     * @phpstan-return list<int>
      */
     protected function searchMailboxMergeResultsWithOrWithoutDisablingServerEncoding($disableServerEncoding, $single_criteria, ...$criteria)
     {
@@ -2053,7 +2027,7 @@ class Mailbox
             $out = \array_merge($out, $this->searchMailbox($criterion, $disableServerEncoding));
         }
 
-        /** @psalm-var list<int> */
+        /** @phpstan-var list<int> */
         return \array_values(\array_unique($out, \SORT_NUMERIC));
     }
 }

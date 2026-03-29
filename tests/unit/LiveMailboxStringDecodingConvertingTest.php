@@ -78,7 +78,7 @@ class LiveMailboxStringDecodingConvertingTest extends TestCase
     {
         $mailbox = new Mailbox('', '', '');
 
-        $dataInfo = new DataPartInfo($mailbox, 1337, '', $encoding, 0);
+        $dataInfo = new DataPartInfo($mailbox, 1337, 0, $encoding, 0);
         $dataInfo->charset = $charset;
 
         $decoded = $dataInfo->decodeAfterFetch($iso_8859_2);
