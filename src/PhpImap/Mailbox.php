@@ -1347,7 +1347,11 @@ class Mailbox
      */
     public function downloadAttachment(DataPartInfo $dataInfo, array $params, object $partStructure, bool $emlOrigin = false): IncomingMailAttachment
     {
-        if ('RFC822' == $partStructure->subtype && isset($partStructure->disposition) && 'attachment' == $partStructure->disposition) {
+        $dispositionAttachment = (isset($partStructure->disposition) &&
+            \is_string($partStructure->disposition) &&
+            'attachment' === \mb_strtolower($partStructure->disposition));
+
+        if ('RFC822' == $partStructure->subtype && $dispositionAttachment) {
             $fileName = \strtolower($partStructure->subtype).'.eml';
         } elseif ('ALTERNATIVE' == $partStructure->subtype) {
             $fileName = \strtolower($partStructure->subtype).'.eml';
@@ -1831,7 +1835,7 @@ class Mailbox
                 } elseif (TYPEMULTIPART === $partStructure->type && 'ALTERNATIVE' === $partStructure->subtype && $not_attachment) {
                     // https://github.com/barbushin/php-imap/issues/198
                     $this->initMailPart($mail, $subPartStructure, $partNum, $markAsSeen);
-                } elseif ('RFC822' === $partStructure->subtype && isset($partStructure->disposition) && 'attachment' === $partStructure->disposition) {
+                } elseif ('RFC822' === $partStructure->subtype && $dispositionAttachment) {
                     //If it comes from am EML attachment, download each part separately as a file
                     $this->initMailPart($mail, $subPartStructure, $partNum.'.'.($subPartNum + 1), $markAsSeen, true);
                 } else {
