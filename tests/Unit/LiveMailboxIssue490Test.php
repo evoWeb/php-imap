@@ -18,13 +18,7 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 
 /**
- * @phpstan-type MAILBOX_ARGS = array{
- *	0:HiddenString,
- *	1:HiddenString,
- *	2:HiddenString,
- *	3:string,
- *	4?:string
- * }
+ * @phpstan-import-type MAILBOX_ARGS from AbstractLiveMailboxTest
  */
 class LiveMailboxIssue490Test extends AbstractLiveMailboxTest
 {
@@ -39,7 +33,7 @@ class LiveMailboxIssue490Test extends AbstractLiveMailboxTest
         string $attachmentsDir,
         string $serverEncoding = 'UTF-8'
     ): void {
-        [$mailbox, $remove_mailbox] = $this->getMailbox(
+        [$mailbox, $removeMailbox] = $this->getMailbox(
             $imapPath,
             $login,
             $password,
@@ -47,6 +41,7 @@ class LiveMailboxIssue490Test extends AbstractLiveMailboxTest
             $serverEncoding
         );
 
+        /** @var \Throwable|null $exception */
         $exception = null;
 
         try {
@@ -54,11 +49,9 @@ class LiveMailboxIssue490Test extends AbstractLiveMailboxTest
                 'subject' => 'barbushin/php-imap#501: ' . \bin2hex(\random_bytes(16)),
             ];
 
-            [$search_criteria] = $this->SubjectSearchCriteriaAndSubject(
-                $envelope
-            );
+            [$searchCriteria] = $this->SubjectSearchCriteriaAndSubject($envelope);
 
-            $search = $mailbox->searchMailbox($search_criteria);
+            $search = $mailbox->searchMailbox($searchCriteria);
 
             self::assertCount(
                 0,
@@ -103,7 +96,7 @@ class LiveMailboxIssue490Test extends AbstractLiveMailboxTest
 
             $mailbox->appendMessageToMailbox($message);
 
-            $search = $mailbox->searchMailbox($search_criteria);
+            $search = $mailbox->searchMailbox($searchCriteria);
 
             self::assertCount(
                 1,
@@ -126,11 +119,10 @@ class LiveMailboxIssue490Test extends AbstractLiveMailboxTest
 
             self::assertSame('bar', $attachments[$keys[0]]->getContents());
             self::assertSame('baz', $attachments[$keys[1]]->getContents());
-        } catch (\Exception $ex) {
-            $exception = $ex;
+        } catch (\Exception $exception) {
         } finally {
             $mailbox->switchMailbox($imapPath->getString());
-            $mailbox->deleteMailbox($remove_mailbox);
+            $mailbox->deleteMailbox($removeMailbox);
             $mailbox->disconnect();
         }
 
