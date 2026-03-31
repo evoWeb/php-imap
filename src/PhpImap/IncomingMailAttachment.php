@@ -100,13 +100,13 @@ class IncomingMailAttachment
     /**
      * Gets information about a file.
      *
-     * @param int $fileinfo_const Any predefined constant. See https://www.php.net/manual/en/fileinfo.constants.php
+     * @param int $fileinfoConst Any predefined constant. See https://www.php.net/manual/en/fileinfo.constants.php
      *
-     * @phpstan-param fileinfoconst $fileinfo_const
+     * @phpstan-param fileinfoconst $fileinfoConst
      */
-    public function getFileInfo(int $fileinfo_const = \FILEINFO_NONE): string
+    public function getFileInfo(int $fileinfoConst = \FILEINFO_NONE): string
     {
-        $finfo = new \finfo($fileinfo_const);
+        $finfo = new \finfo($fileinfoConst);
 
         return $finfo->buffer($this->getContents());
     }

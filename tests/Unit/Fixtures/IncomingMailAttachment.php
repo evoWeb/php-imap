@@ -8,17 +8,17 @@ use PhpImap\IncomingMailAttachment as Base;
 
 class IncomingMailAttachment extends Base
 {
-    public ?string $override_getFileInfo_mime_type;
+    public ?string $overrideGetFileInfoMimeType;
 
-    public function getFileInfo(int $fileinfo_const = \FILEINFO_NONE): string
+    public function getFileInfo(int $fileinfoConst = \FILEINFO_NONE): string
     {
         if (
-            $fileinfo_const === \FILEINFO_MIME_TYPE &&
-            isset($this->override_getFileInfo_mime_type)
+            $fileinfoConst === \FILEINFO_MIME_TYPE
+            && isset($this->overrideGetFileInfoMimeType)
         ) {
-            return $this->override_getFileInfo_mime_type;
+            return $this->overrideGetFileInfoMimeType;
         }
 
-        return parent::getFileInfo($fileinfo_const);
+        return parent::getFileInfo($fileinfoConst);
     }
 }

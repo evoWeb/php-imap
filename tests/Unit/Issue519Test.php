@@ -158,7 +158,7 @@ class Issue519Test extends TestCase
         $attachment->name = self::ID;
         $attachment->sizeInBytes = self::SIZE_IN_BYTES;
         $attachment->disposition = $header_value;
-        $attachment->override_getFileInfo_mime_type = self::MIME_TYPE;
+        $attachment->overrideGetFileInfoMimeType = self::MIME_TYPE;
 
         $attachment->addDataPartInfo($part);
 
