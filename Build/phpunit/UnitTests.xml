@@ -3,7 +3,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../vendor/phpunit/phpunit/phpunit.xsd"
     backupGlobals="true"
-    bootstrap="../../vendor/autoload.php"
+    bootstrap="UnitTestsBootstrap.php"
     cacheDirectory="../../.cache"
     cacheResult="false"
     colors="true"
@@ -26,10 +26,9 @@
 
     <testsuites>
         <testsuite name="php-imap Tests">
-            <directory>../../tests</directory>
+            <directory>../../tests/Unit</directory>
             <exclude>../../tests/Unit/AbstractLiveMailboxTest.php</exclude>
         </testsuite>
     </testsuites>
-
 
 </phpunit>
