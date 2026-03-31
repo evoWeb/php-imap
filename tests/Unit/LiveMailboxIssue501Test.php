@@ -19,13 +19,7 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 
 /**
- * @phpstan-type MAILBOX_ARGS = array{
- *	0:HiddenString,
- *	1:HiddenString,
- *	2:HiddenString,
- *	3:string,
- *	4?:string
- * }
+ * @phpstan-import-type MAILBOX_ARGS from AbstractLiveMailboxTest
  */
 class LiveMailboxIssue501Test extends AbstractLiveMailboxTest
 {
@@ -36,7 +30,7 @@ class LiveMailboxIssue501Test extends AbstractLiveMailboxTest
     {
         self::assertSame([], \imap_mime_header_decode(''));
 
-        // example credentials nabbed from MailboxTest::testConstructorTrimsPossibleVariables()
+        // example credentials copied from MailboxTest::testConstructorTrimsPossibleVariables()
         $imapPath = ' {imap.example.com:993/imap/ssl}INBOX     ';
         $login = '    php-imap@example.com';
         $password = '  v3rY!53cEt&P4sSWöRd$';
@@ -60,7 +54,7 @@ class LiveMailboxIssue501Test extends AbstractLiveMailboxTest
         string $attachmentsDir,
         string $serverEncoding = 'UTF-8'
     ): void {
-        [$mailbox, $remove_mailbox] = $this->getMailbox(
+        [$mailbox, $removeMailbox] = $this->getMailbox(
             $imapPath,
             $login,
             $password,
@@ -68,6 +62,7 @@ class LiveMailboxIssue501Test extends AbstractLiveMailboxTest
             $serverEncoding
         );
 
+        /** @var \Throwable|null $exception */
         $exception = null;
 
         try {
@@ -75,11 +70,9 @@ class LiveMailboxIssue501Test extends AbstractLiveMailboxTest
                 'subject' => 'barbushin/php-imap#501: ' . \bin2hex(\random_bytes(16)),
             ];
 
-            [$search_criteria] = $this->SubjectSearchCriteriaAndSubject(
-                $envelope
-            );
+            [$searchCriteria] = $this->SubjectSearchCriteriaAndSubject($envelope);
 
-            $search = $mailbox->searchMailbox($search_criteria);
+            $search = $mailbox->searchMailbox($searchCriteria);
 
             self::assertCount(
                 0,
@@ -101,7 +94,7 @@ class LiveMailboxIssue501Test extends AbstractLiveMailboxTest
                 ]
             ));
 
-            $search = $mailbox->searchMailbox($search_criteria);
+            $search = $mailbox->searchMailbox($searchCriteria);
 
             self::assertCount(
                 1,
@@ -116,11 +109,10 @@ class LiveMailboxIssue501Test extends AbstractLiveMailboxTest
             $mail = $mailbox->getMail($search[0], false);
 
             self::assertSame('', $mail->textPlain);
-        } catch (\Exception $ex) {
-            $exception = $ex;
+        } catch (\Exception $exception) {
         } finally {
             $mailbox->switchMailbox($imapPath->getString());
-            $mailbox->deleteMailbox($remove_mailbox);
+            $mailbox->deleteMailbox($removeMailbox);
             $mailbox->disconnect();
         }
 
