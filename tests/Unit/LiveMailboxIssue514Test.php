@@ -41,7 +41,7 @@ class LiveMailboxIssue514Test extends AbstractLiveMailboxTest
             'subject' => 'barbushin/php-imap#514--' . \bin2hex(\random_bytes(16)),
         ];
 
-        [$search_criteria] = $this->SubjectSearchCriteriaAndSubject($envelope);
+        [$searchCriteria] = $this->SubjectSearchCriteriaAndSubject($envelope);
 
         $body = [
             [
@@ -88,12 +88,9 @@ class LiveMailboxIssue514Test extends AbstractLiveMailboxTest
             ],
         ];
 
-        $message = Imap::mail_compose(
-            $envelope,
-            $body
-        );
+        $message = Imap::mail_compose($envelope, $body);
 
-        [$mailbox, $remove_mailbox, $path] = $this->getMailboxFromArgs([
+        [$mailbox, $removeMailbox, $path] = $this->getMailboxFromArgs([
             $imapPath,
             $login,
             $password,
@@ -102,7 +99,7 @@ class LiveMailboxIssue514Test extends AbstractLiveMailboxTest
         ]);
 
         try {
-            $search = $mailbox->searchMailbox($search_criteria);
+            $search = $mailbox->searchMailbox($searchCriteria);
 
             self::assertCount(
                 0,
@@ -116,7 +113,7 @@ class LiveMailboxIssue514Test extends AbstractLiveMailboxTest
 
             $mailbox->appendMessageToMailbox($message);
 
-            $search = $mailbox->searchMailbox($search_criteria);
+            $search = $mailbox->searchMailbox($searchCriteria);
 
             self::assertCount(
                 1,
@@ -146,10 +143,7 @@ class LiveMailboxIssue514Test extends AbstractLiveMailboxTest
                 $counts,
                 (
                     'counts should only contain foo.png and foo.webp, found: ' .
-                    \implode(
-                        ', ',
-                        \array_keys($counts)
-                    )
+                    \implode(', ', \array_keys($counts))
                 )
             );
 
@@ -157,7 +151,7 @@ class LiveMailboxIssue514Test extends AbstractLiveMailboxTest
                 self::assertSame(
                     1,
                     $count,
-                    $cid . ' had ' . (string)$count . ', expected 1.'
+                    $cid . ' had ' . $count . ', expected 1.'
                 );
             }
 
@@ -233,11 +227,10 @@ class LiveMailboxIssue514Test extends AbstractLiveMailboxTest
             );
 
             $mailbox->deleteMail($search[0]);
-        } catch (\Throwable $ex) {
-            $exception = $ex;
+        } catch (\Throwable $exception) {
         } finally {
             $mailbox->switchMailbox($path->getString());
-            $mailbox->deleteMailbox($remove_mailbox);
+            $mailbox->deleteMailbox($removeMailbox);
             $mailbox->disconnect();
         }
 
