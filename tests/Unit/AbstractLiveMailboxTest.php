@@ -16,26 +16,25 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @phpstan-type MAILBOX_ARGS = array{
- *	0:HiddenString,
- *	1:HiddenString,
- *	2:HiddenString,
- *	3:string,
- *	4?:string
+ *      0: HiddenString,
+ *      1: HiddenString,
+ *      2: HiddenString,
+ *      3: string,
+ *      4?: string
  * }
  * @phpstan-type COMPOSE_ENVELOPE = array{
- *	subject?:string
+ *      subject: string
  * }
  * @phpstan-type COMPOSE_BODY = list<array{
- *	type?:int,
- *	encoding?:int,
- *	charset?:string,
- *	subtype?:string,
- *	description?:string,
- *  'disposition.type'?:string,
- *  'type.parameters'?:array{name:string},
- *  'contents.data'?:string,
- *  id?:string,
- *	disposition?:array{filename:string}
+ *      type?: int,
+ *      encoding?: int,
+ *      charset?: string,
+ *      subtype?: string,
+ *      description?: string,
+ *      disposition?: array{filename: string, type?: string},
+ *      'type.parameters'?: array{name: string},
+ *      'contents.data'?: string,
+ *      id?: string,
  * }>
  */
 abstract class AbstractLiveMailboxTest extends TestCase
@@ -43,7 +42,11 @@ abstract class AbstractLiveMailboxTest extends TestCase
     use LiveMailboxTestingTrait;
 
     /**
-     * @phpstan-return \Generator<int, array{COMPOSE_ENVELOPE, COMPOSE_BODY, string}, mixed, void>
+     * @phpstan-return \Generator<int, array{
+     *     0: COMPOSE_ENVELOPE,
+     *     1: COMPOSE_BODY,
+     *     2: string
+     * }, mixed, void>
      */
     public static function ComposeProvider(): \Generator
     {
@@ -53,29 +56,27 @@ abstract class AbstractLiveMailboxTest extends TestCase
     /**
      * Get subject search criteria and subject.
      *
-     * @phpstan-param array{subject?:mixed} $envelope
+     * @phpstan-param array{subject: string} $envelope
      *
-     * @phpstan-return array{0:string, 1:string}
+     * @phpstan-return array{0: string, 1: string}
      */
     protected function SubjectSearchCriteriaAndSubject(array $envelope): array
     {
-        /** @var string|null */
+        /** @var ?string $subject */
         $subject = $envelope['subject'] ?? null;
 
         self::assertIsString($subject);
 
-        $search_criteria = \sprintf('SUBJECT "%s"', $subject);
+        $searchCriteria = \sprintf('SUBJECT "%s"', $subject);
 
-        /** @phpstan-var array{0:string, 1:string} */
-        return [$search_criteria, $subject];
+        /** @phpstan-var array{0: string, 1: string} */
+        return [$searchCriteria, $subject];
     }
 
     protected function MaybeSkipAppendTest(array $envelope): bool
     {
         if (!isset($envelope['subject'])) {
-            self::markTestSkipped(
-                'Cannot search for message by subject, no subject specified!'
-            );
+            self::markTestSkipped('Cannot search for message by subject, no subject specified!');
         }
 
         return false;
