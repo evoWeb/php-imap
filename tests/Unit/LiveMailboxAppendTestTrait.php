@@ -26,26 +26,26 @@ trait LiveMailboxAppendTestTrait
 {
     /**
      * @phpstan-return \Generator<int, array{
-     *	0:MAILBOX_ARGS,
-     *	1:COMPOSE_ENVELOPE,
-     *	2:COMPOSE_BODY,
-     *	3:string,
-     *	4:bool
+     *      0: MAILBOX_ARGS,
+     *      1: COMPOSE_ENVELOPE,
+     *      2: COMPOSE_BODY,
+     *      3: string,
+     *      4: bool
      * }, mixed, void>
      */
     public static function AppendProvider(): \Generator
     {
-        foreach (static::MailBoxProvider() as $mailbox_args) {
-            foreach (static::ComposeProvider() as $compose_args) {
-                [$envelope, $body, $expected_compose_result] = $compose_args;
+        foreach (static::MailBoxProvider() as $mailboxArguments) {
+            foreach (static::ComposeProvider() as $composeArguments) {
+                [$envelope, $body, $expectedComposeResult] = $composeArguments;
 
-                yield [$mailbox_args, $envelope, $body, $expected_compose_result, false];
+                yield [$mailboxArguments, $envelope, $body, $expectedComposeResult, false];
             }
 
-            foreach (static::ComposeProvider() as $compose_args) {
-                [$envelope, $body, $expected_compose_result] = $compose_args;
+            foreach (static::ComposeProvider() as $composeArguments) {
+                [$envelope, $body, $expectedComposeResult] = $composeArguments;
 
-                yield [$mailbox_args, $envelope, $body, $expected_compose_result, true];
+                yield [$mailboxArguments, $envelope, $body, $expectedComposeResult, true];
             }
         }
     }
@@ -54,51 +54,49 @@ trait LiveMailboxAppendTestTrait
      * @depends testGetImapStream
      * @depends testMailCompose
      *
-     * @phpstan-param MAILBOX_ARGS $mailbox_args
+     * @phpstan-param MAILBOX_ARGS $mailboxArguments
      * @phpstan-param COMPOSE_ENVELOPE $envelope
      * @phpstan-param COMPOSE_BODY $body
      */
     #[Test]
     #[DataProvider('AppendProvider')]
     public function testAppend(
-        array $mailbox_args,
+        array $mailboxArguments,
         array $envelope,
         array $body,
-        string $_expected_compose_result,
-        bool $pre_compose
+        string $expectedComposeResult,
+        bool $preCompose
     ): void {
-        $this->runAppendTest($mailbox_args, $envelope, $body, $_expected_compose_result, $pre_compose);
+        $this->runAppendTest($mailboxArguments, $envelope, $body, $expectedComposeResult, $preCompose);
     }
 
     /**
-     * @phpstan-param MAILBOX_ARGS $mailbox_args
+     * @phpstan-param MAILBOX_ARGS $mailboxArguments
      * @phpstan-param COMPOSE_ENVELOPE $envelope
      * @phpstan-param COMPOSE_BODY $body
      */
     protected function runAppendTest(
-        array $mailbox_args,
+        array $mailboxArguments,
         array $envelope,
         array $body,
-        string $_expected_compose_result,
-        bool $pre_compose
+        string $expectedComposeResult,
+        bool $preCompose
     ): void {
         if ($this->MaybeSkipAppendTest($envelope)) {
             return;
         }
 
-        [$search_criteria] = $this->SubjectSearchCriteriaAndSubject($envelope);
+        [$searchCriteria] = $this->SubjectSearchCriteriaAndSubject($envelope);
 
-        [$mailbox, $remove_mailbox, $path] = $this->getMailboxFromArgs(
-            $mailbox_args
-        );
+        [$mailbox, $removeMailbox, $path] = $this->getMailboxFromArgs($mailboxArguments);
 
-        /** @var \Throwable|null */
+        /** @var \Throwable|null $exception */
         $exception = null;
 
         $mailboxDeleted = false;
 
         try {
-            $search = $mailbox->searchMailbox($search_criteria);
+            $search = $mailbox->searchMailbox($searchCriteria);
 
             self::assertCount(
                 0,
@@ -112,13 +110,13 @@ trait LiveMailboxAppendTestTrait
 
             $message = [$envelope, $body];
 
-            if ($pre_compose) {
+            if ($preCompose) {
                 $message = Imap::mail_compose($envelope, $body);
             }
 
             $mailbox->appendMessageToMailbox($message);
 
-            $search = $mailbox->searchMailbox($search_criteria);
+            $search = $mailbox->searchMailbox($searchCriteria);
 
             self::assertCount(
                 1,
@@ -135,23 +133,22 @@ trait LiveMailboxAppendTestTrait
             $mailbox->expungeDeletedMails();
 
             $mailbox->switchMailbox($path->getString());
-            $mailbox->deleteMailbox($remove_mailbox);
+            $mailbox->deleteMailbox($removeMailbox);
             $mailboxDeleted = true;
 
             self::assertCount(
                 0,
-                $mailbox->searchMailbox($search_criteria),
+                $mailbox->searchMailbox($searchCriteria),
                 (
                     'If a subject was found,' .
                     ' then the message is was not expunged as requested.'
                 )
             );
-        } catch (\Throwable $ex) {
-            $exception = $ex;
+        } catch (\Throwable $exception) {
         } finally {
             $mailbox->switchMailbox($path->getString());
             if (!$mailboxDeleted) {
-                $mailbox->deleteMailbox($remove_mailbox);
+                $mailbox->deleteMailbox($removeMailbox);
             }
             $mailbox->disconnect();
         }
