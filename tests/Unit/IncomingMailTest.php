@@ -41,7 +41,7 @@ class IncomingMailTest extends TestCase
                 'date',
             ] as $property
         ) {
-            /** @var scalar|array|object|resource|null */
+            /** @var null|int|bool|string $headerPropertyValue */
             $headerPropertyValue = $header->$property;
             self::assertSame($headerPropertyValue, $mail->$property);
         }
@@ -73,9 +73,7 @@ class IncomingMailTest extends TestCase
         self::assertFalse($mail->hasAttachments());
         self::assertSame([], $mail->getAttachments());
 
-        $attachments = [
-            new IncomingMailAttachment(),
-        ];
+        $attachments = [new IncomingMailAttachment()];
 
         foreach ($attachments as $i => $attachment) {
             $attachment->id = (string)$i;
