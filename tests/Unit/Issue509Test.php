@@ -44,9 +44,11 @@ class Issue509Test extends TestCase
     YW5ub24gRHJpdmUNCkUxNCA0QVMgTG9uZG9uDQp3d3cuY2xvdWR3b3JrZXJzLmNvbXBhbnkNCg0K
     DQo=';
 
-    public const sha256 =
-        '5656f5f8a872b8989ba3aaecdfbdc6311bf4c5e0219c27b3b004ce83d8ffd6f3';
+    public const sha256 = '5656f5f8a872b8989ba3aaecdfbdc6311bf4c5e0219c27b3b004ce83d8ffd6f3';
 
+    /**
+     * @throws \Exception
+     */
     #[Test]
     public function testDecode(): void
     {
