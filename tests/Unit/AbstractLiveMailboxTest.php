@@ -20,7 +20,8 @@ use PHPUnit\Framework\TestCase;
  *      1: HiddenString,
  *      2: HiddenString,
  *      3: string,
- *      4?: string
+ *      4?: string,
+ *      5?: array,
  * }
  * @phpstan-type COMPOSE_ENVELOPE = array{
  *      subject: string
@@ -37,6 +38,14 @@ use PHPUnit\Framework\TestCase;
  *      'type.parameters'?: array{name: string},
  *      'contents.data'?: string,
  * }>
+ * @phpstan-type OPEN_ARGS = array{
+ *      0: HiddenString,
+ *      1: HiddenString,
+ *      2: HiddenString,
+ *      3: int,
+ *      4: int,
+ *      5: array{DISABLE_AUTHENTICATOR: string}|array<empty, empty>
+ *  }
  */
 abstract class AbstractLiveMailboxTest extends TestCase
 {

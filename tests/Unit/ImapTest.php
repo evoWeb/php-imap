@@ -9,35 +9,32 @@ namespace PhpImap\Tests\Unit;
 
 use ParagonIE\HiddenString\HiddenString;
 use PhpImap\Exceptions\ConnectionException;
+use PhpImap\Exceptions\InvalidParameterException;
 use PhpImap\Imap;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase as Base;
+use Random\RandomException;
 
 /**
- * @phpstan-type MAILBOX_ARGS = array{
- *	0:HiddenString,
- *	1:HiddenString,
- *	2:HiddenString,
- *	3:string,
- *	4?:string
- * }
- * @phpstan-type PSALM_OPEN_ARGS = array{
- *  0:HiddenString,
- *  1:HiddenString,
- *  2:HiddenString,
- *  3:int,
- *  4:int,
- *  5:array{DISABLE_AUTHENTICATOR:string}|array<empty, empty>
- * }
+ * @phpstan-import-type OPEN_ARGS from AbstractLiveMailboxTest
  */
 class ImapTest extends Base
 {
     use LiveMailboxTestingTrait;
 
     /**
-     * @phpstan-return \Generator<'CI ENV with invalid password'|'empty mailbox/username/password', array{0: class-string<ConnectionException>, 1: non-empty-string, 2: array{0: HiddenString, 1: HiddenString, 2: HiddenString, 3: 0, 4: 0, 5: array<empty, empty>}, 3?: true}, mixed, void>
+     * @phpstan-return \Generator<
+     *     'CI ENV with invalid password'|'empty mailbox/username/password',
+     *      array{
+     *          0: class-string<ConnectionException>,
+     *          1: non-empty-string,
+     *          2: OPEN_ARGS
+     *      },
+     *      mixed,
+     *      void
+     * >
      */
     public static function OpenFailure(): \Generator
     {
@@ -77,50 +74,52 @@ class ImapTest extends Base
 
     /**
      * @phpstan-param class-string<\Throwable> $exception
-     * @phpstan-param PSALM_OPEN_ARGS $args
+     * @phpstan-param OPEN_ARGS $openArguments
      */
     #[Test]
     #[DataProvider('OpenFailure')]
     public function testOpenFailure(
         string $exception,
         string $message,
-        array $args,
-        bool $message_as_regex = false
+        array $openArguments,
+        bool $messageAsRegex = false
     ): void {
         $this->expectException($exception);
 
-        if ($message_as_regex) {
+        if ($messageAsRegex) {
             $this->expectExceptionMessageMatches($message);
         } else {
             $this->expectExceptionMessage($message);
         }
 
         Imap::open(
-            $args[0]->getString(),
-            $args[1]->getString(),
-            $args[2]->getString(),
-            $args[3],
-            $args[4],
-            $args[5]
+            $openArguments[0]->getString(),
+            $openArguments[1]->getString(),
+            $openArguments[2]->getString(),
+            $openArguments[3],
+            $openArguments[4],
+            $openArguments[5]
         );
     }
 
+    /**
+     * @throws \Throwable
+     * @throws InvalidParameterException
+     * @throws RandomException
+     */
     #[Test]
     #[DataProvider('MailBoxProvider')]
     #[Group('live')]
-    public function testSortEmpty(
-        HiddenString $path,
-        HiddenString $login,
-        HiddenString $password
-    ): void {
-        [$mailbox, $remove_mailbox, $path] = $this->getMailboxFromArgs([
+    public function testSortEmpty(HiddenString $path, HiddenString $login, HiddenString $password): void
+    {
+        [$mailbox, $removeMailbox, $path] = $this->getMailboxFromArgs([
             $path,
             $login,
             $password,
             \sys_get_temp_dir(),
         ]);
 
-        /** @var \Throwable|null */
+        /** @var \Throwable|null $exception */
         $exception = null;
 
         try {
@@ -133,11 +132,10 @@ class ImapTest extends Base
                     0
                 )
             );
-        } catch (\Throwable $ex) {
-            $exception = $ex;
+        } catch (\Throwable $exception) {
         } finally {
             $mailbox->switchMailbox($path->getString());
-            $mailbox->deleteMailbox($remove_mailbox);
+            $mailbox->deleteMailbox($removeMailbox);
             $mailbox->disconnect();
         }
 
