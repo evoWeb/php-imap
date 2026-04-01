@@ -21,40 +21,28 @@ final class MailboxTest extends TestCase
 
     /**
      * Holds the imap path.
-     *
-     * @var string
      */
-    private $imapPath = '{imap.example.com:993/imap/ssl/novalidate-cert}INBOX';
+    private string $imapPath = '{imap.example.com:993/imap/ssl/novalidate-cert}INBOX';
 
     /**
      * Holds the imap username.
-     *
-     * @var string
-     *
-     * @phpstan-var string
      */
-    private $login = 'php-imap@example.com';
+    private string $login = 'php-imap@example.com';
 
     /**
      * Holds the imap user password.
-     *
-     * @var string
      */
-    private $password = 'v3rY!53cEt&P4sSWöRd$';
+    private string $password = 'v3rY!53cEt&P4sSWöRd$';
 
     /**
      * Holds the relative name of the directory, where email attachments will be saved.
-     *
-     * @var string
      */
-    private $attachmentsDir = '.';
+    private string $attachmentsDir = '.';
 
     /**
      * Holds the server encoding setting.
-     *
-     * @var string
      */
-    private $serverEncoding = 'UTF-8';
+    private string $serverEncoding = 'UTF-8';
 
     /**
      * Test, that the constructor trims possible variables
@@ -98,8 +86,8 @@ final class MailboxTest extends TestCase
             ] as $perhaps
         ) {
             if (
-                \in_array(\trim($perhaps), $supported, true) ||
-                \in_array(\strtoupper(\trim($perhaps)), $supported, true)
+                \in_array(\trim($perhaps), $supported, true)
+                || \in_array(\strtoupper(\trim($perhaps)), $supported, true)
             ) {
                 $data[] = [$perhaps];
             }
@@ -126,6 +114,8 @@ final class MailboxTest extends TestCase
 
     /**
      * Test, that server encoding is set to a default value.
+     *
+     * @throws InvalidParameterException
      */
     public function testServerEncodingHasDefaultSetting(): void
     {
@@ -136,6 +126,8 @@ final class MailboxTest extends TestCase
 
     /**
      * Test, that server encoding that all functions uppers the server encoding setting.
+     *
+     * @throws InvalidParameterException
      */
     public function testServerEncodingUppersSetting(): void
     {
@@ -151,9 +143,25 @@ final class MailboxTest extends TestCase
     /**
      * Provides test data for testing server encodings.
      *
-     * @return (bool|string)[][]
+     * @return array<string, (string|bool)>
      *
-     * @phpstan-return array{'UTF-7': array{0: true, 1: 'UTF-7'}, UTF7-IMAP: array{0: true, 1: 'UTF7-IMAP'}, UTF-8: array{0: true, 1: 'UTF-8'}, ASCII: array{0: true, 1: 'ASCII'}, US-ASCII: array{0: true, 1: 'US-ASCII'}, ISO-8859-1: array{0: true, 1: 'ISO-8859-1'}, UTF7: array{0: false, 1: 'UTF7'}, UTF-7-IMAP: array{0: false, 1: 'UTF-7-IMAP'}, UTF-7IMAP: array{0: false, 1: 'UTF-7IMAP'}, UTF8: array{0: false, 1: 'UTF8'}, USASCII: array{0: false, 1: 'USASCII'}, ASC11: array{0: false, 1: 'ASC11'}, ISO-8859-0: array{0: false, 1: 'ISO-8859-0'}, ISO-8855-1: array{0: false, 1: 'ISO-8855-1'}, ISO-8859: array{0: false, 1: 'ISO-8859'}}
+     * @phpstan-return array{
+     *      'UTF-7': array{0: true, 1: 'UTF-7'},
+     *      UTF7-IMAP: array{0: true, 1: 'UTF7-IMAP'},
+     *      UTF-8: array{0: true, 1: 'UTF-8'},
+     *      ASCII: array{0: true, 1: 'ASCII'},
+     *      US-ASCII: array{0: true, 1: 'US-ASCII'},
+     *      ISO-8859-1: array{0: true, 1: 'ISO-8859-1'},
+     *      UTF7: array{0: false, 1: 'UTF7'},
+     *      UTF-7-IMAP: array{0: false, 1: 'UTF-7-IMAP'},
+     *      UTF-7IMAP: array{0: false, 1: 'UTF-7IMAP'},
+     *      UTF8: array{0: false, 1: 'UTF8'},
+     *      USASCII: array{0: false, 1: 'USASCII'},
+     *      ASC11: array{0: false, 1: 'ASC11'},
+     *      ISO-8859-0: array{0: false, 1: 'ISO-8859-0'},
+     *      ISO-8855-1: array{0: false, 1: 'ISO-8855-1'},
+     *      ISO-8859: array{0: false, 1: 'ISO-8859'}
+     * }
      */
     public static function serverEncodingProvider(): array
     {
@@ -180,6 +188,8 @@ final class MailboxTest extends TestCase
 
     /**
      * Test, that server encoding only can use supported character encodings.
+     *
+     * @throws InvalidParameterException
      */
     #[Test]
     #[DataProvider('serverEncodingProvider')]
@@ -199,31 +209,33 @@ final class MailboxTest extends TestCase
 
     /**
      * Test, that the IMAP search option has a default value
-     * 1 => SE_UID
-     * 2 => SE_FREE.
+     * 1 => \SE_UID
+     * 2 => \SE_FREE.
      */
     public function testImapSearchOptionHasADefault(): void
     {
-        self::assertEquals($this->getMailbox()->getImapSearchOption(), 1);
+        self::assertEquals(1, $this->getMailbox()->getImapSearchOption());
     }
 
     /**
      * Test, that the IMAP search option can be changed
-     * 1 => SE_UID
-     * 2 => SE_FREE.
+     * 1 => \SE_UID
+     * 2 => \SE_FREE.
+     *
+     * @throws InvalidParameterException
      */
     public function testSetAndGetImapSearchOption(): void
     {
         $mailbox = $this->getMailbox();
 
         $mailbox->setImapSearchOption(\SE_FREE);
-        self::assertEquals($mailbox->getImapSearchOption(), 2);
+        self::assertEquals(2, $mailbox->getImapSearchOption());
 
         $this->expectException(InvalidParameterException::class);
         $mailbox->setImapSearchOption(self::ANYTHING);
 
         $mailbox->setImapSearchOption(\SE_UID);
-        self::assertEquals($mailbox->getImapSearchOption(), 1);
+        self::assertEquals(1, $mailbox->getImapSearchOption());
     }
 
     /**
@@ -231,7 +243,7 @@ final class MailboxTest extends TestCase
      */
     public function testGetLogin(): void
     {
-        self::assertEquals($this->getMailbox()->getLogin(), 'php-imap@example.com');
+        self::assertEquals('php-imap@example.com', $this->getMailbox()->getLogin());
     }
 
     /**
@@ -245,7 +257,7 @@ final class MailboxTest extends TestCase
     /**
      * Provides test data for testing path delimiter.
      *
-     * @return string[][]
+     * @return array<string, string[]>
      */
     public static function pathDelimiterProvider(): array
     {
@@ -332,16 +344,18 @@ final class MailboxTest extends TestCase
 
     /**
      * Test, that the path delimiter can be set.
+     *
+     * @throws InvalidParameterException
      */
     public function testSetAndGetPathDelimiter(): void
     {
         $mailbox = $this->getMailbox();
 
         $mailbox->setPathDelimiter('.');
-        self::assertEquals($mailbox->getPathDelimiter(), '.');
+        self::assertEquals('.', $mailbox->getPathDelimiter());
 
         $mailbox->setPathDelimiter('/');
-        self::assertEquals($mailbox->getPathDelimiter(), '/');
+        self::assertEquals('/', $mailbox->getPathDelimiter());
     }
 
     /**
@@ -349,17 +363,17 @@ final class MailboxTest extends TestCase
      */
     public function testGetAttachmentsAreNotIgnoredByDefault(): void
     {
-        self::assertEquals($this->getMailbox()->getAttachmentsIgnore(), false);
+        self::assertFalse($this->getMailbox()->getAttachmentsIgnore());
     }
 
     /**
      * Provides test data for testing attachments ignore.
      *
-     * @phpstan-return array<string, array{0:bool}>
+     * @phpstan-return array<string, array{0: bool}>
      */
     public static function attachmentsIgnoreProvider(): array
     {
-        /** @phpstan-var array<string, array{0:bool}> */
+        /** @phpstan-var array<string, array{0: bool}> */
         return [
             'true' => [true],
             'false' => [false],
@@ -381,7 +395,36 @@ final class MailboxTest extends TestCase
     /**
      * Provides test data for testing encoding.
      *
-     * @phpstan-return array{Avañe’ẽ: array{0: 'Avañe’ẽ'}, azərbaycanca: array{0: 'azərbaycanca'}, Bokmål: array{0: 'Bokmål'}, chiCheŵa: array{0: 'chiCheŵa'}, Deutsch: array{0: 'Deutsch'}, 'U.S. English': array{0: 'U.S. English'}, français: array{0: 'français'}, 'Éléments envoyés': array{0: 'Éléments envoyés'}, føroyskt: array{0: 'føroyskt'}, Kĩmĩrũ: array{0: 'Kĩmĩrũ'}, Kɨlaangi: array{0: 'Kɨlaangi'}, oʼzbekcha: array{0: 'oʼzbekcha'}, Plattdüütsch: array{0: 'Plattdüütsch'}, română: array{0: 'română'}, Sängö: array{0: 'Sängö'}, 'Tiếng Việt': array{0: 'Tiếng Việt'}, ɔl-Maa: array{0: 'ɔl-Maa'}, Ελληνικά: array{0: 'Ελληνικά'}, Ўзбек: array{0: 'Ўзбек'}, Азәрбајҹан: array{0: 'Азәрбајҹан'}, Српски: array{0: 'Српски'}, русский: array{0: 'русский'}, 'ѩзыкъ словѣньскъ': array{0: 'ѩзыкъ словѣньскъ'}, العربية: array{0: 'العربية'}, नेपाली: array{0: 'नेपाली'}, 日本語: array{0: '日本語'}, 简体中文: array{0: '简体中文'}, 繁體中文: array{0: '繁體中文'}, 한국어: array{0: '한국어'}, ąčęėįšųūžĄČĘĖĮŠŲŪŽ: array{0: 'ąčęėįšųūžĄČĘĖĮŠŲŪŽ'}}
+     * @phpstan-return array{
+     *      Avañe’ẽ: array{0: 'Avañe’ẽ'},
+     *      azərbaycanca: array{0: 'azərbaycanca'},
+     *      Bokmål: array{0: 'Bokmål'},
+     *      chiCheŵa: array{0: 'chiCheŵa'},
+     *      Deutsch: array{0: 'Deutsch'},
+     *      'U.S. English': array{0: 'U.S. English'},
+     *      français: array{0: 'français'},
+     *      'Éléments envoyés': array{0: 'Éléments envoyés'},
+     *      føroyskt: array{0: 'føroyskt'},
+     *      Kĩmĩrũ: array{0: 'Kĩmĩrũ'},
+     *      Kɨlaangi: array{0: 'Kɨlaangi'},
+     *      oʼzbekcha: array{0: 'oʼzbekcha'},
+     *      Plattdüütsch: array{0: 'Plattdüütsch'},
+     *      română: array{0: 'română'}, Sängö: array{0: 'Sängö'},
+     *      'Tiếng Việt': array{0: 'Tiếng Việt'},
+     *      ɔl-Maa: array{0: 'ɔl-Maa'},
+     *      Ελληνικά: array{0: 'Ελληνικά'},
+     *      Ўзбек: array{0: 'Ўзбек'},
+     *      Азәрбајҹан: array{0: 'Азәрбајҹан'},
+     *      Српски: array{0: 'Српски'},
+     *      русский: array{0: 'русский'},
+     *      'ѩзыкъ словѣньскъ': array{0: 'ѩзыкъ словѣньскъ'},
+     *      العربية: array{0: 'العربية'},
+     *      नेपाली: array{0: 'नेपाली'},
+     *      日本語: array{0: '日本語'},
+     *      简体中文: array{0: '简体中文'},
+     *      繁體中文: array{0: '繁體中文'},
+     *      한국어: array{0: '한국어'},
+     *      ąčęėįšųūžĄČĘĖĮŠŲŪŽ: array{0: 'ąčęėįšųūžĄČĘĖĮŠŲŪŽ'}}
      *
      * @return string[][]
      */
@@ -426,32 +469,46 @@ final class MailboxTest extends TestCase
      */
     #[Test]
     #[DataProvider('encodingTestStringsProvider')]
-    public function testEncodingToUtf7DecodeBackToUtf8(string $str): void
+    public function testEncodingToUtf7DecodeBackToUtf8(string $string): void
     {
         $mailbox = $this->getMailbox();
 
-        $utf7_encoded_str = $mailbox->encodeStringToUtf7Imap($str);
-        $utf8_decoded_str = $mailbox->decodeStringFromUtf7ImapToUtf8($utf7_encoded_str);
+        $utf7EncodedString = $mailbox->encodeStringToUtf7Imap($string);
+        $utf8DecodedString = $mailbox->decodeStringFromUtf7ImapToUtf8($utf7EncodedString);
 
-        self::assertEquals($str, $utf8_decoded_str);
+        self::assertEquals($string, $utf8DecodedString);
     }
 
     /**
      * Test, that strings encoded to UTF-7 can be decoded back to UTF-8.
+     *
+     * @throws \Exception
      */
     #[Test]
     #[DataProvider('encodingTestStringsProvider')]
-    public function testMimeDecodingReturnsCorrectValues(string $str): void
+    public function testMimeDecodingReturnsCorrectValues(string $string): void
     {
-        self::assertEquals($str, $this->getMailbox()->decodeMimeStr($str));
+        self::assertEquals($string, $this->getMailbox()->decodeMimeStr($string));
     }
 
     /**
      * Provides test data for testing parsing datetimes.
      *
-     * @phpstan-return array{'Sun, 14 Aug 2005 16:13:03 +0000 (CEST)': array{0: '2005-08-14T16:13:03+00:00', 1: 1124035983}, 'Sun, 14 Aug 2005 16:13:03 +0000': array{0: '2005-08-14T16:13:03+00:00', 1: 1124035983}, 'Sun, 14 Aug 2005 16:13:03 +1000 (CEST)': array{0: '2005-08-14T06:13:03+00:00', 1: 1123999983}, 'Sun, 14 Aug 2005 16:13:03 +1000': array{0: '2005-08-14T06:13:03+00:00', 1: 1123999983}, 'Sun, 14 Aug 2005 16:13:03 -1000': array{0: '2005-08-15T02:13:03+00:00', 1: 1124071983}, 'Sun, 14 Aug 2005 16:13:03 +1100 (CEST)': array{0: '2005-08-14T05:13:03+00:00', 1: 1123996383}, 'Sun, 14 Aug 2005 16:13:03 +1100': array{0: '2005-08-14T05:13:03+00:00', 1: 1123996383}, 'Sun, 14 Aug 2005 16:13:03 -1100': array{0: '2005-08-15T03:13:03+00:00', 1: 1124075583}, '14 Aug 2005 16:13:03 +1000 (CEST)': array{0: '2005-08-14T06:13:03+00:00', 1: 1123999983}, '14 Aug 2005 16:13:03 +1000': array{0: '2005-08-14T06:13:03+00:00', 1: 1123999983}, '14 Aug 2005 16:13:03 -1000': array{0: '2005-08-15T02:13:03+00:00', 1: 1124071983}}
+     * @phpstan-return array{
+     *      'Sun, 14 Aug 2005 16:13:03 +0000 (CEST)': array{0: '2005-08-14T16:13:03+00:00', 1: 1124035983},
+     *      'Sun, 14 Aug 2005 16:13:03 +0000': array{0: '2005-08-14T16:13:03+00:00', 1: 1124035983},
+     *      'Sun, 14 Aug 2005 16:13:03 +1000 (CEST)': array{0: '2005-08-14T06:13:03+00:00', 1: 1123999983},
+     *      'Sun, 14 Aug 2005 16:13:03 +1000': array{0: '2005-08-14T06:13:03+00:00', 1: 1123999983},
+     *      'Sun, 14 Aug 2005 16:13:03 -1000': array{0: '2005-08-15T02:13:03+00:00', 1: 1124071983},
+     *      'Sun, 14 Aug 2005 16:13:03 +1100 (CEST)': array{0: '2005-08-14T05:13:03+00:00', 1: 1123996383},
+     *      'Sun, 14 Aug 2005 16:13:03 +1100': array{0: '2005-08-14T05:13:03+00:00', 1: 1123996383},
+     *      'Sun, 14 Aug 2005 16:13:03 -1100': array{0: '2005-08-15T03:13:03+00:00', 1: 1124075583},
+     *      '14 Aug 2005 16:13:03 +1000 (CEST)': array{0: '2005-08-14T06:13:03+00:00', 1: 1123999983},
+     *      '14 Aug 2005 16:13:03 +1000': array{0: '2005-08-14T06:13:03+00:00', 1: 1123999983},
+     *      '14 Aug 2005 16:13:03 -1000': array{0: '2005-08-15T02:13:03+00:00', 1: 1124071983}
+     * }
      *
-     * @return (int|string)[][]
+     * @return array<string, array<int, (string|int)>>
      */
     public static function datetimeProvider(): array
     {
@@ -475,22 +532,28 @@ final class MailboxTest extends TestCase
 
     /**
      * Test, different datetimes conversions using differents timezones.
+     *
+     * @throws InvalidParameterException
      */
     #[Test]
     #[DataProvider('datetimeProvider')]
     public function testParsedDateDifferentTimeZones(string $dateToParse, int $epochToCompare): void
     {
-        $parsedDt = $this->getMailbox()->parseDateTime($dateToParse);
-        $parsedDateTime = new \DateTime($parsedDt);
-        self::assertEquals((int)$parsedDateTime->format('U'), $epochToCompare);
+        $parsedDatetime = $this->getMailbox()->parseDateTime($dateToParse);
+        $parsedDateTime = new \DateTime($parsedDatetime);
+        self::assertEquals($epochToCompare, (int)$parsedDateTime->format('U'));
     }
 
     /**
      * Provides test data for testing parsing invalid / unparseable datetimes.
      *
-     * @phpstan-return array{'Sun, 14 Aug 2005 16:13:03 +9000 (CEST)': array{0: 'Sun, 14 Aug 2005 16:13:03 +9000 (CEST)'}, 'Sun, 14 Aug 2005 16:13:03 +9000': array{0: 'Sun, 14 Aug 2005 16:13:03 +9000'}, 'Sun, 14 Aug 2005 16:13:03 -9000': array{0: 'Sun, 14 Aug 2005 16:13:03 -9000'}}
+     * @phpstan-return array{
+     *      'Sun, 14 Aug 2005 16:13:03 +9000 (CEST)': array{0: 'Sun, 14 Aug 2005 16:13:03 +9000 (CEST)'},
+     *      'Sun, 14 Aug 2005 16:13:03 +9000': array{0: 'Sun, 14 Aug 2005 16:13:03 +9000'},
+     *      'Sun, 14 Aug 2005 16:13:03 -9000': array{0: 'Sun, 14 Aug 2005 16:13:03 -9000'}
+     * }
      *
-     * @return string[][]
+     * @return array<string, string[]>
      */
     public static function invalidDatetimeProvider(): array
     {
@@ -503,6 +566,8 @@ final class MailboxTest extends TestCase
 
     /**
      * Test, different invalid / unparseable datetimes conversions.
+     *
+     * @throws InvalidParameterException
      */
     #[Test]
     #[DataProvider('invalidDatetimeProvider')]
@@ -513,7 +578,7 @@ final class MailboxTest extends TestCase
     }
 
     /**
-     * Test, parsed datetime being emtpy the header date.
+     * Test, parsed datetime being empty the header date.
      */
     #[Test]
     public function testParsedDateTimeWithEmptyHeaderDate(): void
@@ -527,7 +592,17 @@ final class MailboxTest extends TestCase
      *
      * @return string[][]
      *
-     * @phpstan-return array{0: array{0: '=?iso-8859-1?Q?Sebastian_Kr=E4tzig?= <sebastian.kraetzig@example.com>', 1: 'Sebastian Krätzig <sebastian.kraetzig@example.com>'}, 1: array{0: '=?iso-8859-1?Q?Sebastian_Kr=E4tzig?=', 1: 'Sebastian Krätzig'}, 2: array{0: 'sebastian.kraetzig', 1: 'sebastian.kraetzig'}, 3: array{0: '=?US-ASCII?Q?Keith_Moore?= <km@ab.example.edu>', 1: 'Keith Moore <km@ab.example.edu>'}, 4: array{0: '   ', 1: '   '}, 5: array{0: '=?ISO-8859-1?Q?Max_J=F8rn_Simsen?= <max.joern.s@example.dk>', 1: 'Max Jørn Simsen <max.joern.s@example.dk>'}, 6: array{0: '=?ISO-8859-1?Q?Andr=E9?= Muster <andre.muster@vm1.ulg.ac.be>', 1: 'André Muster <andre.muster@vm1.ulg.ac.be>'}, 7: array{0: '=?ISO-8859-1?B?SWYgeW91IGNhbiByZWFkIHRoaXMgeW8=?= =?ISO-8859-2?B?dSB1bmRlcnN0YW5kIHRoZSBleGFtcGxlLg==?=', 1: 'If you can read this you understand the example.'}, 8: array{0: '', 1: ''}}
+     * @phpstan-return array{
+     *      0: array{0: '=?iso-8859-1?Q?Sebastian_Kr=E4tzig?= <sebastian.kraetzig@example.com>', 1: 'Sebastian Krätzig <sebastian.kraetzig@example.com>'},
+     *      1: array{0: '=?iso-8859-1?Q?Sebastian_Kr=E4tzig?=', 1: 'Sebastian Krätzig'},
+     *      2: array{0: 'sebastian.kraetzig', 1: 'sebastian.kraetzig'},
+     *      3: array{0: '=?US-ASCII?Q?Keith_Moore?= <km@ab.example.edu>', 1: 'Keith Moore <km@ab.example.edu>'},
+     *      4: array{0: '   ', 1: '   '},
+     *      5: array{0: '=?ISO-8859-1?Q?Max_J=F8rn_Simsen?= <max.joern.s@example.dk>', 1: 'Max Jørn Simsen <max.joern.s@example.dk>'},
+     *      6: array{0: '=?ISO-8859-1?Q?Andr=E9?= Muster <andre.muster@vm1.ulg.ac.be>', 1: 'André Muster <andre.muster@vm1.ulg.ac.be>'},
+     *      7: array{0: '=?ISO-8859-1?B?SWYgeW91IGNhbiByZWFkIHRoaXMgeW8=?= =?ISO-8859-2?B?dSB1bmRlcnN0YW5kIHRoZSBleGFtcGxlLg==?=', 1: 'If you can read this you understand the example.'},
+     *      8: array{0: '', 1: ''}
+     * }
      */
     public static function mimeEncodingProvider(): array
     {
@@ -546,6 +621,8 @@ final class MailboxTest extends TestCase
 
     /**
      * Test, that mime encoding returns correct strings.
+     *
+     * @throws \Exception
      */
     #[Test]
     #[DataProvider('mimeEncodingProvider')]
@@ -559,17 +636,37 @@ final class MailboxTest extends TestCase
     /**
      * Provides test data for testing timeouts.
      *
-     * @phpstan-return array<string, array{0:'assertNull'|'expectException', 1:int, 2:list<int>}>
+     * @phpstan-return array<string, array{0: 'assertNull'|'expectException', 1: int, 2: list<int>}>
      */
     public static function timeoutsProvider(): array
     {
-        /** @phpstan-var array<string, array{0:'assertNull'|'expectException', 1:int, 2:list<int>}> */
+        /** @phpstan-var array<string, array{0: 'assertNull'|'expectException', 1: int, 2: list<int>}> */
         return [
-            'array(IMAP_OPENTIMEOUT)' => ['assertNull', 1, [\IMAP_OPENTIMEOUT]],
-            'array(IMAP_READTIMEOUT)' => ['assertNull', 1, [\IMAP_READTIMEOUT]],
-            'array(IMAP_WRITETIMEOUT)' => ['assertNull', 1, [\IMAP_WRITETIMEOUT]],
-            'array(IMAP_CLOSETIMEOUT)' => ['assertNull', 1, [\IMAP_CLOSETIMEOUT]],
-            'array(IMAP_OPENTIMEOUT, IMAP_READTIMEOUT, IMAP_WRITETIMEOUT, IMAP_CLOSETIMEOUT)' => ['assertNull', 1, [\IMAP_OPENTIMEOUT, \IMAP_READTIMEOUT, \IMAP_WRITETIMEOUT, \IMAP_CLOSETIMEOUT]],
+            'array(IMAP_OPENTIMEOUT)' => [
+                'assertNull',
+                1,
+                [\IMAP_OPENTIMEOUT],
+            ],
+            'array(IMAP_READTIMEOUT)' => [
+                'assertNull',
+                1,
+                [\IMAP_READTIMEOUT],
+            ],
+            'array(IMAP_WRITETIMEOUT)' => [
+                'assertNull',
+                1,
+                [\IMAP_WRITETIMEOUT],
+            ],
+            'array(IMAP_CLOSETIMEOUT)' => [
+                'assertNull',
+                1,
+                [\IMAP_CLOSETIMEOUT],
+            ],
+            'array(IMAP_OPENTIMEOUT, IMAP_READTIMEOUT, IMAP_WRITETIMEOUT, IMAP_CLOSETIMEOUT)' => [
+                'assertNull',
+                1,
+                [\IMAP_OPENTIMEOUT, \IMAP_READTIMEOUT, \IMAP_WRITETIMEOUT, \IMAP_CLOSETIMEOUT],
+            ],
         ];
     }
 
@@ -622,7 +719,7 @@ final class MailboxTest extends TestCase
             'readonly, null options' => ['expectException', \OP_READONLY, 0, [null]],
         ];
 
-        /** @phpstan-var list<array{0:int, 1:string}> */
+        /** @phpstan-var list<array{0:int, 1:string}> $options */
         $options = [
             [\OP_DEBUG, 'debug'], // 1
             [\OP_READONLY, 'readonly'], // 2
@@ -635,17 +732,17 @@ final class MailboxTest extends TestCase
             [\CL_EXPUNGE, 'expunge on close'], // 32768
         ];
 
-        foreach ($options as $i => $option) {
-            $value = $option[0];
+        foreach ($options as $i => $optionOuter) {
+            $value = $optionOuter[0];
 
             for ($j = $i + 1; $j < \count($options); ++$j) {
                 $value |= $options[$j][0];
 
                 $fields = [];
 
-                foreach ($options as $option) {
-                    if (($value & $option[0]) !== 0) {
-                        $fields[] = $option[1];
+                foreach ($options as $optionInner) {
+                    if (($value & $optionInner[0]) !== 0) {
+                        $fields[] = $optionInner[1];
                     }
                 }
 
@@ -660,12 +757,18 @@ final class MailboxTest extends TestCase
     /**
      * Test, that only supported and valid connection args can be set.
      *
-     * @phpstan-param array{DISABLE_AUTHENTICATOR?:string}|array<empty, empty> $param
+     * @phpstan-param array{DISABLE_AUTHENTICATOR?: string}|array<empty, empty> $param
+     *
+     * @throws InvalidParameterException
      */
     #[Test]
     #[DataProvider('connectionArgsProvider')]
-    public function testSetConnectionArgs(string $assertMethod, int $option, int $retriesNum, ?array $param = null): void
-    {
+    public function testSetConnectionArgs(
+        string $assertMethod,
+        int $option,
+        int $retriesNum,
+        ?array $param = null
+    ): void {
         $mailbox = $this->getMailbox();
 
         if ($assertMethod == 'expectException') {
@@ -704,6 +807,9 @@ final class MailboxTest extends TestCase
 
     /**
      * Test, that decoding mime strings return unchanged / not broken strings.
+     *
+     * @throws InvalidParameterException
+     * @throws \Exception
      */
     #[Test]
     #[DataProvider('mimeStrDecodingProvider')]
@@ -718,7 +824,15 @@ final class MailboxTest extends TestCase
     /**
      * Provides test data for testing base64 string decoding.
      *
-     * @phpstan-return array{0: array{0: 'bm8tcmVwbHlAZXhhbXBsZS5jb20=', 1: 'no-reply@example.com'}, 1: array{0: 'TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlzIHNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2YgdGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGludWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Yga25vd2xlZGdlLCBleGNlZWRzIHRoZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4=', 1: 'Man is distinguished, not only by his reason, but by this singular passion from other animals, which is a lust of the mind, that by a perseverance of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of any carnal pleasure.'}, 2: array{0: 'SSBjYW4gZWF0IGdsYXNzIGFuZCBpdCBkb2VzIG5vdCBodXJ0IG1lLg==', 1: 'I can eat glass and it does not hurt me.'}, 3: array{0: '77u/4KSV4KS+4KSa4KSCIOCktuCkleCljeCkqOCli+CkruCljeCkr+CkpOCljeCkpOClgeCkruCljSDgpaQg4KSo4KWL4KSq4KS54KS/4KSo4KS44KWN4KSk4KS/IOCkruCkvuCkruCljSDgpaU=', 1: '﻿काचं शक्नोम्यत्तुम् । नोपहिनस्ति माम् ॥'}, 4: array{0: 'SmUgcGV1eCBtYW5nZXIgZHUgdmVycmUsIMOnYSBuZSBtZSBmYWl0IHBhcyBtYWwu', 1: 'Je peux manger du verre, ça ne me fait pas mal.'}, 5: array{0: 'UG90IHPEgyBtxINuw6JuYyBzdGljbMSDIMiZaSBlYSBudSBtxIMgcsSDbmXImXRlLg==', 1: 'Pot să mănânc sticlă și ea nu mă rănește.'}, 6: array{0: '5oiR6IO95ZCe5LiL546755KD6ICM5LiN5YK36Lqr6auU44CC', 1: '我能吞下玻璃而不傷身體。'}}
+     * @phpstan-return array{
+     *      0: array{0: 'bm8tcmVwbHlAZXhhbXBsZS5jb20=', 1: 'no-reply@example.com'},
+     *      1: array{0: 'TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlzIHNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2YgdGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGludWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Yga25vd2xlZGdlLCBleGNlZWRzIHRoZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4=', 1: 'Man is distinguished, not only by his reason, but by this singular passion from other animals, which is a lust of the mind, that by a perseverance of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of any carnal pleasure.'},
+     *      2: array{0: 'SSBjYW4gZWF0IGdsYXNzIGFuZCBpdCBkb2VzIG5vdCBodXJ0IG1lLg==', 1: 'I can eat glass and it does not hurt me.'},
+     *      3: array{0: '77u/4KSV4KS+4KSa4KSCIOCktuCkleCljeCkqOCli+CkruCljeCkr+CkpOCljeCkpOClgeCkruCljSDgpaQg4KSo4KWL4KSq4KS54KS/4KSo4KS44KWN4KSk4KS/IOCkruCkvuCkruCljSDgpaU=', 1: '﻿काचं शक्नोम्यत्तुम् । नोपहिनस्ति माम् ॥'},
+     *      4: array{0: 'SmUgcGV1eCBtYW5nZXIgZHUgdmVycmUsIMOnYSBuZSBtZSBmYWl0IHBhcyBtYWwu', 1: 'Je peux manger du verre, ça ne me fait pas mal.'},
+     *      5: array{0: 'UG90IHPEgyBtxINuw6JuYyBzdGljbMSDIMiZaSBlYSBudSBtxIMgcsSDbmXImXRlLg==', 1: 'Pot să mănânc sticlă și ea nu mă rănește.'},
+     *      6: array{0: '5oiR6IO95ZCe5LiL546755KD6ICM5LiN5YK36Lqr6auU44CC', 1: '我能吞下玻璃而不傷身體。'}
+     * }
      *
      * @return string[][]
      */
@@ -795,6 +909,8 @@ final class MailboxTest extends TestCase
      * Test that setting the attachments directory fails when expected.
      *
      * @phpstan-param class-string<\Exception> $expectedException
+     *
+     * @throws InvalidParameterException
      */
     #[Test]
     #[DataProvider('attachmentDirFailureProvider')]
