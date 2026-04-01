@@ -11,26 +11,20 @@ declare(strict_types=1);
 
 namespace PhpImap\Tests\Unit;
 
+use PhpImap\Exceptions\InvalidParameterException;
 use PhpImap\Mailbox;
 use ParagonIE\HiddenString\HiddenString;
+use Random\RandomException;
 
 /**
- * @phpstan-type MAILBOX_ARGS = array{
- *	0:HiddenString,
- *	1:HiddenString,
- *	2:HiddenString,
- *	3:string,
- *	4?:string
- * }
+ * @phpstan-import-type MAILBOX_ARGS from AbstractLiveMailboxTest
  */
 trait LiveMailboxTestingTrait
 {
     /**
      * Provides constructor arguments for a live mailbox.
      *
-     * @phpstan-return array{'CI_ENV'?: array{0: \ParagonIE\HiddenString\HiddenString, 1: \ParagonIE\HiddenString\HiddenString, 2: \ParagonIE\HiddenString\HiddenString, 3: string}}
-     *
-     * @return (\ParagonIE\HiddenString\HiddenString|string)[][]
+     * @return array<string, MAILBOX_ARGS>
      */
     public static function MailBoxProvider(): array
     {
@@ -41,7 +35,12 @@ trait LiveMailboxTestingTrait
         $password = \getenv('PHPIMAP_PASSWORD');
 
         if (\is_string($imapPath) && \is_string($login) && \is_string($password)) {
-            $sets['CI ENV'] = [new HiddenString($imapPath), new HiddenString($login), new HiddenString($password, true, true), \sys_get_temp_dir()];
+            $sets['CI ENV'] = [
+                new HiddenString($imapPath),
+                new HiddenString($login),
+                new HiddenString($password, true, true),
+                \sys_get_temp_dir()
+            ];
         }
 
         return $sets;
@@ -50,9 +49,12 @@ trait LiveMailboxTestingTrait
     /**
      * Get instance of Mailbox, pre-set to a random mailbox.
      *
-     * @return (Mailbox|\ParagonIE\HiddenString\HiddenString|string)[]
+     * @return (Mailbox|HiddenString|string)[]
      *
-     * @phpstan-return array{0: Mailbox, 1: string, 2: \ParagonIE\HiddenString\HiddenString}
+     * @phpstan-return array{0: Mailbox, 1: string, 2: HiddenString}
+     *
+     * @throws RandomException
+     * @throws InvalidParameterException
      */
     protected function getMailbox(
         HiddenString $imapPath,
@@ -61,7 +63,13 @@ trait LiveMailboxTestingTrait
         string $attachmentsDir,
         string $serverEncoding = 'UTF-8'
     ): array {
-        $mailbox = new Mailbox($imapPath->getString(), $login->getString(), $password->getString(), $attachmentsDir, $serverEncoding);
+        $mailbox = new Mailbox(
+            $imapPath->getString(),
+            $login->getString(),
+            $password->getString(),
+            $attachmentsDir,
+            $serverEncoding
+        );
 
         $random = 'test-box-' . \date('c') . \bin2hex(\random_bytes(4));
 
@@ -73,22 +81,25 @@ trait LiveMailboxTestingTrait
     }
 
     /**
-     * @phpstan-param MAILBOX_ARGS $mailbox_args
+     * @phpstan-param MAILBOX_ARGS $mailboxArguments
      *
-     * @return mixed[]
+     * @return (Mailbox|HiddenString|string)[]
      *
-     * @phpstan-return array{0:Mailbox, 1:string, 2:HiddenString}
+     * @phpstan-return array{0: Mailbox, 1: string, 2: HiddenString}
+     *
+     * @throws RandomException
+     * @throws InvalidParameterException
      */
-    protected function getMailboxFromArgs(array $mailbox_args): array
+    protected function getMailboxFromArgs(array $mailboxArguments): array
     {
-        [$path, $username, $password, $attachments_dir] = $mailbox_args;
+        [$imapPath, $login, $password, $attachmentsDir] = $mailboxArguments;
 
         return $this->getMailbox(
-            $path,
-            $username,
+            $imapPath,
+            $login,
             $password,
-            $attachments_dir,
-            $mailbox_args[4] ?? 'UTF-8'
+            $attachmentsDir,
+            $mailboxArguments[4] ?? 'UTF-8'
         );
     }
 }
