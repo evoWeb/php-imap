@@ -78,17 +78,22 @@ class LiveMailboxStringDecodingConvertingTest extends TestCase
      */
     #[Test]
     #[DataProvider('stringDecodeProvider')]
-    public function testStringDecode(int $encoding, string $charset, string $iso_8859_2, string $utf8, string $sha256): void
-    {
+    public function testStringDecode(
+        int $encoding,
+        string $charset,
+        string $encoded,
+        string $expectedUtf8,
+        string $expectedSha256
+    ): void {
         $mailbox = new Mailbox('', '', '');
 
         $dataInfo = new DataPartInfo($mailbox, 1337, 0, $encoding, 0);
         $dataInfo->charset = $charset;
 
-        $decoded = $dataInfo->decodeAfterFetch($iso_8859_2);
+        $decoded = $dataInfo->decodeAfterFetch($encoded);
 
-        self::assertSame($utf8, $decoded);
+        self::assertSame($expectedUtf8, $decoded);
 
-        self::assertSame($sha256, \hash('sha256', $decoded));
+        self::assertSame($expectedSha256, \hash('sha256', $decoded));
     }
 }
