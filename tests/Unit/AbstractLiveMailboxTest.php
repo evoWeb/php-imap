@@ -26,15 +26,16 @@ use PHPUnit\Framework\TestCase;
  *      subject: string
  * }
  * @phpstan-type COMPOSE_BODY = list<array{
+ *      id?: string,
  *      type?: int,
  *      encoding?: int,
  *      charset?: string,
  *      subtype?: string,
  *      description?: string,
  *      disposition?: array{filename: string, type?: string},
+ *      'disposition.type'?: string,
  *      'type.parameters'?: array{name: string},
  *      'contents.data'?: string,
- *      id?: string,
  * }>
  */
 abstract class AbstractLiveMailboxTest extends TestCase
@@ -43,9 +44,9 @@ abstract class AbstractLiveMailboxTest extends TestCase
 
     /**
      * @phpstan-return \Generator<int, array{
-     *     0: COMPOSE_ENVELOPE,
-     *     1: COMPOSE_BODY,
-     *     2: string
+     *      0: COMPOSE_ENVELOPE,
+     *      1: COMPOSE_BODY,
+     *      2: string
      * }, mixed, void>
      */
     public static function ComposeProvider(): \Generator
