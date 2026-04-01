@@ -97,7 +97,7 @@ class Issue519Test extends TestCase
 
     public const HTML = 'foo.html';
 
-    public const HTML_EMBED = '<img src="data:image/jpeg;base64, ">';
+    public const HTML_EMBED = '<img src="data:image/jpeg;base64, " alt="">';
 
     public const MIME_TYPE = 'image/jpeg';
 
@@ -105,46 +105,26 @@ class Issue519Test extends TestCase
 
     public const EXPECTED_ATTACHMENT_COUNT_AFTER_EMBED = 0;
 
-    /**
-     * @phpstan-return array<string, array{0: string}>
-     *
-     * @return string[][]
-     */
-    public static function provider(): array
+    public static function headerValueProvider(): \Generator
     {
-        $out = [];
-
         foreach (self::HEADER_VALUES as $value) {
-            $out[$value] = [$value];
+            yield $value => [$value];
         }
-
-        return $out;
     }
 
     #[Test]
-    #[DataProvider('provider')]
-    public function test(string $header_value): void
+    #[DataProvider('headerValueProvider')]
+    public function test(string $headerValue): void
     {
         $mailbox = new Mailbox('', '', '');
         $mail = new IncomingMail();
         $attachment = new Fixtures\IncomingMailAttachment();
-        $part = new Fixtures\DataPartInfo(
-            $mailbox,
-            0,
-            0,
-            \ENCBASE64,
-            0
-        );
 
-        $html = new Fixtures\DataPartInfo(
-            $mailbox,
-            0,
-            0,
-            \ENC8BIT,
-            0
-        );
+        $part = new Fixtures\DataPartInfo($mailbox, 0, 0, \ENCBASE64, 0);
 
-        $html_string = '<img src="' . self::CID . '">';
+        $html = new Fixtures\DataPartInfo($mailbox, 0, 0, \ENC8BIT, 0);
+
+        $html_string = '<img src="' . self::CID . '" alt="">';
 
         $html->setData($html_string);
         $part->setData('');
@@ -157,7 +137,7 @@ class Issue519Test extends TestCase
         $attachment->description = self::ID;
         $attachment->name = self::ID;
         $attachment->sizeInBytes = self::SIZE_IN_BYTES;
-        $attachment->disposition = $header_value;
+        $attachment->disposition = $headerValue;
         $attachment->overrideGetFileInfoMimeType = self::MIME_TYPE;
 
         $attachment->addDataPartInfo($part);
@@ -167,19 +147,13 @@ class Issue519Test extends TestCase
 
         self::assertTrue($mail->hasAttachments());
 
-        self::assertCount(
-            self::EXPECTED_ATTACHMENT_COUNT,
-            $mail->getAttachments()
-        );
+        self::assertCount(self::EXPECTED_ATTACHMENT_COUNT, $mail->getAttachments());
 
         self::assertSame($html_string, $mail->textHtml);
 
         $mail->embedImageAttachments();
 
-        self::assertCount(
-            self::EXPECTED_ATTACHMENT_COUNT_AFTER_EMBED,
-            $mail->getAttachments()
-        );
+        self::assertCount(self::EXPECTED_ATTACHMENT_COUNT_AFTER_EMBED, $mail->getAttachments());
 
         self::assertSame(self::HTML_EMBED, $mail->textHtml);
     }
