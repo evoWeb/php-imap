@@ -22,3 +22,9 @@ parameters:
   # see what would happen if we set this option to "true" again.
   # treatPhpDocTypesAsCertain is explicitly disabled because we MUST not trust doc types 100%.
   treatPhpDocTypesAsCertain: false
+
+  ignoreErrors:
+    # imap_close() returns bool in PHP <8.4 and void since PHP 8.4
+    - identifier: booleanNot.alwaysFalse
+      path: ../../src/PhpImap/Imap.php
+      reportUnmatched: false
