@@ -49,11 +49,11 @@ class IncomingMailAttachment
 
     public ?string $mimeType;
 
-    private ?string $file_path;
+    private string $file_path;
 
-    private ?DataPartInfo $dataInfo;
+    private string $filePath;
 
-    private ?string $filePath;
+    private DataPartInfo $dataInfo;
 
     /**
      * @return false|string
@@ -116,10 +116,6 @@ class IncomingMailAttachment
      */
     public function getContents(): string
     {
-        if ($this->dataInfo === null) {
-            throw new \UnexpectedValueException(static::class . '::$dataInfo has not been set by calling ' . self::class . '::addDataPartInfo()');
-        }
-
         return $this->dataInfo->fetch();
     }
 
@@ -130,10 +126,6 @@ class IncomingMailAttachment
      */
     public function saveToDisk(): bool
     {
-        if ($this->dataInfo === null) {
-            return false;
-        }
-
         if (\file_put_contents($this->__get('filePath'), $this->dataInfo->fetch()) === false) {
             unset($this->filePath, $this->file_path);
 

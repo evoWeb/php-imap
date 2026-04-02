@@ -168,8 +168,8 @@ class IncomingMail extends IncomingMailHeader
     {
         $fetchedHtml = $this->__get('textHtml');
 
-        /** @phpstan-var array{list<string>, list<non-falsy-string>, list<non-empty-string>} $matches */
         $match = \preg_match_all('/=["\'](ci?d:([\w.%*@-]+))["\']/i', $fetchedHtml, $matches);
+        /** @phpstan-var array{list<string>, list<non-falsy-string>, list<non-empty-string>} $matches */
 
         return $match ? \array_combine($matches[2], $matches[1]) : [];
     }

@@ -103,10 +103,7 @@ class Mailbox
 
     protected bool $attachmentFilenameMode = false;
 
-    /**
-     * @var Connection
-     */
-    private $imapStream;
+    private ?Connection $imapStream = null;
 
     /**
      * @throws InvalidParameterException
@@ -430,7 +427,7 @@ class Mailbox
     public function hasImapStream(): bool
     {
         try {
-            return (\is_resource($this->imapStream) || $this->imapStream instanceof Connection) && \imap_ping($this->imapStream);
+            return $this->imapStream instanceof Connection && \imap_ping($this->imapStream);
         } catch (\Error $exception) {
             // From PHP 8.1.10 imap_ping() on a closed stream throws a ValueError. See #680.
             $valueError = '\ValueError';
@@ -1818,14 +1815,14 @@ class Mailbox
     /**
      * Retrieve the quota settings per user.
      *
-     * @param string $quota_root Should normally be in the form of which mailbox (i.e. INBOX)
+     * @param string $quotaRoot Should normally be in the form of which mailbox (i.e. INBOX)
      *
      * @throws ConnectionException
      * @see imap_get_quotaroot()
      */
-    protected function getQuota(string $quota_root = 'INBOX'): array
+    protected function getQuota(string $quotaRoot = 'INBOX'): array
     {
-        return Imap::get_quotaroot($this->getImapStream(), $quota_root);
+        return Imap::get_quotaroot($this->getImapStream(), $quotaRoot);
     }
 
     /**

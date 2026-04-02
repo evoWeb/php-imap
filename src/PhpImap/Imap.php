@@ -178,8 +178,6 @@ final class Imap
 
     /**
      * @phpstan-param value-of<self::CLOSE_FLAGS> $flag
-     *
-     * @return true
      */
     public static function close(Connection $imapStream, int $flag = 0): bool
     {
@@ -286,13 +284,6 @@ final class Imap
         int|string $section,
         int $options = 0
     ): string {
-        if (!\is_string($section) && !\is_int($section)) {
-            throw new \InvalidArgumentException(
-                'Argument 3 passed to ' . __METHOD__ . '() must be a string or integer, '
-                . \gettype($section) . ' given!'
-            );
-        }
-
         self::flushImapErrors();
 
         $result = \imap_fetchbody(
@@ -497,8 +488,6 @@ final class Imap
 
         $result = \imap_mailboxmsginfo($imapStream);
 
-        // @phpstan-ignore identical.alwaysFalse (imap_mailboxmsginfo can return
-        // false per PHP docs, but PHPStan stub types it as stdClass only)
         self::assertResultNotFalse(
             $result,
             'Could not fetch mailboxmsginfo from mailbox!',
@@ -755,9 +744,6 @@ final class Imap
         self::assertResultNotFalse($result, 'Could not subscribe to mailbox!', 0, 'imap_subscribe');
     }
 
-    /**
-     * @phpstan-param value-of<self::TIMEOUT_TYPES> $timeoutType
-     */
     public static function timeout(int $timeoutType, int $timeout = -1): bool|int {
         self::flushImapErrors();
 
@@ -866,12 +852,6 @@ final class Imap
         int $argument,
         bool $allowSequence = false
     ): string {
-        if (!\is_int($msgNumber) && !\is_string($msgNumber)) {
-            throw new \InvalidArgumentException(
-                'Argument 1 passed to ' . __METHOD__ . '() must be an integer or a string!'
-            );
-        }
-
         $regex = '/^\d+:\d+$/';
         $suffix = '() did not appear to be a valid message id range!';
 

@@ -257,7 +257,7 @@ final class MailboxTest extends TestCase
     /**
      * Provides test data for testing path delimiter.
      *
-     * @return array<string, string[]>
+     * @return array<int|string, string[]>
      */
     public static function pathDelimiterProvider(): array
     {

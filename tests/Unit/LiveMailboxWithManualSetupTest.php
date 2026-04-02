@@ -35,7 +35,7 @@ class LiveMailboxWithManualSetupTest extends AbstractLiveMailboxTest
     }
 
     /**
-     * @phpstan-return Generator<int, MAILBOX_ARGS}, mixed, void>
+     * @phpstan-return Generator<int, MAILBOX_ARGS[], mixed, void>
      */
     public static function statusProviderAbsolutePath(): \Generator
     {
