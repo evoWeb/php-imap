@@ -25,8 +25,7 @@ class DataPartInfo
         public readonly string|int $part,
         public readonly mixed $encoding,
         public readonly int $options
-    ) {
-    }
+    ) {}
 
     public function fetch(): string
     {

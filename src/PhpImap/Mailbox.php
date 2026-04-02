@@ -631,7 +631,6 @@ class Mailbox
      * @phpstan-return list<int>
      * @throws ConnectionException
      * @see Mailbox::searchMailboxFromWithOrWithoutDisablingServerEncoding()
-     *
      */
     public function searchMailboxFrom(string $criteria, string $sender, string ...$senders): array
     {
@@ -1599,7 +1598,6 @@ class Mailbox
      * @return string Converted string if conversion was successful, or the original string if not
      *
      * @throws \Exception
-     *
      */
     public function decodeMimeStr(string $string): string
     {

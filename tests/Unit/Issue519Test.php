@@ -12,8 +12,8 @@ declare(strict_types=1);
 namespace PhpImap\Tests\Unit;
 
 use PhpImap\DataPartInfo;
-use PhpImap\Mailbox;
 use PhpImap\IncomingMail;
+use PhpImap\Mailbox;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

@@ -11,9 +11,9 @@ declare(strict_types=1);
 
 namespace PhpImap\Tests\Unit;
 
+use ParagonIE\HiddenString\HiddenString;
 use PhpImap\Exceptions\InvalidParameterException;
 use PhpImap\Mailbox;
-use ParagonIE\HiddenString\HiddenString;
 use Random\RandomException;
 
 /**
@@ -39,7 +39,7 @@ trait LiveMailboxTestingTrait
                 new HiddenString($imapPath),
                 new HiddenString($login),
                 new HiddenString($password, true, true),
-                \sys_get_temp_dir()
+                \sys_get_temp_dir(),
             ];
         }
 

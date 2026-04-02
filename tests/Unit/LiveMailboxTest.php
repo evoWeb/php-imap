@@ -165,7 +165,7 @@ class LiveMailboxTest extends AbstractLiveMailboxTest
                 'Content-Type: TEXT/PLAIN; CHARSET=US-ASCII',
                 '',
                 'test',
-                ''
+                '',
             ]),
         ];
 
@@ -194,7 +194,7 @@ class LiveMailboxTest extends AbstractLiveMailboxTest
                 'Content-Disposition: attachment; filename=.gitignore',
                 '',
                 $contentsData,
-                ''
+                '',
             ]),
         ];
 
@@ -222,7 +222,7 @@ class LiveMailboxTest extends AbstractLiveMailboxTest
                 'Content-Disposition: attachment; filename=gitignore.',
                 '',
                 $contentsData,
-                ''
+                '',
             ]),
         ];
 
@@ -284,7 +284,7 @@ class LiveMailboxTest extends AbstractLiveMailboxTest
                 '',
                 $randomAttachmentB,
                 '--{{REPLACE_BOUNDARY_HERE}}--',
-                ''
+                '',
             ]),
         ];
     }

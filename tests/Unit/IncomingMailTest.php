@@ -41,7 +41,7 @@ class IncomingMailTest extends TestCase
                 'date',
             ] as $property
         ) {
-            /** @var null|int|bool|string $headerPropertyValue */
+            /** @var int|bool|string|null $headerPropertyValue */
             $headerPropertyValue = $header->$property;
             self::assertSame($headerPropertyValue, $mail->$property);
         }

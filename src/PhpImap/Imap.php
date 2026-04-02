@@ -744,7 +744,8 @@ final class Imap
         self::assertResultNotFalse($result, 'Could not subscribe to mailbox!', 0, 'imap_subscribe');
     }
 
-    public static function timeout(int $timeoutType, int $timeout = -1): bool|int {
+    public static function timeout(int $timeoutType, int $timeout = -1): bool|int
+    {
         self::flushImapErrors();
 
         $result = \imap_timeout($timeoutType, $timeout);

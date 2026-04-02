@@ -49,7 +49,7 @@ class LiveMailboxIssue250Test extends AbstractLiveMailboxTest
                 'Content-Type: TEXT/PLAIN; CHARSET=US-ASCII',
                 '',
                 'test',
-                ''
+                '',
             ]),
         ];
     }

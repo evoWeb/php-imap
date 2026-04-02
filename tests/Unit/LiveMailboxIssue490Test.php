@@ -11,8 +11,8 @@ declare(strict_types=1);
 
 namespace PhpImap\Tests\Unit;
 
-use PhpImap\Imap;
 use ParagonIE\HiddenString\HiddenString;
+use PhpImap\Imap;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
