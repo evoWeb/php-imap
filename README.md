@@ -28,16 +28,16 @@ Initially released in December 2012, the PHP IMAP Mailbox is a powerful and open
 
 ### Requirements
 
-| PHP Version  | php-imap Version | php-imap status |
-| ------------- | ------------- | ------------- |
-| 5.6  | 3.x  | End of life |
-| 7.0  | 3.x  | End of life |
-| 7.1  | 3.x  | End of life |
-| 7.2  | 3.x, 4.x | End of life |
-| 7.3  | 3.x, 4.x | End of life |
-| 7.4  | >3.0.33, 4.x, 5.x | Active support |
-| 8.0  | >3.0.33, 4.x, 5.x | Active support |
-| 8.1  | >4.3.0, 5.x | Active support |
+| PHP Version | php-imap Version  | php-imap status |
+|-------------|-------------------|-----------------|
+| 5.6         | 3.x               | End of life     |
+| 7.0         | 3.x               | End of life     |
+| 7.1         | 3.x               | End of life     |
+| 7.2         | 3.x, 4.x          | End of life     |
+| 7.3         | 3.x, 4.x          | End of life     |
+| 7.4         | >3.0.33, 4.x, 5.x | Active support  |
+| 8.0         | >3.0.33, 4.x, 5.x | Active support  |
+| 8.1         | >4.3.0, 5.x       | Active support  |
 
 * PHP `fileinfo` extension must be present; so make sure this line is active in your php.ini: `extension=php_fileinfo.dll`
 * PHP `iconv` extension must be present; so make sure this line is active in your php.ini: `extension=php_iconv.dll`
@@ -51,21 +51,21 @@ Install the [latest available release](https://github.com/barbushin/php-imap/rel
 
 	$ composer require php-imap/php-imap
 
-Install the latest available and stable source code from `master`, which is may not released / tagged yet:
+Install the latest available and stable source code from `master`, which may not be released / tagged yet:
 
 	$ composer require php-imap/php-imap:dev-master
 
 ### Run Tests
 
-Before you can run the any tests you may need to run `composer install` to install all (development) dependencies.
+Before you can run any tests you may need to run `composer install` to install all (development) dependencies.
 
 #### Run all tests
 
-You can run all available tests by running the following command (inside of the installed `php-imap` directory): `composer run tests`
+You can run all available tests by running the following command (inside the installed `php-imap` directory): `composer run tests`
 
 #### Run only PHPUnit tests
 
-You can run all PHPUnit tests by running the following command (inside of the installed `php-imap` directory): `php vendor/bin/phpunit --testdox`
+You can run all PHPUnit tests by running the following command (inside the installed `php-imap` directory): `php vendor/bin/phpunit --testdox`
 
 ### Integration with frameworks
 
@@ -80,11 +80,11 @@ By default, this library uses random filenames for attachments as identical file
 ```php
 // Create PhpImap\Mailbox instance for all further actions
 $mailbox = new PhpImap\Mailbox(
-	'{imap.gmail.com:993/imap/ssl}INBOX', // IMAP server and mailbox folder
-	'some@gmail.com', // Username for the before configured mailbox
-	'*********', // Password for the before configured username
-	__DIR__, // Directory, where attachments will be saved (optional)
-	'UTF-8', // Server encoding (optional)
+    '{imap.gmail.com:993/imap/ssl}INBOX', // IMAP server and mailbox folder
+    'some@gmail.com', // Username for the before configured mailbox
+    '*********', // Password for the before configured username
+    __DIR__, // Directory, where attachments will be saved (optional)
+    'UTF-8', // Server encoding (optional)
     true, // Trim leading/ending whitespaces of IMAP path (optional)
     false // Attachment filename mode (optional; false = random filename; true = original filename)
 );
@@ -96,17 +96,17 @@ $mailbox->setConnectionArgs(
 );
 
 try {
-	// Get all emails (messages)
-	// PHP.net imap_search criteria: http://php.net/manual/en/function.imap-search.php
-	$mailsIds = $mailbox->searchMailbox('ALL');
+    // Get all emails (messages)
+    // PHP.net imap_search criteria: https://php.net/manual/en/function.imap-search.php
+    $mailsIds = $mailbox->searchMailbox('ALL');
 } catch(PhpImap\Exceptions\ConnectionException $ex) {
-	echo "IMAP connection failed: " . implode(",", $ex->getErrors('all'));
-	die();
+    echo "IMAP connection failed: " . implode(",", $ex->getErrors('all'));
+    die();
 }
 
 // If $mailsIds is empty, no emails could be found
 if(!$mailsIds) {
-	die('Mailbox is empty');
+    die('Mailbox is empty');
 }
 
 // Get the first message
@@ -117,15 +117,15 @@ $mail = $mailbox->getMail($mailsIds[0]);
 // Show, if $mail has one or more attachments
 echo "\nMail has attachments? ";
 if($mail->hasAttachments()) {
-	echo "Yes\n";
+    echo "Yes\n";
 } else {
-	echo "No\n";
+    echo "No\n";
 }
 
 // Print all information of $mail
 print_r($mail);
 
-// Print all attachements of $mail
+// Print all attachments of $mail
 echo "\n\nAttachments:\n";
 print_r($mail->getAttachments());
 ```
@@ -133,7 +133,7 @@ print_r($mail->getAttachments());
 Method `imap()` allows to call any [PHP IMAP function](https://www.php.net/manual/ref.imap.php) in a context of the instance. Example:
 
 ```php
-// Call imap_check() - see http://php.net/manual/function.imap-check.php
+// Call imap_check() - see https://php.net/manual/function.imap-check.php
 $info = $mailbox->imap('check');
 
 
@@ -152,23 +152,29 @@ $mailbox->setAttachmentsIgnore(true);
 // get the list of folders/mailboxes
 $folders = $mailbox->getMailboxes('*');
 
-// loop through mailboxs
+// loop through mailboxes
 foreach($folders as $folder) {
 
-	// switch to particular mailbox
-	$mailbox->switchMailbox($folder['fullpath']);
+    // switch to particular mailbox
+    $mailbox->switchMailbox($folder['fullpath']);
 
-	// search in particular mailbox
-	$mails_ids[$folder['fullpath']] = $mailbox->searchMailbox('SINCE "1 Jan 2018" BEFORE "28 Jan 2018"');
+    // search in particular mailbox
+    $mails_ids[$folder['fullpath']] = $mailbox->searchMailbox('SINCE "1 Jan 2018" BEFORE "28 Jan 2018"');
 }
 
 print_r($mails_ids);
 ```
 
+### Upgrading from below 6.x
+
+BREAKING: Before each method in Imap checked if it really got a connection handed. Now
+the functions are enforcing connection with typed arguments. You are still able to use
+Imap::EnsureConnection() yourself if you need to check your argument
+
 ### Upgrading from 3.x
 
 Prior to 3.1, `Mailbox` used a "magic" method (`Mailbox::imap()`), with the
-class `Imap` now performing it's purpose to call many `imap_*` functions with
+class `Imap` now performing its purpose to call many `imap_*` functions with
 automated string encoding/decoding of arguments and return values:
 
 Before:

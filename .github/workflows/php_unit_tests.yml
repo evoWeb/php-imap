@@ -5,6 +5,7 @@ on:
     branches:
       - master
   pull_request:
+    branches: [ develop ]
 
 jobs:
   phpunit:
@@ -29,14 +30,15 @@ jobs:
           --health-retries 10
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
           coverage: none
           extensions: imap
-
-      - uses: actions/checkout@v6
 
       - name: Validate composer.json and composer.lock
         run: composer validate
