@@ -69,6 +69,7 @@ phpunit: ##@ Run phpunit tests
 
 .PHONY: phpunit-coverage
 phpunit-coverage: ##@ Run phpunit tests with code coverage
+	ddev xdebug true
 	ddev composer run phpunit-coverage
 
 
