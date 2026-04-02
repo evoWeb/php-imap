@@ -9,19 +9,43 @@ declare(strict_types=1);
 namespace PhpImap;
 
 use IMAP\Connection;
+use ParagonIE\HiddenString\HiddenString;
 use PhpImap\Exceptions\ConnectionException;
 
 /**
- * @phpstan-type PARTSTRUCTURE_PARAM = object{attribute:string, value?:string}
+ * @phpstan-type MAILBOX_ARGS = array{
+ *      0: HiddenString,
+ *      1: HiddenString,
+ *      2: HiddenString,
+ *      3: string,
+ *      4?: string,
+ *      5?: array,
+ * }
+ * @phpstan-type COMPOSE_BODY = list<array{
+ *      id?: string,
+ *      type?: int,
+ *      encoding?: int,
+ *      charset?: string,
+ *      subtype?: string,
+ *      description?: string,
+ *      disposition?: array{filename: string, type?: string},
+ *      'disposition.type'?: string,
+ *      'type.parameters'?: array{name: string},
+ *      'contents.data'?: string,
+ * }>
+ * @phpstan-type COMPOSE_ENVELOPE = array{
+ *      subject: string
+ * }
+ * @phpstan-type PARTSTRUCTURE_PARAM = object{attribute: string, value?: string}
  * @phpstan-type PARTSTRUCTURE = object{
- *  id?:string,
- *  encoding:int|mixed,
- *  partStructure:object[],
- *  parameters:PARTSTRUCTURE_PARAM[],
- *  dparameters:object{attribute:string, value:string}[],
- *  parts:array<int, object{disposition?:string}>,
- *  type:int,
- *  subtype:string
+ *      id?: string,
+ *      encoding: int|mixed,
+ *      partStructure: object[],
+ *      parameters: PARTSTRUCTURE_PARAM[],
+ *      dparameters: object{attribute:string, value:string}[],
+ *      parts: array<int, object{disposition?:string}>,
+ *      type: int,
+ *      subtype: string
  * }
  */
 final class Imap
@@ -51,101 +75,93 @@ final class Imap
         \CL_EXPUNGE,
     ];
 
+    public static function flushImapErrors(): void
+    {
+        \imap_errors();
+    }
+
+    private static function assertResultNotFalse(
+        mixed $result,
+        string $message,
+        int $code,
+        string $function,
+        ?array $errors = null,
+    ): void {
+        if ($result === false) {
+            throw new \UnexpectedValueException(
+                $message,
+                $code,
+                self::HandleErrors($errors ?? \imap_errors(), $function)
+            );
+        }
+    }
+
     /**
-     * @param resource|false|Connection $imap_stream
-     *
      * @return true
      *
      * @see imap_append()
      */
     public static function append(
-        $imap_stream,
+        Connection $imapStream,
         string $mailbox,
         string $message,
         ?string $options = null,
-        ?string $internal_date = null
+        ?string $internalDate = null
     ): bool {
-        \imap_errors(); // flush errors
+        self::flushImapErrors();
 
-        $imap_stream = self::EnsureConnection($imap_stream, __METHOD__, 1);
-
-        if ($options !== null && $internal_date !== null) {
+        if ($options !== null && $internalDate !== null) {
             $result = \imap_append(
-                $imap_stream,
+                $imapStream,
                 $mailbox,
                 $message,
                 $options,
-                $internal_date
+                $internalDate
             );
         } elseif ($options !== null) {
-            $result = \imap_append($imap_stream, $mailbox, $message, $options);
+            $result = \imap_append($imapStream, $mailbox, $message, $options);
         } else {
-            $result = \imap_append($imap_stream, $mailbox, $message);
+            $result = \imap_append($imapStream, $mailbox, $message);
         }
 
-        if ($result === false) {
-            throw new \UnexpectedValueException('Could not append message to mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_append'));
-        }
+        self::assertResultNotFalse($result, 'Could not append message to mailbox!', 1, 'imap_append');
 
-        return $result;
+        return true;
     }
 
-    /**
-     * @param false|resource $imap_stream
-     */
-    public static function body(
-        $imap_stream,
-        int $msg_number,
-        int $options = 0
-    ): string {
-        \imap_errors(); // flush errors
-
-        $result = \imap_body(
-            self::EnsureConnection($imap_stream, __METHOD__, 1),
-            $msg_number,
-            $options
-        );
-
-        if ($result === false) {
-            throw new \UnexpectedValueException('Could not fetch message body from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_body'));
-        }
-
-        return $result;
-    }
-
-    /**
-     * @param false|resource|Connection $imap_stream
-     */
-    public static function check($imap_stream): \stdClass
+    public static function body(Connection $imapStream, int $msgNumber, int $options = 0): string
     {
-        \imap_errors(); // flush errors
+        self::flushImapErrors();
 
-        $result = \imap_check(self::EnsureConnection($imap_stream, __METHOD__, 1));
+        $result = \imap_body($imapStream, $msgNumber, $options);
 
-        if ($result === false) {
-            throw new \UnexpectedValueException('Could not check imap mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_check'));
-        }
+        self::assertResultNotFalse($result, 'Could not fetch message body from mailbox!', 0, 'imap_body');
 
         return $result;
     }
 
-    /**
-     * @param false|resource $imap_stream
-     * @param int|string $sequence
-     *
-     * @return true
-     */
+    public static function check(Connection $imapStream): \stdClass
+    {
+        self::flushImapErrors();
+
+        $result = \imap_check($imapStream);
+
+        self::assertResultNotFalse($result, 'Could not check imap mailbox!', 0, 'imap_check');
+
+        return $result;
+    }
+
     public static function clearflag_full(
-        $imap_stream,
-        $sequence,
+        Connection $imapStream,
+        int|string $sequence,
         string $flag,
         int $options = 0
     ): bool {
-        \imap_errors(); // flush errors
+        self::flushImapErrors();
 
         $result = \imap_clearflag_full(
-            self::EnsureConnection($imap_stream, __METHOD__, 1),
-            self::encodeStringToUtf7Imap(static::EnsureRange(
+            $imapStream,
+            self::encodeStringToUtf7Imap(self::EnsureRange(
                 $sequence,
                 __METHOD__,
                 2,
@@ -155,151 +171,95 @@ final class Imap
             $options
         );
 
-        if (!$result) {
-            throw new \UnexpectedValueException('Could not clear flag on messages!', 0, self::HandleErrors(\imap_errors(), 'imap_clearflag_full'));
-        }
+        self::assertResultNotFalse($result, 'Could not clear flag on messages!', 0, 'imap_clearflag_full');
 
         return $result;
     }
 
     /**
-     * @param false|resource $imap_stream
-     *
      * @phpstan-param value-of<self::CLOSE_FLAGS> $flag
      *
      * @return true
      */
-    public static function close($imap_stream, int $flag = 0): bool
+    public static function close(Connection $imapStream, int $flag = 0): bool
     {
-        \imap_errors(); // flush errors
+        self::flushImapErrors();
 
-        $result = \imap_close(self::EnsureConnection($imap_stream, __METHOD__, 1), $flag);
+        $result = \imap_close($imapStream, $flag);
 
+        $message = 'Could not close imap connection';
         if ($result === false) {
-            $message = 'Could not close imap connection';
-
             if (\CL_EXPUNGE === ($flag & \CL_EXPUNGE)) {
                 $message .= ', messages may not have been expunged';
             }
-
             $message .= '!';
-            throw new \UnexpectedValueException($message, 0, self::HandleErrors(\imap_errors(), 'imap_close'));
         }
+        self::assertResultNotFalse($result, $message, 0, 'imap_close');
 
         return $result;
     }
 
-    /**
-     * @param false|resource $imap_stream
-     *
-     * @return true
-     */
-    public static function createmailbox($imap_stream, string $mailbox): bool
+    public static function createmailbox(Connection $imapStream, string $mailbox): bool
     {
-        \imap_errors(); // flush errors
+        self::flushImapErrors();
 
-        $result = \imap_createmailbox(
-            self::EnsureConnection($imap_stream, __METHOD__, 1),
-            static::encodeStringToUtf7Imap($mailbox)
-        );
+        $result = \imap_createmailbox($imapStream, self::encodeStringToUtf7Imap($mailbox));
 
-        if ($result === false) {
-            throw new \UnexpectedValueException('Could not create mailbox!', 0, self::HandleErrors(\imap_errors(), 'createmailbox'));
-        }
+        self::assertResultNotFalse($result, 'Could not create mailbox!', 0, 'createmailbox');
 
         return $result;
     }
 
-    /**
-     * @param false|resource $imap_stream
-     * @param string|int $msg_number
-     *
-     * @return true
-     */
-    public static function delete(
-        $imap_stream,
-        $msg_number,
-        int $options = 0
-    ): bool {
-        $msg_number = self::encodeStringToUtf7Imap(self::EnsureRange(
-            $msg_number,
+    public static function delete(Connection $imapStream, string|int $msgNumber, int $options = 0): bool
+    {
+        $msgNumber = self::encodeStringToUtf7Imap(self::EnsureRange(
+            $msgNumber,
             __METHOD__,
             1
         ));
 
-        \imap_errors(); // flush errors
+        self::flushImapErrors();
 
-        $result = \imap_delete(
-            self::EnsureConnection($imap_stream, __METHOD__, 1),
-            $msg_number,
-            $options
-        );
+        $result = \imap_delete($imapStream, $msgNumber, $options);
 
-        if ($result === false) {
-            throw new \UnexpectedValueException('Could not delete message from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_delete'));
-        }
+        self::assertResultNotFalse($result, 'Could not delete message from mailbox!', 0, 'imap_delete');
 
         return $result;
     }
 
-    /**
-     * @param false|resource $imap_stream
-     *
-     * @return true
-     */
-    public static function deletemailbox($imap_stream, string $mailbox): bool
+    public static function deletemailbox(Connection $imapStream, string $mailbox): bool
     {
-        \imap_errors(); // flush errors
+        self::flushImapErrors();
 
-        $result = \imap_deletemailbox(
-            self::EnsureConnection($imap_stream, __METHOD__, 1),
-            static::encodeStringToUtf7Imap($mailbox)
-        );
+        $result = \imap_deletemailbox($imapStream, self::encodeStringToUtf7Imap($mailbox));
 
-        if ($result === false) {
-            throw new \UnexpectedValueException('Could not delete mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_deletemailbox'));
-        }
+        self::assertResultNotFalse($result, 'Could not delete mailbox!', 0, 'imap_deletemailbox');
 
         return $result;
     }
 
-    /**
-     * @param false|resource $imap_stream
-     *
-     * @return true
-     */
-    public static function expunge($imap_stream): bool
+    public static function expunge(Connection $imapStream): bool
     {
-        \imap_errors(); // flush errors
+        self::flushImapErrors();
 
-        $result = \imap_expunge(
-            self::EnsureConnection($imap_stream, __METHOD__, 1)
-        );
+        $result = \imap_expunge($imapStream);
 
-        if ($result === false) {
-            throw new \UnexpectedValueException('Could not expunge messages from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_expunge'));
-        }
+        self::assertResultNotFalse($result, 'Could not expunge messages from mailbox!', 0, 'imap_expunge');
 
         return $result;
     }
 
     /**
-     * @param false|resource $imap_stream
-     * @param int|string $sequence
-     *
      * @return object[]
      *
      * @phpstan-return list<object>
      */
-    public static function fetch_overview(
-        $imap_stream,
-        $sequence,
-        int $options = 0
-    ): array {
-        \imap_errors(); // flush errors
+    public static function fetch_overview(Connection $imapStream, int|string $sequence, int $options = 0): array
+    {
+        self::flushImapErrors();
 
         $result = \imap_fetch_overview(
-            self::EnsureConnection($imap_stream, __METHOD__, 1),
+            $imapStream,
             self::encodeStringToUtf7Imap(self::EnsureRange(
                 $sequence,
                 __METHOD__,
@@ -309,131 +269,92 @@ final class Imap
             $options
         );
 
-        if ($result === false) {
-            throw new \UnexpectedValueException('Could not fetch overview for message from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_fetch_overview'));
-        }
+        self::assertResultNotFalse(
+            $result,
+            'Could not fetch overview for message from mailbox!',
+            0,
+            'imap_fetch_overview'
+        );
 
         /** @phpstan-var list<object> $result */
         return $result;
     }
 
-    /**
-     * @param false|resource $imap_stream
-     * @param string|int $section
-     */
     public static function fetchbody(
-        $imap_stream,
-        int $msg_number,
-        $section,
+        Connection $imapStream,
+        int $msgNumber,
+        int|string $section,
         int $options = 0
     ): string {
         if (!\is_string($section) && !\is_int($section)) {
-            throw new \InvalidArgumentException('Argument 3 passed to ' . __METHOD__ . '() must be a string or integer, ' . \gettype($section) . ' given!');
+            throw new \InvalidArgumentException(
+                'Argument 3 passed to ' . __METHOD__ . '() must be a string or integer, '
+                . \gettype($section) . ' given!'
+            );
         }
 
-        \imap_errors(); // flush errors
+        self::flushImapErrors();
 
         $result = \imap_fetchbody(
-            self::EnsureConnection($imap_stream, __METHOD__, 1),
-            $msg_number,
+            $imapStream,
+            $msgNumber,
             self::encodeStringToUtf7Imap((string)$section),
             $options
         );
 
-        if ($result === false) {
-            throw new \UnexpectedValueException('Could not fetch message body from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_fetchbody'));
-        }
+        self::assertResultNotFalse($result, 'Could not fetch message body from mailbox!', 0, 'imap_fetchbody');
 
         return $result;
     }
 
-    /**
-     * @param false|resource $imap_stream
-     */
-    public static function fetchheader(
-        $imap_stream,
-        int $msg_number,
-        int $options = 0
-    ): string {
-        \imap_errors(); // flush errors
+    public static function fetchheader(Connection $imapStream, int $msgNumber, int $options = 0): string
+    {
+        self::flushImapErrors();
 
-        $result = \imap_fetchheader(
-            self::EnsureConnection($imap_stream, __METHOD__, 1),
-            $msg_number,
-            $options
+        $result = \imap_fetchheader($imapStream, $msgNumber, $options);
+
+        self::assertResultNotFalse($result, 'Could not fetch message header from mailbox!', 0, 'imap_fetchheader');
+
+        return $result;
+    }
+
+    public static function fetchstructure(Connection $imapStream, int $msgNumber, int $options = 0): \stdClass
+    {
+        self::flushImapErrors();
+
+        $result = \imap_fetchstructure($imapStream, $msgNumber, $options);
+
+        self::assertResultNotFalse(
+            $result,
+            'Could not fetch message structure from mailbox!',
+            0,
+            'imap_fetchstructure'
         );
 
-        if ($result === false) {
-            throw new \UnexpectedValueException('Could not fetch message header from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_fetchheader'));
-        }
+        return $result;
+    }
+
+    public static function get_quotaroot(Connection $imapStream, string $quotaRoot): array
+    {
+        self::flushImapErrors();
+
+        $result = \imap_get_quotaroot($imapStream, self::encodeStringToUtf7Imap($quotaRoot));
+
+        self::assertResultNotFalse($result, 'Could not quota for mailbox!', 0, 'imap_get_quotaroot');
 
         return $result;
     }
 
     /**
-     * @param false|resource|Connection $imap_stream
-     */
-    public static function fetchstructure(
-        $imap_stream,
-        int $msg_number,
-        int $options = 0
-    ): \stdClass {
-        \imap_errors(); // flush errors
-
-        $result = \imap_fetchstructure(
-            self::EnsureConnection($imap_stream, __METHOD__, 1),
-            $msg_number,
-            $options
-        );
-
-        if ($result === false) {
-            throw new \UnexpectedValueException('Could not fetch message structure from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_fetchstructure'));
-        }
-
-        return $result;
-    }
-
-    /**
-     * @param false|resource $imap_stream
-     */
-    public static function get_quotaroot(
-        $imap_stream,
-        string $quota_root
-    ): array {
-        \imap_errors(); // flush errors
-
-        $result = \imap_get_quotaroot(
-            self::EnsureConnection($imap_stream, __METHOD__, 1),
-            self::encodeStringToUtf7Imap($quota_root)
-        );
-
-        if ($result === false) {
-            throw new \UnexpectedValueException('Could not quota for mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_get_quotaroot'));
-        }
-
-        return $result;
-    }
-
-    /**
-     * @param resource|false $imap_stream
-     *
      * @return object[]
-     *
-     * @phpstan-return list<object>
      */
-    public static function getmailboxes(
-        $imap_stream,
-        string $ref,
-        string $pattern
-    ): array {
-        \imap_errors(); // flush errors
+    public static function getmailboxes(Connection $imapStream, string $ref, string $pattern): array
+    {
+        self::flushImapErrors();
 
-        $result = \imap_getmailboxes(
-            self::EnsureConnection($imap_stream, __METHOD__, 1),
-            $ref,
-            $pattern
-        );
+        $result = \imap_getmailboxes($imapStream, $ref, $pattern);
 
+        $errors = null;
         if ($result === false) {
             $errors = \imap_errors();
 
@@ -444,215 +365,169 @@ final class Imap
                 */
                 return [];
             }
-
-            throw new \UnexpectedValueException('Call to imap_getmailboxes() with supplied arguments returned false, not array!', 0, self::HandleErrors(\imap_errors(), 'imap_getmailboxes'));
         }
+        self::assertResultNotFalse(
+            $result,
+            'Call to imap_getmailboxes() with supplied arguments returned false, not array!',
+            0,
+            'imap_getmailboxes',
+            $errors
+        );
 
         /** @phpstan-var list<object> */
         return $result;
     }
 
     /**
-     * @param resource|false $imap_stream
-     *
      * @return object[]
-     *
-     * @phpstan-return list<object>
      */
-    public static function getsubscribed(
-        $imap_stream,
-        string $ref,
-        string $pattern
-    ): array {
-        \imap_errors(); // flush errors
+    public static function getsubscribed(Connection $imapStream, string $ref, string $pattern): array
+    {
+        self::flushImapErrors();
 
-        $result = \imap_getsubscribed(
-            self::EnsureConnection($imap_stream, __METHOD__, 1),
-            $ref,
-            $pattern
+        $result = \imap_getsubscribed($imapStream, $ref, $pattern);
+
+        self::assertResultNotFalse(
+            $result,
+            'Call to imap_getsubscribed() with supplied arguments returned false, not array!',
+            0,
+            'imap_getsubscribed'
         );
-
-        if ($result === false) {
-            throw new \UnexpectedValueException('Call to imap_getsubscribed() with supplied arguments returned false, not array!', 0, self::HandleErrors(\imap_errors(), 'imap_getsubscribed'));
-        }
 
         /** @phpstan-var list<object> */
         return $result;
     }
 
-    /**
-     * @param false|resource $imap_stream
-     */
-    public static function headers($imap_stream): array
+    public static function headers(Connection $imapStream): array
     {
-        \imap_errors(); // flush errors
+        self::flushImapErrors();
 
-        $result = \imap_headers(
-            self::EnsureConnection($imap_stream, __METHOD__, 1)
-        );
+        $result = \imap_headers($imapStream);
 
-        if ($result === false) {
-            throw new \UnexpectedValueException('Could not fetch headers from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_headers'));
-        }
+        self::assertResultNotFalse($result, 'Could not fetch headers from mailbox!', 0, 'imap_headers');
 
         return $result;
     }
 
     /**
-     * @param false|resource $imap_stream
-     *
      * @return string[]
-     *
-     * @phpstan-return list<string>
      */
-    public static function listOfMailboxes($imap_stream, string $ref, string $pattern): array
+    public static function listOfMailboxes(Connection $imapStream, string $ref, string $pattern): array
     {
-        \imap_errors(); // flush errors
+        self::flushImapErrors();
 
         $result = \imap_list(
-            self::EnsureConnection($imap_stream, __METHOD__, 1),
-            static::encodeStringToUtf7Imap($ref),
-            static::encodeStringToUtf7Imap($pattern)
+            $imapStream,
+            self::encodeStringToUtf7Imap($ref),
+            self::encodeStringToUtf7Imap($pattern)
         );
 
-        if ($result === false) {
-            throw new \UnexpectedValueException('Could not list folders mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_list'));
-        }
+        self::assertResultNotFalse($result, 'Could not list folders mailbox!', 0, 'imap_list');
 
         return \array_values(\array_map(
             static function (string $folder): string {
-                return static::decodeStringFromUtf7ImapToUtf8($folder);
+                return self::decodeStringFromUtf7ImapToUtf8($folder);
             },
             $result
         ));
     }
 
     /**
-     * @param mixed[] $envelope An associative array of headers fields
-     * @param mixed[] $body An indexed array of bodies
-     *
-     * @phpstan-param array{
-     *    subject?:string
-     * } $envelope An associative array of headers fields (docblock is not complete)
-     * @phpstan-param list<array{
-     *    type?:int,
-     *    encoding?:int,
-     *    charset?:string,
-     *    subtype?:string,
-     *    description?:string,
-     *    disposition?:array{filename:string}
-     * }> $body An indexed array of bodies (docblock is not complete)
+     * @phpstan-param COMPOSE_ENVELOPE $envelope An associative array of headers fields (docblock is not complete)
+     * @phpstan-param COMPOSE_BODY $body An indexed array of bodies (docblock is not complete)
      */
     public static function mail_compose(array $envelope, array $body): string
     {
         return \imap_mail_compose($envelope, $body);
     }
 
-    /**
-     * @param false|resource $imap_stream
-     * @param int|string $msglist
-     *
-     * @return true
-     */
     public static function mail_copy(
-        $imap_stream,
-        $msglist,
+        Connection $imapStream,
+        int|string $msglist,
         string $mailbox,
         int $options = 0
     ): bool {
-        \imap_errors(); // flush errors
+        self::flushImapErrors();
 
         $result = \imap_mail_copy(
-            self::EnsureConnection($imap_stream, __METHOD__, 1),
-            static::encodeStringToUtf7Imap(self::EnsureRange(
+            $imapStream,
+            self::encodeStringToUtf7Imap(self::EnsureRange(
                 $msglist,
                 __METHOD__,
                 2,
                 true
             )),
-            static::encodeStringToUtf7Imap($mailbox),
+            self::encodeStringToUtf7Imap($mailbox),
             $options
         );
 
-        if ($result === false) {
-            throw new \UnexpectedValueException('Could not copy messages!', 0, self::HandleErrors(\imap_errors(), 'imap_mail_copy'));
-        }
+        self::assertResultNotFalse($result, 'Could not copy messages!', 0, 'imap_mail_copy');
 
         return $result;
     }
 
-    /**
-     * @param false|resource $imap_stream
-     * @param int|string $msglist
-     *
-     * @return true
-     */
     public static function mail_move(
-        $imap_stream,
-        $msglist,
+        Connection $imapStream,
+        int|string $msglist,
         string $mailbox,
         int $options = 0
     ): bool {
-        \imap_errors(); // flush errors
+        self::flushImapErrors();
 
         $result = \imap_mail_move(
-            self::EnsureConnection($imap_stream, __METHOD__, 1),
-            static::encodeStringToUtf7Imap(self::EnsureRange(
+            $imapStream,
+            self::encodeStringToUtf7Imap(self::EnsureRange(
                 $msglist,
                 __METHOD__,
                 2,
                 true
             )),
-            static::encodeStringToUtf7Imap($mailbox),
+            self::encodeStringToUtf7Imap($mailbox),
             $options
         );
 
-        if ($result === false) {
-            throw new \UnexpectedValueException('Could not move messages!', 0, self::HandleErrors(\imap_errors(), 'imap_mail_move'));
-        }
+        self::assertResultNotFalse($result, 'Could not move messages!', 0, 'imap_mail_move');
 
         return $result;
     }
 
-    /**
-     * @param false|resource|Connection $imap_stream
-     */
-    public static function mailboxmsginfo($imap_stream): \stdClass
+    public static function mailboxmsginfo(Connection $imapStream): \stdClass
     {
-        \imap_errors(); // flush errors
+        self::flushImapErrors();
 
-        $result = \imap_mailboxmsginfo(
-            self::EnsureConnection($imap_stream, __METHOD__, 1)
+        $result = \imap_mailboxmsginfo($imapStream);
+
+        // @phpstan-ignore identical.alwaysFalse (imap_mailboxmsginfo can return
+        // false per PHP docs, but PHPStan stub types it as stdClass only)
+        self::assertResultNotFalse(
+            $result,
+            'Could not fetch mailboxmsginfo from mailbox!',
+            0,
+            'imap_mailboxmsginfo'
         );
 
-        // @phpstan-ignore identical.alwaysFalse (imap_mailboxmsginfo can return false per PHP docs, but PHPStan stub types it as stdClass only)
-        if ($result === false) {
-            throw new \UnexpectedValueException('Could not fetch mailboxmsginfo from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_mailboxmsginfo'));
-        }
-
         return $result;
     }
 
-    /**
-     * @param false|resource $imap_stream
-     */
-    public static function num_msg($imap_stream): int
+    public static function num_msg(Connection $imapStream): int
     {
-        \imap_errors(); // flush errors
+        self::flushImapErrors();
 
-        $result = \imap_num_msg(self::EnsureConnection($imap_stream, __METHOD__, 1));
+        $result = \imap_num_msg($imapStream);
 
-        if ($result === false) {
-            throw new \UnexpectedValueException('Could not get the number of messages in the mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_num_msg'));
-        }
+        self::assertResultNotFalse(
+            $result,
+            'Could not get the number of messages in the mailbox!',
+            0,
+            'imap_num_msg'
+        );
 
         return $result;
     }
 
     /**
-     * @phpstan-param array{DISABLE_AUTHENTICATOR:string}|array<empty, empty> $params
-     *
-     * @return Connection
+     * @phpstan-param array{DISABLE_AUTHENTICATOR: string}|array<empty, empty> $params
+     * @throws ConnectionException
      */
     public static function open(
         string $mailbox,
@@ -661,16 +536,16 @@ final class Imap
         int $options = 0,
         int $n_retries = 0,
         array $params = []
-    ) {
+    ): Connection {
         if (\preg_match("/^\{.*}(.*)$/", $mailbox, $matches)) {
             $mailbox_name = $matches[1];
 
             if (!\mb_detect_encoding($mailbox_name, 'ASCII', true)) {
-                $mailbox = static::encodeStringToUtf7Imap($mailbox);
+                $mailbox = self::encodeStringToUtf7Imap($mailbox);
             }
         }
 
-        \imap_errors(); // flush errors
+        self::flushImapErrors();
 
         $result = @\imap_open($mailbox, $username, $password, $options, $n_retries, $params);
 
@@ -681,127 +556,92 @@ final class Imap
         return $result;
     }
 
-    /**
-     * @param resource|false|Connection $imap_stream
-     */
-    public static function ping($imap_stream): bool
+    public static function ping(Connection $imapStream): bool
     {
-        return (\is_resource($imap_stream) || $imap_stream instanceof Connection) && \imap_ping($imap_stream);
+        return \imap_ping($imapStream);
     }
 
-    /**
-     * @param false|resource $imap_stream
-     *
-     * @return true
-     */
-    public static function renamemailbox(
-        $imap_stream,
-        string $old_mbox,
-        string $new_mbox
-    ): bool {
-        $imap_stream = self::EnsureConnection($imap_stream, __METHOD__, 1);
+    public static function renamemailbox(Connection $imapStream, string $oldMailbox, string $newMailbox): bool
+    {
+        $oldMailbox = self::encodeStringToUtf7Imap($oldMailbox);
+        $newMailbox = self::encodeStringToUtf7Imap($newMailbox);
 
-        $old_mbox = static::encodeStringToUtf7Imap($old_mbox);
-        $new_mbox = static::encodeStringToUtf7Imap($new_mbox);
+        self::flushImapErrors();
 
-        \imap_errors(); // flush errors
+        $result = \imap_renamemailbox($imapStream, $oldMailbox, $newMailbox);
 
-        $result = \imap_renamemailbox($imap_stream, $old_mbox, $new_mbox);
-
-        if (!$result) {
-            throw new \UnexpectedValueException('Could not rename mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_renamemailbox'));
-        }
+        self::assertResultNotFalse($result, 'Could not rename mailbox!', 0, 'imap_renamemailbox');
 
         return $result;
     }
 
-    /**
-     * @param false|resource $imap_stream
-     *
-     * @return true
-     */
     public static function reopen(
-        $imap_stream,
+        Connection $imapStream,
         string $mailbox,
         int $options = 0,
-        int $n_retries = 0
+        int $retries = 0
     ): bool {
-        $imap_stream = self::EnsureConnection($imap_stream, __METHOD__, 1);
+        $mailbox = self::encodeStringToUtf7Imap($mailbox);
 
-        $mailbox = static::encodeStringToUtf7Imap($mailbox);
+        self::flushImapErrors();
 
-        \imap_errors(); // flush errors
+        $result = \imap_reopen($imapStream, $mailbox, $options, $retries);
 
-        $result = \imap_reopen($imap_stream, $mailbox, $options, $n_retries);
-
-        if (!$result) {
-            throw new \UnexpectedValueException('Could not reopen mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_reopen'));
-        }
+        self::assertResultNotFalse($result, 'Could not reopen mailbox!', 0, 'imap_reopen');
 
         return $result;
     }
 
     /**
-     * @param false|resource $imap_stream
      * @param string|false|resource $file
-     *
-     * @return true
      */
     public static function savebody(
-        $imap_stream,
-        $file,
-        int $msg_number,
-        string $part_number = '',
+        Connection $imapStream,
+        mixed $file,
+        int $msgNumber,
+        string $partNumber = '',
         int $options = 0
     ): bool {
-        $imap_stream = self::EnsureConnection($imap_stream, __METHOD__, 1);
         $file = \is_string($file) ? $file : self::EnsureResource($file, __METHOD__, 2);
-        $part_number = self::encodeStringToUtf7Imap($part_number);
+        $partNumber = self::encodeStringToUtf7Imap($partNumber);
 
-        \imap_errors(); // flush errors
+        self::flushImapErrors();
 
-        $result = \imap_savebody($imap_stream, $file, $msg_number, $part_number, $options);
+        $result = \imap_savebody($imapStream, $file, $msgNumber, $partNumber, $options);
 
-        if (!$result) {
-            throw new \UnexpectedValueException('Could not reopen mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_savebody'));
-        }
+        self::assertResultNotFalse($result, 'Could not reopen mailbox!', 0, 'imap_savebody');
 
-        return $result;
+        return true;
     }
 
     /**
-     * @param false|resource $imap_stream
-     *
      * @return int[]
-     *
-     * @phpstan-return list<int>
      */
     public static function search(
-        $imap_stream,
+        Connection $imapStream,
         string $criteria,
         int $options = \SE_FREE,
         ?string $charset = null,
         bool $encodeCriteriaAsUtf7Imap = false
     ): array {
-        \imap_errors(); // flush errors
-
-        $imap_stream = static::EnsureConnection($imap_stream, __METHOD__, 1);
+        self::flushImapErrors();
 
         if ($encodeCriteriaAsUtf7Imap) {
-            $criteria = static::encodeStringToUtf7Imap($criteria);
+            $criteria = self::encodeStringToUtf7Imap($criteria);
         }
 
         if (\is_string($charset)) {
             $result = \imap_search(
-                $imap_stream,
+                $imapStream,
                 $criteria,
                 $options,
-                static::encodeStringToUtf7Imap($charset)
+                self::encodeStringToUtf7Imap($charset)
             );
         } else {
-            $result = \imap_search($imap_stream, $criteria, $options);
+            $result = \imap_search($imapStream, $criteria, $options);
         }
 
+        $errors = null;
         if (!$result) {
             $errors = \imap_errors();
 
@@ -812,31 +652,24 @@ final class Imap
                 */
                 return [];
             }
-
-            throw new \UnexpectedValueException('Could not search mailbox!', 0, self::HandleErrors($errors, 'imap_search'));
         }
+        self::assertResultNotFalse($result, 'Could not search mailbox!', 0, 'imap_search', $errors);
 
         /** @phpstan-var list<int> */
         return $result;
     }
 
-    /**
-     * @param false|resource $imap_stream
-     * @param int|string $sequence
-     *
-     * @return true
-     */
     public static function setflag_full(
-        $imap_stream,
-        $sequence,
+        Connection $imapStream,
+        int|string $sequence,
         string $flag,
         int $options = 0
     ): bool {
-        \imap_errors(); // flush errors
+        self::flushImapErrors();
 
         $result = \imap_setflag_full(
-            self::EnsureConnection($imap_stream, __METHOD__, 1),
-            self::encodeStringToUtf7Imap(static::EnsureRange(
+            $imapStream,
+            self::encodeStringToUtf7Imap(self::EnsureRange(
                 $sequence,
                 __METHOD__,
                 2,
@@ -846,144 +679,104 @@ final class Imap
             $options
         );
 
-        if (!$result) {
-            throw new \UnexpectedValueException('Could not set flag on messages!', 0, self::HandleErrors(\imap_errors(), 'imap_setflag_full'));
-        }
+        self::assertResultNotFalse($result, 'Could not set flag on messages!', 0, 'imap_setflag_full');
 
         return $result;
     }
 
     /**
-     * @param false|resource|Connection $imap_stream
-     *
      * @phpstan-param value-of<self::SORT_CRITERIA> $criteria
      *
      * @return int[]
-     *
-     * @phpstan-return list<int>
      */
     public static function sort(
-        $imap_stream,
+        Connection $imapStream,
         int $criteria,
         bool $reverse,
         int $options,
-        ?string $search_criteria = null,
+        ?string $searchCriteria = null,
         ?string $charset = null
     ): array {
-        \imap_errors(); // flush errors
+        self::flushImapErrors();
 
-        $imap_stream = self::EnsureConnection($imap_stream, __METHOD__, 1);
-
-        if ($search_criteria !== null && $charset !== null) {
+        if ($searchCriteria !== null && $charset !== null) {
             $result = \imap_sort(
-                $imap_stream,
+                $imapStream,
                 $criteria,
                 $reverse,
                 $options,
-                self::encodeStringToUtf7Imap($search_criteria),
+                self::encodeStringToUtf7Imap($searchCriteria),
                 self::encodeStringToUtf7Imap($charset)
             );
-        } elseif ($search_criteria !== null) {
+        } elseif ($searchCriteria !== null) {
             $result = \imap_sort(
-                $imap_stream,
+                $imapStream,
                 $criteria,
                 $reverse,
                 $options,
-                self::encodeStringToUtf7Imap($search_criteria)
+                self::encodeStringToUtf7Imap($searchCriteria)
             );
         } else {
             $result = \imap_sort(
-                $imap_stream,
+                $imapStream,
                 $criteria,
                 $reverse,
                 $options
             );
         }
 
-        if ($result === false) {
-            throw new \UnexpectedValueException('Could not sort messages!', 0, self::HandleErrors(\imap_errors(), 'imap_sort'));
-        }
+        self::assertResultNotFalse($result, 'Could not sort messages!', 0, 'imap_sort');
 
         /** @phpstan-var list<int> */
         return $result;
     }
 
-    /**
-     * @param false|resource|Connection $imap_stream
-     */
-    public static function status($imap_stream, string $mailbox, int $options): \stdClass
+    public static function status(Connection $imapStream, string $mailbox, int $options): \stdClass
     {
-        $imap_stream = self::EnsureConnection($imap_stream, __METHOD__, 1);
+        $mailbox = self::encodeStringToUtf7Imap($mailbox);
 
-        $mailbox = static::encodeStringToUtf7Imap($mailbox);
+        self::flushImapErrors();
 
-        \imap_errors(); // flush errors
+        $result = \imap_status($imapStream, $mailbox, $options);
 
-        $result = \imap_status($imap_stream, $mailbox, $options);
-
-        if (!$result) {
-            throw new \UnexpectedValueException('Could not get status of mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_status'));
-        }
+        self::assertResultNotFalse($result, 'Could not get status of mailbox!', 0, 'imap_status');
 
         return $result;
     }
 
-    /**
-     * @param false|resource $imap_stream
-     */
-    public static function subscribe($imap_stream, string $mailbox): void
+    public static function subscribe(Connection $imapStream, string $mailbox): void
     {
-        $imap_stream = self::EnsureConnection($imap_stream, __METHOD__, 1);
+        $mailbox = self::encodeStringToUtf7Imap($mailbox);
 
-        $mailbox = static::encodeStringToUtf7Imap($mailbox);
+        self::flushImapErrors();
 
-        \imap_errors(); // flush errors
+        $result = \imap_subscribe($imapStream, $mailbox);
 
-        $result = \imap_subscribe($imap_stream, $mailbox);
-
-        if ($result === false) {
-            throw new \UnexpectedValueException('Could not subscribe to mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_subscribe'));
-        }
+        self::assertResultNotFalse($result, 'Could not subscribe to mailbox!', 0, 'imap_subscribe');
     }
 
     /**
-     * @phpstan-param value-of<self::TIMEOUT_TYPES> $timeout_type
-     *
-     * @return true|int
+     * @phpstan-param value-of<self::TIMEOUT_TYPES> $timeoutType
      */
-    public static function timeout(int $timeout_type, int $timeout = -1) {
-        \imap_errors(); // flush errors
+    public static function timeout(int $timeoutType, int $timeout = -1): bool|int {
+        self::flushImapErrors();
 
-        $result = \imap_timeout(
-            $timeout_type,
-            $timeout
-        );
+        $result = \imap_timeout($timeoutType, $timeout);
 
-        if ($result === false) {
-            throw new \UnexpectedValueException('Could not get/set connection timeout!', 0, self::HandleErrors(\imap_errors(), 'imap_timeout'));
-        }
+        self::assertResultNotFalse($result, 'Could not get/set connection timeout!', 0, 'imap_timeout');
 
         return $result;
     }
 
-    /**
-     * @param false|resource $imap_stream
-     */
-    public static function unsubscribe(
-        $imap_stream,
-        string $mailbox
-    ): void {
-        $imap_stream = self::EnsureConnection($imap_stream, __METHOD__, 1);
+    public static function unsubscribe(Connection $imapStream, string $mailbox): void
+    {
+        $mailbox = self::encodeStringToUtf7Imap($mailbox);
 
-        $mailbox = static::encodeStringToUtf7Imap($mailbox);
+        self::flushImapErrors();
 
-        \imap_errors(); // flush errors
+        $result = \imap_unsubscribe($imapStream, $mailbox);
 
-        $result = \imap_unsubscribe($imap_stream, $mailbox);
-
-        if ($result === false) {
-            throw new \UnexpectedValueException('Could not unsubscribe from mailbox!', 0, self::HandleErrors(\imap_errors(), 'imap_unsubscribe'));
-        }
+        self::assertResultNotFalse($result, 'Could not unsubscribe from mailbox!', 0, 'imap_unsubscribe');
     }
 
     /**
@@ -995,9 +788,12 @@ final class Imap
     {
         $out = \mb_convert_encoding($str, 'UTF7-IMAP', 'UTF-8');
 
-        if (!\is_string($out)) {
-            throw new \UnexpectedValueException('mb_convert_encoding($str, \'UTF-8\', {detected}) could not convert $str');
-        }
+        self::assertResultNotFalse(
+            \is_string($out),
+            'mb_convert_encoding($str, \'UTF-8\', {detected}) could not convert $str',
+            0,
+            'mb_convert_encoding'
+        );
 
         return $out;
     }
@@ -1011,9 +807,12 @@ final class Imap
     {
         $out = \mb_convert_encoding($str, 'UTF-8', 'UTF7-IMAP');
 
-        if (!\is_string($out)) {
-            throw new \UnexpectedValueException('mb_convert_encoding($str, \'UTF-8\', \'UTF7-IMAP\') could not convert $str');
-        }
+        self::assertResultNotFalse(
+            \is_string($out),
+            'mb_convert_encoding($str, \'UTF-8\', \'UTF7-IMAP\') could not convert $str',
+            0,
+            'mb_convert_encoding'
+        );
 
         return $out;
     }
@@ -1021,74 +820,77 @@ final class Imap
     /**
      * @param false|resource|Connection $maybe
      *
-     * @return Connection
      * @throws \InvalidArgumentException if $maybe is not a valid resource
      *
+     * @return resource
      */
-    private static function EnsureResource($maybe, string $method, int $argument)
+    private static function EnsureResource(mixed $maybe, string $method, int $argument)
     {
-        if (!$maybe || (!\is_resource($maybe) && !$maybe instanceof Connection)) {
-            throw new \InvalidArgumentException('Argument ' . (string)$argument . ' passed to ' . $method . ' must be a valid resource!');
-        }
+        self::assertResultNotFalse(
+            (!$maybe || !\is_resource($maybe)),
+            'Argument ' . $argument . ' passed to ' . $method . ' must be a valid resource!',
+            0,
+            'is_resource'
+        );
         return $maybe;
     }
 
     /**
-     * @param false|resource|Connection $maybe
-     *
-     * @return Connection
-     * @throws Exceptions\ConnectionException if $maybe is not a valid resource
-     *
+     * @throws ConnectionException if $maybe is not a valid resource
      */
-    private static function EnsureConnection($maybe, string $method, int $argument)
+    public static function EnsureConnection(mixed $maybe, string $method, int $argument): Connection
     {
-        try {
-            return self::EnsureResource($maybe, $method, $argument);
-        } catch (\Throwable $e) {
-            throw new Exceptions\ConnectionException(['Argument ' . (string)$argument . ' passed to ' . $method . ' must be valid resource!'], 0, $e);
+        if (!$maybe instanceof Connection) {
+            throw new ConnectionException(
+                ['Argument ' . $argument . ' passed to ' . $method . ' must be valid resource!'],
+                0,
+            );
         }
+        return $maybe;
     }
 
-    /**
-     * @param array|false $errors
-     */
-    private static function HandleErrors($errors, string $method): \UnexpectedValueException
+    private static function HandleErrors(array|false $errors, string $method): \UnexpectedValueException
     {
         if ($errors) {
-            return new \UnexpectedValueException('IMAP method ' . $method . '() failed with error: ' . \implode('. ', $errors));
+            return new \UnexpectedValueException(
+                'IMAP method ' . $method . '() failed with error: ' . \implode('. ', $errors)
+            );
         }
 
         return new \UnexpectedValueException('IMAP method ' . $method . '() failed!');
     }
 
-    /**
-     * @param scalar $msg_number
-     */
     private static function EnsureRange(
-        $msg_number,
+        int|string $msgNumber,
         string $method,
         int $argument,
-        bool $allow_sequence = false
+        bool $allowSequence = false
     ): string {
-        if (!\is_int($msg_number) && !\is_string($msg_number)) {
-            throw new \InvalidArgumentException('Argument 1 passed to ' . __METHOD__ . '() must be an integer or a string!');
+        if (!\is_int($msgNumber) && !\is_string($msgNumber)) {
+            throw new \InvalidArgumentException(
+                'Argument 1 passed to ' . __METHOD__ . '() must be an integer or a string!'
+            );
         }
 
         $regex = '/^\d+:\d+$/';
         $suffix = '() did not appear to be a valid message id range!';
 
-        if ($allow_sequence) {
+        if ($allowSequence) {
             $regex = '/^\d+(?:(?:,\d+)+|:(\d+|\*))$/';
             $suffix = '() did not appear to be a valid message id range or sequence!';
         }
 
-        if (\is_int($msg_number) || \preg_match('/^\d+$/', $msg_number)) {
-            return \sprintf('%1$s:%1$s', $msg_number);
-        }
-        if (\preg_match($regex, $msg_number) !== 1) {
-            throw new \InvalidArgumentException('Argument ' . (string)$argument . ' passed to ' . $method . $suffix);
+        if (\is_int($msgNumber) || \preg_match('/^\d+$/', $msgNumber)) {
+            return \sprintf('%1$s:%1$s', $msgNumber);
         }
 
-        return $msg_number;
+        self::assertResultNotFalse(
+            \preg_match($regex, $msgNumber) !== 1,
+            'Argument ' . $argument . ' passed to ' . $method . $suffix,
+            0,
+            'preg_match'
+        );
+
+        return $msgNumber;
     }
 }
