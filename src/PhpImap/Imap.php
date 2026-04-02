@@ -186,7 +186,7 @@ final class Imap
         $result = \imap_close($imapStream, $flag);
 
         $message = 'Could not close imap connection';
-        if ($result === false) {
+        if (!$result) {
             if (\CL_EXPUNGE === ($flag & \CL_EXPUNGE)) {
                 $message .= ', messages may not have been expunged';
             }
