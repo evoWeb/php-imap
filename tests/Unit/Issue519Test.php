@@ -118,11 +118,11 @@ class Issue519Test extends TestCase
     {
         $mailbox = new Mailbox('', '', '');
         $mail = new IncomingMail();
-        $attachment = new Fixtures\IncomingMailAttachment();
+        $attachment = new \PhpImap\Tests\Fixtures\IncomingMailAttachment();
 
-        $part = new Fixtures\DataPartInfo($mailbox, 0, 0, \ENCBASE64, 0);
+        $part = new \PhpImap\Tests\Fixtures\DataPartInfo($mailbox, 0, 0, \ENCBASE64, 0);
 
-        $html = new Fixtures\DataPartInfo($mailbox, 0, 0, \ENC8BIT, 0);
+        $html = new \PhpImap\Tests\Fixtures\DataPartInfo($mailbox, 0, 0, \ENC8BIT, 0);
 
         $html_string = '<img src="' . self::CID . '" alt="">';
 

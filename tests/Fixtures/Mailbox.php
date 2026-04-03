@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpImap\Tests\Unit\Fixtures;
+namespace PhpImap\Tests\Fixtures;
 
 use PhpImap\Mailbox as BaseMailbox;
 

@@ -53,7 +53,7 @@ class IncomingMailTest extends TestCase
         $mail = new IncomingMail();
         $mailbox = new Mailbox('', '', '');
 
-        $data_part = new Fixtures\DataPartInfo($mailbox, 1, 0, \ENCOTHER, 0);
+        $data_part = new \PhpImap\Tests\Fixtures\DataPartInfo($mailbox, 1, 0, \ENCOTHER, 0);
         $data_part->setData('foo');
 
         self::assertSame('foo', $data_part->fetch());

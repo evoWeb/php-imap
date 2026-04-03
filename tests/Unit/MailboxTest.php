@@ -57,7 +57,7 @@ final class MailboxTest extends TestCase
         $attachmentsDir = '.';
         $serverEncoding = 'UTF-8  ';
 
-        $mailbox = new Fixtures\Mailbox($imapPath, $login, $password, $attachmentsDir, $serverEncoding);
+        $mailbox = new \PhpImap\Tests\Fixtures\Mailbox($imapPath, $login, $password, $attachmentsDir, $serverEncoding);
 
         self::assertSame('{imap.example.com:993/imap/ssl}INBOX', $mailbox->getImapPath());
         self::assertSame('php-imap@example.com', $mailbox->getLogin());
@@ -930,8 +930,8 @@ final class MailboxTest extends TestCase
         $mailbox->setAttachmentsDir($attachmentsDir);
     }
 
-    protected function getMailbox(): Fixtures\Mailbox
+    protected function getMailbox(): \PhpImap\Tests\Fixtures\Mailbox
     {
-        return new Fixtures\Mailbox($this->imapPath, $this->login, $this->password, $this->attachmentsDir, $this->serverEncoding);
+        return new \PhpImap\Tests\Fixtures\Mailbox($this->imapPath, $this->login, $this->password, $this->attachmentsDir, $this->serverEncoding);
     }
 }
