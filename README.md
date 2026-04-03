@@ -2,18 +2,17 @@
 
 ## <mark>Based on works until December 2022 in [barbushin/php-imap](https://github.com/barbushin/php-imap) with merged pull requests</mark>
 
-[![GitHub release](https://img.shields.io/github/release/barbushin/php-imap.svg?style=flat-square)](https://packagist.org/packages/php-imap/php-imap)
+[![GitHub release](https://img.shields.io/github/release/garbast/php-imap.svg?style=flat-square)](https://packagist.org/packages/php-imap/php-imap)
 [![Supported PHP Version](https://img.shields.io/packagist/php-v/php-imap/php-imap.svg)](README.md)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 [![Packagist](https://img.shields.io/packagist/dt/php-imap/php-imap.svg?style=flat-square)](https://packagist.org/packages/php-imap/php-imap)
 
-[![CI PHP Unit Tests](https://github.com/barbushin/php-imap/actions/workflows/php_unit_tests.yml/badge.svg?branch=master)](https://github.com/barbushin/php-imap/actions/workflows/php_unit_tests.yml)
-[![CI PHP Static Analysis](https://github.com/barbushin/php-imap/actions/workflows/php_static_analysis.yml/badge.svg?branch=master)](https://github.com/barbushin/php-imap/actions/workflows/php_static_analysis.yml)
-[![CI PHP Code Coverage](https://github.com/barbushin/php-imap/actions/workflows/php_code_coverage.yml/badge.svg?branch=master)](https://github.com/barbushin/php-imap/actions/workflows/php_code_coverage.yml)
+[![CI PHP Unit Tests](https://github.com/garbast/php-imap/actions/workflows/php_unit_tests.yml/badge.svg?branch=master)](https://github.com/garbast/php-imap/actions/workflows/php_unit_tests.yml)
+[![CI PHP Static Analysis](https://github.com/garbast/php-imap/actions/workflows/php_static_analysis.yml/badge.svg?branch=master)](https://github.com/garbast/php-imap/actions/workflows/php_static_analysis.yml)
+[![CI PHP Code Coverage](https://github.com/garbast/php-imap/actions/workflows/php_code_coverage.yml/badge.svg?branch=master)](https://github.com/garbast/php-imap/actions/workflows/php_code_coverage.yml)
 
-[![Maintainability](https://api.codeclimate.com/v1/badges/02f72a4fd695cb7e2976/maintainability)](https://codeclimate.com/github/barbushin/php-imap/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/02f72a4fd695cb7e2976/test_coverage)](https://codeclimate.com/github/barbushin/php-imap/test_coverage)
-[![Type Coverage](https://shepherd.dev/github/barbushin/php-imap/coverage.svg)](https://shepherd.dev/github/barbushin/php-imap)
+[![Maintainability](https://qlty.sh/gh/garbast/projects/php-imap/maintainability.svg)](https://qlty.sh/gh/garbast/projects/php-imap)
+[![Code Coverage](https://qlty.sh/gh/garbast/projects/php-imap/coverage.svg)](https://qlty.sh/gh/garbast/projects/php-imap)
 
 Initially released in December 2012, the PHP IMAP Mailbox is a powerful and open source library to connect to a mailbox by POP3, IMAP and NNTP using the PHP IMAP extension. This library allows you to fetch emails from your email server. Extend the functionality or create powerful web applications to handle your incoming emails.
 

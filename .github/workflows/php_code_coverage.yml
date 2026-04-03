@@ -51,3 +51,8 @@ jobs:
           PHPIMAP_IMAP_PATH: "{localhost:31993/imap/ssl/novalidate-cert}INBOX"
           PHPIMAP_LOGIN: testuser
           PHPIMAP_PASSWORD: testpass
+
+      - uses: qltysh/qlty-action/coverage@v2
+        with:
+          token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+          files: .cache/clover.xml
