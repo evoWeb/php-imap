@@ -9,7 +9,7 @@
  */
 declare(strict_types=1);
 
-namespace PhpImap\Tests\Unit;
+namespace PhpImap\Tests\Functional;
 
 use ParagonIE\HiddenString\HiddenString;
 use PHPUnit\Framework\TestCase;
@@ -47,7 +47,7 @@ use PHPUnit\Framework\TestCase;
  *      5: array{DISABLE_AUTHENTICATOR: string}|array<empty, empty>
  *  }
  */
-abstract class AbstractLiveMailboxTest extends TestCase
+abstract class AbstractMailboxTest extends TestCase
 {
     use LiveMailboxTestingTrait;
 

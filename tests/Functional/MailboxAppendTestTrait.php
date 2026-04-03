@@ -9,7 +9,7 @@
  */
 declare(strict_types=1);
 
-namespace PhpImap\Tests\Unit;
+namespace PhpImap\Tests\Functional;
 
 use PhpImap\Imap;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -18,11 +18,11 @@ use PHPUnit\Framework\Attributes\Test;
 /**
  * Provides testAppend for test classes that implement ComposeProvider.
  *
- * @phpstan-import-type MAILBOX_ARGS from AbstractLiveMailboxTest
- * @phpstan-import-type COMPOSE_ENVELOPE from AbstractLiveMailboxTest
- * @phpstan-import-type COMPOSE_BODY from AbstractLiveMailboxTest
+ * @phpstan-import-type MAILBOX_ARGS from AbstractMailboxTest
+ * @phpstan-import-type COMPOSE_ENVELOPE from AbstractMailboxTest
+ * @phpstan-import-type COMPOSE_BODY from AbstractMailboxTest
  */
-trait LiveMailboxAppendTestTrait
+trait MailboxAppendTestTrait
 {
     /**
      * @phpstan-return \Generator<int, array{

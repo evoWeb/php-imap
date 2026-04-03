@@ -9,7 +9,7 @@
  */
 declare(strict_types=1);
 
-namespace PhpImap\Tests\Unit;
+namespace PhpImap\Tests\Functional;
 
 use ParagonIE\HiddenString\HiddenString;
 use PhpImap\Imap;
@@ -18,13 +18,13 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 
 /**
- * @phpstan-import-type MAILBOX_ARGS from AbstractLiveMailboxTest
- * @phpstan-import-type COMPOSE_ENVELOPE from AbstractLiveMailboxTest
- * @phpstan-import-type COMPOSE_BODY from AbstractLiveMailboxTest
+ * @phpstan-import-type MAILBOX_ARGS from AbstractMailboxTest
+ * @phpstan-import-type COMPOSE_ENVELOPE from AbstractMailboxTest
+ * @phpstan-import-type COMPOSE_BODY from AbstractMailboxTest
  */
-class LiveMailboxTest extends AbstractLiveMailboxTest
+class MailboxTest extends AbstractMailboxTest
 {
-    use LiveMailboxAppendTestTrait;
+    use MailboxAppendTestTrait;
 
     public const RANDOM_MAILBOX_SAMPLE_SIZE = 3;
 

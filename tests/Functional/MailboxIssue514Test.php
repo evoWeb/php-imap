@@ -9,7 +9,7 @@
  */
 declare(strict_types=1);
 
-namespace PhpImap\Tests\Unit;
+namespace PhpImap\Tests\Functional;
 
 use ParagonIE\HiddenString\HiddenString;
 use PhpImap\Imap;
@@ -18,9 +18,9 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 
 /**
- * @phpstan-import-type COMPOSE_ENVELOPE from AbstractLiveMailboxTest
+ * @phpstan-import-type COMPOSE_ENVELOPE from AbstractMailboxTest
  */
-class LiveMailboxIssue514Test extends AbstractLiveMailboxTest
+class MailboxIssue514Test extends AbstractMailboxTest
 {
     #[Test]
     #[DataProvider('MailBoxProvider')]

@@ -9,7 +9,7 @@
  */
 declare(strict_types=1);
 
-namespace PhpImap\Tests\Unit;
+namespace PhpImap\Tests\Functional;
 
 use Generator;
 use ParagonIE\HiddenString\HiddenString;
@@ -20,9 +20,9 @@ use PHPUnit\Framework\Attributes\Test;
 use Random\RandomException;
 
 /**
- * @phpstan-import-type MAILBOX_ARGS from AbstractLiveMailboxTest
+ * @phpstan-import-type MAILBOX_ARGS from AbstractMailboxTest
  */
-class LiveMailboxWithManualSetupTest extends AbstractLiveMailboxTest
+class MailboxWithManualSetupTest extends AbstractMailboxTest
 {
     /**
      * @phpstan-return Generator<int, array{0: '.issue-499.Éléments envoyés'}, mixed, void>

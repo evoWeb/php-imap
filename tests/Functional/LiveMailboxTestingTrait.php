@@ -9,7 +9,7 @@
  */
 declare(strict_types=1);
 
-namespace PhpImap\Tests\Unit;
+namespace PhpImap\Tests\Functional;
 
 use ParagonIE\HiddenString\HiddenString;
 use PhpImap\Exceptions\InvalidParameterException;
@@ -17,7 +17,7 @@ use PhpImap\Mailbox;
 use Random\RandomException;
 
 /**
- * @phpstan-import-type MAILBOX_ARGS from AbstractLiveMailboxTest
+ * @phpstan-import-type MAILBOX_ARGS from AbstractMailboxTest
  */
 trait LiveMailboxTestingTrait
 {

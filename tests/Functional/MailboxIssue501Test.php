@@ -9,24 +9,45 @@
  */
 declare(strict_types=1);
 
-namespace PhpImap\Tests\Unit;
+namespace PhpImap\Tests\Functional;
 
 use ParagonIE\HiddenString\HiddenString;
 use PhpImap\Imap;
+use PhpImap\Mailbox;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 
 /**
- * @phpstan-import-type MAILBOX_ARGS from AbstractLiveMailboxTest
+ * @phpstan-import-type MAILBOX_ARGS from AbstractMailboxTest
  */
-class LiveMailboxIssue490Test extends AbstractLiveMailboxTest
+class MailboxIssue501Test extends AbstractMailboxTest
 {
+    #[Test]
+    #[Group('offline')]
+    #[Group('offline-issue-501')]
+    public function testDecodeMimeStrEmpty(): void
+    {
+        self::assertSame([], \imap_mime_header_decode(''));
+
+        // example credentials copied from MailboxTest::testConstructorTrimsPossibleVariables()
+        $imapPath = ' {imap.example.com:993/imap/ssl}INBOX     ';
+        $login = '    php-imap@example.com';
+        $password = '  v3rY!53cEt&P4sSWöRd$';
+        // directory names can contain spaces before AND after on Linux/Unix systems. Windows trims these spaces automatically.
+        $attachmentsDir = '.';
+        $serverEncoding = 'UTF-8  ';
+
+        $mailbox = new Mailbox($imapPath, $login, $password, $attachmentsDir, $serverEncoding);
+
+        self::assertSame('', $mailbox->decodeMimeStr(''));
+    }
+
     #[Test]
     #[DataProvider('MailBoxProvider')]
     #[Group('live')]
-    #[Group('live-issue-490')]
-    public function testGetTextAttachments(
+    #[Group('live-issue-501')]
+    public function testGetEmptyBody(
         HiddenString $imapPath,
         HiddenString $login,
         HiddenString $password,
@@ -63,38 +84,15 @@ class LiveMailboxIssue490Test extends AbstractLiveMailboxTest
                 )
             );
 
-            $message = Imap::mail_compose(
+            $mailbox->appendMessageToMailbox(Imap::mail_compose(
                 $envelope,
                 [
                     [
-                        'type' => \TYPEMULTIPART,
-                    ],
-                    [
                         'type' => \TYPETEXT,
-                        'contents.data' => 'foo',
-                    ],
-                    [
-                        'type' => \TYPEMULTIPART,
-                        'subtype' => 'plain',
-                        'description' => 'bar.txt',
-                        'disposition.type' => 'attachment',
-                        'disposition' => ['filename' => 'bar.txt'],
-                        'type.parameters' => ['name' => 'bar.txt'],
-                        'contents.data' => 'bar',
-                    ],
-                    [
-                        'type' => \TYPEMULTIPART,
-                        'subtype' => 'plain',
-                        'description' => 'baz.txt',
-                        'disposition.type' => 'attachment',
-                        'disposition' => ['filename' => 'baz.txt'],
-                        'type.parameters' => ['name' => 'baz.txt'],
-                        'contents.data' => 'baz',
+                        'contents.data' => '',
                     ],
                 ]
-            );
-
-            $mailbox->appendMessageToMailbox($message);
+            ));
 
             $search = $mailbox->searchMailbox($searchCriteria);
 
@@ -110,15 +108,7 @@ class LiveMailboxIssue490Test extends AbstractLiveMailboxTest
 
             $mail = $mailbox->getMail($search[0], false);
 
-            self::assertSame('foo', $mail->textPlain);
-
-            $attachments = $mail->getAttachments();
-            $keys = \array_keys($attachments);
-
-            self::assertCount(2, $attachments);
-
-            self::assertSame('bar', $attachments[$keys[0]]->getContents());
-            self::assertSame('baz', $attachments[$keys[1]]->getContents());
+            self::assertSame('', $mail->textPlain);
         } catch (\Exception $exception) {
         } finally {
             $mailbox->switchMailbox($imapPath->getString());

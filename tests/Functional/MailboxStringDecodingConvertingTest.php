@@ -9,7 +9,7 @@
  */
 declare(strict_types=1);
 
-namespace PhpImap\Tests\Unit;
+namespace PhpImap\Tests\Functional;
 
 use PhpImap\DataPartInfo;
 use PhpImap\Mailbox;
@@ -17,7 +17,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
-class LiveMailboxStringDecodingConvertingTest extends TestCase
+class MailboxStringDecodingConvertingTest extends TestCase
 {
     /**
      * Provides data for testing string decoding.

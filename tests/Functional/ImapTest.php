@@ -5,7 +5,7 @@
 */
 declare(strict_types=1);
 
-namespace PhpImap\Tests\Unit;
+namespace PhpImap\Tests\Functional;
 
 use ParagonIE\HiddenString\HiddenString;
 use PhpImap\Exceptions\ConnectionException;
@@ -14,13 +14,13 @@ use PhpImap\Imap;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase as Base;
+use PHPUnit\Framework\TestCase;
 use Random\RandomException;
 
 /**
- * @phpstan-import-type OPEN_ARGS from AbstractLiveMailboxTest
+ * @phpstan-import-type OPEN_ARGS from AbstractMailboxTest
  */
-class ImapTest extends Base
+class ImapTest extends TestCase
 {
     use LiveMailboxTestingTrait;
 
