@@ -32,8 +32,8 @@ trait MailboxAppendTestTrait
      *      0: MAILBOX_ARGS,
      *      1: COMPOSE_ENVELOPE,
      *      2: COMPOSE_BODY,
-     *      3: string,
-     *      4: bool
+     *      3: bool,
+     *      4: string
      * }, mixed, void>
      */
     public static function AppendProvider(): \Generator
