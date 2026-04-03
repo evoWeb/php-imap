@@ -11,8 +11,8 @@ declare(strict_types=1);
 
 namespace PhpImap\Tests\Functional;
 
-use Generator;
 use ParagonIE\HiddenString\HiddenString;
+use PhpImap\Exceptions\ConnectionException;
 use PhpImap\Exceptions\InvalidParameterException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -25,7 +25,7 @@ use Random\RandomException;
 class MailboxWithManualSetupTest extends AbstractMailboxTest
 {
     /**
-     * @phpstan-return Generator<int, array{0: '.issue-499.Éléments envoyés'}, mixed, void>
+     * @phpstan-return \Generator<int, array{0: '.issue-499.Éléments envoyés'}, mixed, void>
      */
     public static function RelativeToRootPathProvider(): \Generator
     {
@@ -35,7 +35,7 @@ class MailboxWithManualSetupTest extends AbstractMailboxTest
     }
 
     /**
-     * @phpstan-return Generator<int, MAILBOX_ARGS[], mixed, void>
+     * @phpstan-return \Generator<int, MAILBOX_ARGS[], mixed, void>
      */
     public static function statusProviderAbsolutePath(): \Generator
     {
@@ -53,8 +53,9 @@ class MailboxWithManualSetupTest extends AbstractMailboxTest
      *
      * @phpstan-param MAILBOX_ARGS $mailboxArguments
      *
-     * @throws RandomException
+     * @throws ConnectionException
      * @throws InvalidParameterException
+     * @throws RandomException
      */
     #[Test]
     #[DataProvider('statusProviderAbsolutePath')]

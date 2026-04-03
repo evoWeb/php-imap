@@ -50,7 +50,7 @@
 		"php-cs-fixer-check": "php-cs-fixer check -v --diff --config=Build/php-cs-fixer/config.php",
 		"php-cs-fixer-fix": "php-cs-fixer fix --no-interaction -v --config=Build/php-cs-fixer/config.php",
 		"phpmd": "phpmnd ./ --exclude=./.ddev/ --exclude=./.github/ --exclude=./examples/ --exclude=./vendor/ --hint",
-		"composer-require-checker": "composer-require-checker check --config-file=Build/composer-require-checker.config.json composer.json",
+		"composer-require-checker": "composer-require-checker check --config-file=Build/composer-require-checker/config.json composer.json",
 		"phpstan": "phpstan analyse --configuration Build/phpstan/phpstan.neon",
 		"phpunit": "phpunit --no-coverage --configuration Build/phpunit/UnitTests.xml",
 		"phpunit-coverage": "XDEBUG_MODE=coverage phpunit --coverage-clover .cache/clover.xml --configuration Build/phpunit/UnitTests.xml",

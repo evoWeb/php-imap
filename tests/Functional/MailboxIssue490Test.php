@@ -12,16 +12,25 @@ declare(strict_types=1);
 namespace PhpImap\Tests\Functional;
 
 use ParagonIE\HiddenString\HiddenString;
+use PhpImap\Exceptions\ConnectionException;
+use PhpImap\Exceptions\InvalidParameterException;
 use PhpImap\Imap;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
+use Random\RandomException;
 
 /**
  * @phpstan-import-type MAILBOX_ARGS from AbstractMailboxTest
  */
 class MailboxIssue490Test extends AbstractMailboxTest
 {
+    /**
+     * @throws InvalidParameterException
+     * @throws \Exception
+     * @throws RandomException
+     * @throws ConnectionException
+     */
     #[Test]
     #[DataProvider('MailBoxProvider')]
     #[Group('live')]
@@ -41,7 +50,7 @@ class MailboxIssue490Test extends AbstractMailboxTest
             $serverEncoding
         );
 
-        /** @var \Throwable|null $exception */
+        /** @var ?\Exception $exception */
         $exception = null;
 
         try {

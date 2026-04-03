@@ -12,16 +12,25 @@ declare(strict_types=1);
 namespace PhpImap\Tests\Functional;
 
 use ParagonIE\HiddenString\HiddenString;
+use PhpImap\Exceptions\ConnectionException;
+use PhpImap\Exceptions\InvalidParameterException;
 use PhpImap\Imap;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
+use Random\RandomException;
 
 /**
  * @phpstan-import-type COMPOSE_ENVELOPE from AbstractMailboxTest
  */
 class MailboxIssue514Test extends AbstractMailboxTest
 {
+    /**
+     * @throws ConnectionException
+     * @throws \Exception
+     * @throws InvalidParameterException
+     * @throws RandomException
+     */
     #[Test]
     #[DataProvider('MailBoxProvider')]
     #[Group('live')]
@@ -33,7 +42,7 @@ class MailboxIssue514Test extends AbstractMailboxTest
         string $attachmentsDir,
         string $serverEncoding = 'UTF-8'
     ): void {
-        /** @var \Throwable|null $exception */
+        /** @var ?\Exception $exception */
         $exception = null;
 
         /** @phpstan-var COMPOSE_ENVELOPE $envelope */
@@ -70,7 +79,7 @@ class MailboxIssue514Test extends AbstractMailboxTest
                 'disposition.type' => 'inline',
                 'type.parameters' => ['name' => 'foo.png'],
                 'contents.data' => \base64_encode(
-                    \file_get_contents(__DIR__ . '/Fixtures/rgbkw5x1.png')
+                    \file_get_contents(__DIR__ . '/../Fixtures/rgbkw5x1.png')
                 ),
             ],
             [
@@ -83,7 +92,7 @@ class MailboxIssue514Test extends AbstractMailboxTest
                 'disposition.type' => 'inline',
                 'type.parameters' => ['name' => 'foo.webp'],
                 'contents.data' => \base64_encode(
-                    \file_get_contents(__DIR__ . '/Fixtures/rgbkw5x1.webp')
+                    \file_get_contents(__DIR__ . '/../Fixtures/rgbkw5x1.webp')
                 ),
             ],
         ];
@@ -227,7 +236,7 @@ class MailboxIssue514Test extends AbstractMailboxTest
             );
 
             $mailbox->deleteMail($search[0]);
-        } catch (\Throwable $exception) {
+        } catch (\Exception $exception) {
         } finally {
             $mailbox->switchMailbox($path->getString());
             $mailbox->deleteMailbox($removeMailbox);

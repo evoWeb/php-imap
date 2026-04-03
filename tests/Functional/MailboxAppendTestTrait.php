@@ -11,9 +11,12 @@ declare(strict_types=1);
 
 namespace PhpImap\Tests\Functional;
 
+use PhpImap\Exceptions\ConnectionException;
+use PhpImap\Exceptions\InvalidParameterException;
 use PhpImap\Imap;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use Random\RandomException;
 
 /**
  * Provides testAppend for test classes that implement ComposeProvider.
@@ -39,13 +42,13 @@ trait MailboxAppendTestTrait
             foreach (static::ComposeProvider() as $composeArguments) {
                 [$envelope, $body, $expectedComposeResult] = $composeArguments;
 
-                yield [$mailboxArguments, $envelope, $body, $expectedComposeResult, false];
+                yield [$mailboxArguments, $envelope, $body, false, $expectedComposeResult];
             }
 
             foreach (static::ComposeProvider() as $composeArguments) {
                 [$envelope, $body, $expectedComposeResult] = $composeArguments;
 
-                yield [$mailboxArguments, $envelope, $body, $expectedComposeResult, true];
+                yield [$mailboxArguments, $envelope, $body, true, $expectedComposeResult];
             }
         }
     }
@@ -57,6 +60,8 @@ trait MailboxAppendTestTrait
      * @phpstan-param MAILBOX_ARGS $mailboxArguments
      * @phpstan-param COMPOSE_ENVELOPE $envelope
      * @phpstan-param COMPOSE_BODY $body
+     *
+     * @throws \Exception
      */
     #[Test]
     #[DataProvider('AppendProvider')]
@@ -64,22 +69,25 @@ trait MailboxAppendTestTrait
         array $mailboxArguments,
         array $envelope,
         array $body,
-        string $expectedComposeResult,
-        bool $preCompose
+        bool $preCompose,
     ): void {
-        $this->runAppendTest($mailboxArguments, $envelope, $body, $expectedComposeResult, $preCompose);
+        $this->runAppendTest($mailboxArguments, $envelope, $body, $preCompose);
     }
 
     /**
      * @phpstan-param MAILBOX_ARGS $mailboxArguments
      * @phpstan-param COMPOSE_ENVELOPE $envelope
      * @phpstan-param COMPOSE_BODY $body
+     *
+     * @throws ConnectionException
+     * @throws \Exception
+     * @throws InvalidParameterException
+     * @throws RandomException
      */
     protected function runAppendTest(
         array $mailboxArguments,
         array $envelope,
         array $body,
-        string $expectedComposeResult,
         bool $preCompose
     ): void {
         if ($this->MaybeSkipAppendTest($envelope)) {
@@ -90,7 +98,7 @@ trait MailboxAppendTestTrait
 
         [$mailbox, $removeMailbox, $path] = $this->getMailboxFromArgs($mailboxArguments);
 
-        /** @var \Throwable|null $exception */
+        /** @var ?\Exception $exception */
         $exception = null;
 
         $mailboxDeleted = false;
@@ -144,7 +152,7 @@ trait MailboxAppendTestTrait
                     ' then the message is was not expunged as requested.'
                 )
             );
-        } catch (\Throwable $exception) {
+        } catch (\Exception $exception) {
         } finally {
             $mailbox->switchMailbox($path->getString());
             if (!$mailboxDeleted) {

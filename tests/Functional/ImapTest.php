@@ -73,8 +73,10 @@ class ImapTest extends TestCase
     }
 
     /**
-     * @phpstan-param class-string<\Throwable> $exception
+     * @phpstan-param class-string<\Exception> $exception
      * @phpstan-param OPEN_ARGS $openArguments
+     *
+     * @throws ConnectionException
      */
     #[Test]
     #[DataProvider('OpenFailure')]
@@ -103,7 +105,7 @@ class ImapTest extends TestCase
     }
 
     /**
-     * @throws \Throwable
+     * @throws \Exception
      * @throws InvalidParameterException
      * @throws RandomException
      */
@@ -119,7 +121,7 @@ class ImapTest extends TestCase
             \sys_get_temp_dir(),
         ]);
 
-        /** @var \Throwable|null $exception */
+        /** @var ?\Exception $exception */
         $exception = null;
 
         try {
@@ -132,7 +134,7 @@ class ImapTest extends TestCase
                     0
                 )
             );
-        } catch (\Throwable $exception) {
+        } catch (\Exception $exception) {
         } finally {
             $mailbox->switchMailbox($path->getString());
             $mailbox->deleteMailbox($removeMailbox);

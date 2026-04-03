@@ -27,7 +27,8 @@
     <testsuites>
         <testsuite name="php-imap Tests">
             <directory>../../tests/Unit</directory>
-            <exclude>../../tests/Unit/AbstractLiveMailboxTest.php</exclude>
+            <directory>../../tests/Functional</directory>
+            <exclude>../../tests/Functional/AbstractMailboxTest.php</exclude>
         </testsuite>
     </testsuites>
 

@@ -12,17 +12,24 @@ declare(strict_types=1);
 namespace PhpImap\Tests\Functional;
 
 use ParagonIE\HiddenString\HiddenString;
+use PhpImap\Exceptions\ConnectionException;
+use PhpImap\Exceptions\InvalidParameterException;
 use PhpImap\Imap;
 use PhpImap\Mailbox;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
+use Random\RandomException;
 
 /**
  * @phpstan-import-type MAILBOX_ARGS from AbstractMailboxTest
  */
 class MailboxIssue501Test extends AbstractMailboxTest
 {
+    /**
+     * @throws InvalidParameterException
+     * @throws \Exception
+     */
     #[Test]
     #[Group('offline')]
     #[Group('offline-issue-501')]
@@ -43,6 +50,12 @@ class MailboxIssue501Test extends AbstractMailboxTest
         self::assertSame('', $mailbox->decodeMimeStr(''));
     }
 
+    /**
+     * @throws InvalidParameterException
+     * @throws \Exception
+     * @throws RandomException
+     * @throws ConnectionException
+     */
     #[Test]
     #[DataProvider('MailBoxProvider')]
     #[Group('live')]
@@ -62,7 +75,7 @@ class MailboxIssue501Test extends AbstractMailboxTest
             $serverEncoding
         );
 
-        /** @var \Throwable|null $exception */
+        /** @var ?\Exception $exception */
         $exception = null;
 
         try {

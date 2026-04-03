@@ -14,6 +14,7 @@ namespace PhpImap\Tests\Functional;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
+use Random\RandomException;
 
 /**
  * @phpstan-import-type MAILBOX_ARGS from AbstractMailboxTest
@@ -30,6 +31,8 @@ class MailboxIssue250Test extends AbstractMailboxTest
      *      1: COMPOSE_BODY,
      *      2: string
      * }, mixed, void>
+     *
+     * @throws RandomException
      */
     public static function ComposeProvider(): \Generator
     {
@@ -58,6 +61,8 @@ class MailboxIssue250Test extends AbstractMailboxTest
      * @phpstan-param MAILBOX_ARGS $mailboxArguments
      * @phpstan-param COMPOSE_ENVELOPE $envelope
      * @phpstan-param COMPOSE_BODY $body
+     *
+     * @throws \Exception
      */
     #[Test]
     #[DataProvider('AppendProvider')]
@@ -67,9 +72,9 @@ class MailboxIssue250Test extends AbstractMailboxTest
         array $mailboxArguments,
         array $envelope,
         array $body,
+        bool $preCompose,
         string $expectedComposeResult,
-        bool $preCompose
     ): void {
-        $this->runAppendTest($mailboxArguments, $envelope, $body, $expectedComposeResult, $preCompose);
+        $this->runAppendTest($mailboxArguments, $envelope, $body, $preCompose);
     }
 }

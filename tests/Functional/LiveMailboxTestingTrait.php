@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace PhpImap\Tests\Functional;
 
 use ParagonIE\HiddenString\HiddenString;
+use PhpImap\Exceptions\ConnectionException;
 use PhpImap\Exceptions\InvalidParameterException;
 use PhpImap\Mailbox;
 use Random\RandomException;
@@ -51,10 +52,9 @@ trait LiveMailboxTestingTrait
      *
      * @return (Mailbox|HiddenString|string)[]
      *
-     * @phpstan-return array{0: Mailbox, 1: string, 2: HiddenString}
-     *
-     * @throws RandomException
      * @throws InvalidParameterException
+     * @throws RandomException
+     * @throws ConnectionException
      */
     protected function getMailbox(
         HiddenString $imapPath,
@@ -85,10 +85,9 @@ trait LiveMailboxTestingTrait
      *
      * @return (Mailbox|HiddenString|string)[]
      *
-     * @phpstan-return array{0: Mailbox, 1: string, 2: HiddenString}
-     *
-     * @throws RandomException
+     * @throws ConnectionException
      * @throws InvalidParameterException
+     * @throws RandomException
      */
     protected function getMailboxFromArgs(array $mailboxArguments): array
     {
