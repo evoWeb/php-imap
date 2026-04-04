@@ -7,7 +7,7 @@ Every contribution, being it pull requests, bug reports or feature requests, wil
 ## Ways to contribute
 
 * Found a bug? Want a feature? Or just having question? [Open an
-issue!](https://github.com/barbushin/php-imap/issues/new/choose)
+issue!](https://github.com/garbast/php-imap/issues/new/choose)
 * Add a feature or fix a bug:
   * Check for existing issue or create a new one.
   * Fork the repo, make your changes.
