@@ -3,9 +3,10 @@ name: PHP Code Coverage
 on:
   push:
     branches:
-      - master
+      - main
+      - develop
   pull_request:
-    branches: [ develop ]
+    types: [ review_requested ]
 
 permissions:
   contents: read
