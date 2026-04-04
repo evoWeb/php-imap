@@ -17,4 +17,38 @@ class Mailbox extends BaseMailbox
     {
         return $this->imapOptions;
     }
+
+    public function exposedGetCombinedPath(string $folder, bool $absolute = false): string
+    {
+        return $this->getCombinedPath($folder, $absolute);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function exposedDecodeRFC2231(string $string): string
+    {
+        return $this->decodeRFC2231($string);
+    }
+
+    public function exposedLowercaseMbListEncodings(): array
+    {
+        return $this->lowercase_mb_list_encodings();
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function exposedPossiblyGetEmailAndNameFromRecipient(object $recipient): ?array
+    {
+        return $this->possiblyGetEmailAndNameFromRecipient($recipient);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function exposedPossiblyGetHostNameAndAddress(array $t): array
+    {
+        return $this->possiblyGetHostNameAndAddress($t);
+    }
 }
