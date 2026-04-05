@@ -210,56 +210,70 @@ class IncomingMail extends IncomingMailHeader
 
         \preg_match_all("/\bcid:[^'\"\s]{1,256}/mi", $fetchedHtml, $matches);
 
-        if (\count($matches[0])) {
-            $matches = $matches[0];
-            foreach ($matches as $match) {
-                $cid = \str_replace('cid:', '', $match);
+        if (!\count($matches[0])) {
+            return;
+        }
 
-                /**
-                 * Inline images can contain a "Content-Disposition: inline", but only a "Content-ID" is also enough.
-                 * See https://github.com/barbushin/php-imap/issues/569.
-                 *
-                 * Re-fetch attachments each iteration so removed attachments are excluded.
-                 * Prefer contentId matching; only fall back to disposition-based matching when no contentId
-                 * match exists, to avoid embedding the wrong attachment when multiple inline images are present.
-                 */
-                $attachments = $this->getAttachments();
-                $matched = null;
-                foreach ($attachments as $attachment) {
-                    if ($attachment->contentId == $cid) {
-                        $matched = $attachment;
-                        break;
-                    }
-                }
-                if ($matched === null) {
-                    foreach ($attachments as $attachment) {
-                        if (\mb_strtolower((string)$attachment->disposition) == 'inline') {
-                            $matched = $attachment;
-                            break;
-                        }
-                    }
-                }
+        $matches = $matches[0];
+        foreach ($matches as $match) {
+            $cid = \str_replace('cid:', '', $match);
 
-                if ($matched !== null) {
-                    $contents = $matched->getContents();
-                    $contentType = $matched->getFileInfo(\FILEINFO_MIME_TYPE);
+            $matched = $this->findMatchingAttachmentForCid($cid);
+            if ($matched !== null) {
+                $this->replaceCidWithImageInHtml($match, $matched);
+            }
+        }
+    }
 
-                    if (str_contains($contentType, 'image')) {
-                        if (!\is_string($matched->id)) {
-                            throw new \InvalidArgumentException(
-                                'Argument 1 passed to ' . __METHOD__ . '() does not have an id specified!'
-                            );
-                        }
+    /**
+     * Inline images can contain a "Content-Disposition: inline", but only a "Content-ID" is also enough.
+     * See https://github.com/barbushin/php-imap/issues/569.
+     *
+     * Re-fetch attachments each iteration so removed attachments are excluded.
+     * Prefer contentId matching; only fall back to disposition-based matching when no contentId
+     * match exists, to avoid embedding the wrong attachment when multiple inline images are present.
+     */
+    private function findMatchingAttachmentForCid(string $cid): ?IncomingMailAttachment
+    {
+        $attachments = $this->getAttachments();
+        $matched = null;
+        foreach ($attachments as $attachment) {
+            if ($attachment->contentId == $cid) {
+                $matched = $attachment;
+                break;
+            }
+        }
 
-                        $base64encoded = \base64_encode($contents);
-                        $replacement = 'data:' . $contentType . ';base64, ' . $base64encoded;
-
-                        $this->textHtml = \str_replace($match, $replacement, $this->textHtml);
-
-                        $this->removeAttachment($matched->id);
-                    }
+        if ($matched === null) {
+            foreach ($attachments as $attachment) {
+                if (\mb_strtolower((string)$attachment->disposition) == 'inline') {
+                    $matched = $attachment;
+                    break;
                 }
             }
+        }
+
+        return $matched;
+    }
+
+    private function replaceCidWithImageInHtml(string $match, IncomingMailAttachment $matched): void
+    {
+        $contents = $matched->getContents();
+        $contentType = $matched->getFileInfo(\FILEINFO_MIME_TYPE);
+
+        if (str_contains($contentType, 'image')) {
+            if (!\is_string($matched->id)) {
+                throw new \InvalidArgumentException(
+                    'Argument 1 passed to ' . __METHOD__ . '() does not have an id specified!'
+                );
+            }
+
+            $base64encoded = \base64_encode($contents);
+            $replacement = 'data:' . $contentType . ';base64, ' . $base64encoded;
+
+            $this->textHtml = \str_replace($match, $replacement, $this->textHtml);
+
+            $this->removeAttachment($matched->id);
         }
     }
 }
