@@ -12,9 +12,10 @@ return (new \PhpCsFixer\Config())
             ->ignoreVCSIgnored(true)
             ->in(__DIR__ . '/../../')
             ->exclude([
-                '../../Build',
                 '../../.ddev',
                 '../../.github',
+                '../../.qlty',
+                '../../Build',
                 '../../vendor',
             ])
     )

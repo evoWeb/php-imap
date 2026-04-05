@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<ruleset name="php-imap">
+    <!-- Base standard: PSR-12 (@PSR12) -->
+    <rule ref="PSR12"/>
+
+    <!-- Line length: warning at 120 chars, no hard error (absoluteLineLimit=0) -->
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="120"/>
+            <property name="absoluteLineLimit" value="0"/>
+        </properties>
+    </rule>
+
+    <!-- array_syntax: short -->
+    <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
+
+    <!-- array_indentation -->
+    <rule ref="Generic.Arrays.ArrayIndent"/>
+
+    <!-- cast_spaces: none -->
+    <rule ref="Generic.Formatting.SpaceAfterCast">
+        <properties>
+            <property name="spacing" value="0"/>
+        </properties>
+    </rule>
+
+    <!-- native_function_casing -->
+    <rule ref="Squiz.PHP.LowercasePHPFunctions"/>
+
+    <!-- no_empty_statement -->
+    <rule ref="Generic.CodeAnalysis.EmptyStatement"/>
+</ruleset>
