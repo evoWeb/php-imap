@@ -1178,60 +1178,15 @@ class Mailbox
          */
         $head = \imap_rfc822_parse_headers($headersRaw);
 
-        if (isset($head->date) && !\is_string($head->date)) {
-            throw new \UnexpectedValueException(
-                'date property of parsed headers corresponding to argument 1 passed to '
-                . __METHOD__ . '() was present but not a string!'
-            );
-        }
-        if (isset($head->Date) && !\is_string($head->Date)) {
-            throw new \UnexpectedValueException(
-                'Date property of parsed headers corresponding to argument 1 passed to '
-                . __METHOD__ . '() was present but not a string!'
-            );
-        }
-        if (isset($head->subject) && !\is_string($head->subject)) {
-            throw new \UnexpectedValueException(
-                'subject property of parsed headers corresponding to argument 1 passed to '
-                . __METHOD__ . '() was present but not a string!'
-            );
-        }
-        if (isset($head->from) && !\is_array($head->from)) {
-            throw new \UnexpectedValueException(
-                'from property of parsed headers corresponding to argument 1 passed to '
-                . __METHOD__ . '() was present but not an array!'
-            );
-        }
-        if (isset($head->sender) && !\is_array($head->sender)) {
-            throw new \UnexpectedValueException(
-                'sender property of parsed headers corresponding to argument 1 passed to '
-                . __METHOD__ . '() was present but not an array!'
-            );
-        }
-        if (isset($head->to) && !\is_array($head->to)) {
-            throw new \UnexpectedValueException(
-                'to property of parsed headers corresponding to argument 1 passed to '
-                . __METHOD__ . '() was present but not an array!'
-            );
-        }
-        if (isset($head->cc) && !\is_array($head->cc)) {
-            throw new \UnexpectedValueException(
-                'cc property of parsed headers corresponding to argument 1 passed to '
-                . __METHOD__ . '() was present but not an array!'
-            );
-        }
-        if (isset($head->bcc) && !\is_array($head->bcc)) {
-            throw new \UnexpectedValueException(
-                'bcc property of parsed headers corresponding to argument 1 passed to '
-                . __METHOD__ . '() was present but not an array!'
-            );
-        }
-        if (isset($head->reply_to) && !\is_array($head->reply_to)) {
-            throw new \UnexpectedValueException(
-                'reply_to property of parsed headers corresponding to argument 1 passed to '
-                . __METHOD__ . '() was present but not an array!'
-            );
-        }
+        $this->assertPropertyIsOfTypeString($head, 'date', $mailId, __METHOD__);
+        $this->assertPropertyIsOfTypeString($head, 'Date', $mailId, __METHOD__);
+        $this->assertPropertyIsOfTypeString($head, 'subject', $mailId, __METHOD__);
+        $this->assertPropertyIsOfTypeString($head, 'from', $mailId, __METHOD__);
+        $this->assertPropertyIsOfTypeString($head, 'sender', $mailId, __METHOD__);
+        $this->assertPropertyIsOfTypeString($head, 'to', $mailId, __METHOD__);
+        $this->assertPropertyIsOfTypeString($head, 'cc', $mailId, __METHOD__);
+        $this->assertPropertyIsOfTypeString($head, 'bcc', $mailId, __METHOD__);
+        $this->assertPropertyIsOfTypeString($head, 'reply_to', $mailId, __METHOD__);
 
         $header = new IncomingMailHeader();
         $header->headersRaw = $headersRaw;
