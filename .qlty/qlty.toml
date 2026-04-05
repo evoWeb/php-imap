@@ -1,12 +1,12 @@
+exclude_patterns = [
+    ".ddev",
+]
+
 [[source]]
 name = "php-imap"
 repository = "https://github.com/evoWeb/php-imap.git"
 branch = "develop"
 
-exclude_patterns = [
-    ".ddev",
-]
-
 [[plugin]]
-name = "phpcs"
-config_file = "Build/phpcs/phpcs.xml"
+name = "php-codesniffer"
+config_files = [ "Build/phpcs/phpcs.xml" ]
