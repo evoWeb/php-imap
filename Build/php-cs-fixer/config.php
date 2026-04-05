@@ -22,7 +22,8 @@ return (new \PhpCsFixer\Config())
     ->setRiskyAllowed(true)
     ->setRules([
         '@DoctrineAnnotation' => true,
-        // @todo: Switch to @PER-CS2x0 once php-cs-fixer's todo list is done: https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/issues/7247
+        // @todo: Switch to @PER-CS2x0 once php-cs-fixer's todo list is done:
+        // https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/issues/7247
         '@PSR12' => true,
         'array_indentation' => true,
         'array_syntax' => ['syntax' => 'short'],
@@ -36,9 +37,22 @@ return (new \PhpCsFixer\Config())
         'function_declaration' => [
             'closure_fn_spacing' => 'none',
         ],
-        'function_to_constant' => ['functions' => ['get_called_class', 'get_class', 'get_class_this', 'php_sapi_name', 'phpversion', 'pi']],
+        'function_to_constant' => [
+            'functions' => [
+                'get_called_class',
+                'get_class',
+                'get_class_this',
+                'php_sapi_name',
+                'phpversion',
+                'pi'
+            ]
+        ],
         'type_declaration_spaces' => true,
-        'global_namespace_import' => ['import_classes' => false, 'import_constants' => false, 'import_functions' => false],
+        'global_namespace_import' => [
+            'import_classes' => false,
+            'import_constants' => false,
+            'import_functions' => false
+        ],
         'list_syntax' => ['syntax' => 'short'],
         // @todo: Can be dropped once we enable @PER-CS2x0
         'method_argument_space' => true,
