@@ -262,7 +262,10 @@ class Mailbox
         $supported_options = [\SE_FREE, \SE_UID];
 
         if (!\in_array($imapSearchOption, $supported_options, true)) {
-            throw new InvalidParameterException('"' . $imapSearchOption . '" is not supported by setImapSearchOption(). Supported options are \SE_FREE and \SE_UID.');
+            throw new InvalidParameterException(
+                '"' . $imapSearchOption
+                . '" is not supported by setImapSearchOption(). Supported options are \SE_FREE and \SE_UID.'
+            );
         }
 
         $this->imapSearchOption = $imapSearchOption;
@@ -290,7 +293,11 @@ class Mailbox
      * Sets the timeout of all or one specific type.
      *
      * @param int $timeout Timeout in seconds
-     * @param array $types One of the following: IMAP_OPENTIMEOUT, IMAP_READTIMEOUT, IMAP_WRITETIMEOUT, IMAP_CLOSETIMEOUT
+     * @param array $types One of the following:
+     *  - IMAP_OPENTIMEOUT
+     *  - IMAP_READTIMEOUT
+     *  - IMAP_WRITETIMEOUT
+     *  - IMAP_CLOSETIMEOUT
      *
      * @phpstan-param list<int> $types
      *
@@ -305,7 +312,10 @@ class Mailbox
         $found_types = \array_intersect($types, $supported_types);
 
         if (\count($types) != \count($found_types)) {
-            throw new InvalidParameterException('You have provided at least one unsupported timeout type. Supported types are: IMAP_OPENTIMEOUT, IMAP_READTIMEOUT, IMAP_WRITETIMEOUT, IMAP_CLOSETIMEOUT');
+            throw new InvalidParameterException(
+                'You have provided at least one unsupported timeout type.'
+                . ' Supported types are: IMAP_OPENTIMEOUT, IMAP_READTIMEOUT, IMAP_WRITETIMEOUT, IMAP_CLOSETIMEOUT'
+            );
         }
 
         $this->timeouts = \array_fill_keys($types, $timeout);
@@ -334,14 +344,20 @@ class Mailbox
     {
         if ($options !== 0) {
             if (($options & self::IMAP_OPTIONS_SUPPORTED_VALUES) !== $options) {
-                throw new InvalidParameterException('Please check your option for setConnectionArgs()! Unsupported option "' . $options . '". Available options: https://www.php.net/manual/de/function.imap-open.php');
+                throw new InvalidParameterException(
+                    'Please check your option for setConnectionArgs()! Unsupported option "'
+                    . $options . '". Available options: https://www.php.net/manual/de/function.imap-open.php'
+                );
             }
             $this->imapOptions = $options;
         }
 
         if ($retriesNum != 0) {
             if ($retriesNum < 0) {
-                throw new InvalidParameterException('Invalid number of retries provided for setConnectionArgs()! It must be a positive integer. (eg. 1 or 3)');
+                throw new InvalidParameterException(
+                    'Invalid number of retries provided for setConnectionArgs()!'
+                    . ' It must be a positive integer. (eg. 1 or 3)'
+                );
             }
             $this->imapRetriesNum = $retriesNum;
         }
@@ -351,7 +367,10 @@ class Mailbox
 
             foreach (\array_keys($params) as $key) {
                 if (!\in_array($key, $supported_params, true)) {
-                    throw new InvalidParameterException('Invalid array key of params provided for setConnectionArgs()! Only DISABLE_AUTHENTICATOR is currently valid.');
+                    throw new InvalidParameterException(
+                        'Invalid array key of params provided for setConnectionArgs()!'
+                        . ' Only DISABLE_AUTHENTICATOR is currently valid.'
+                    );
                 }
             }
 
@@ -459,7 +478,9 @@ class Mailbox
         $out = mb_convert_encoding($str, 'UTF-8', 'UTF7-IMAP');
 
         if (!\is_string($out)) {
-            throw new \UnexpectedValueException('mb_convert_encoding($str, \'UTF-8\', \'UTF7-IMAP\') could not convert $str');
+            throw new \UnexpectedValueException(
+                'mb_convert_encoding($str, \'UTF-8\', \'UTF7-IMAP\') could not convert $str'
+            );
         }
 
         return $out;
@@ -605,7 +626,8 @@ class Mailbox
      * For example, to match all unanswered mails sent by Mom, you'd use: "UNANSWERED FROM mom".
      *
      * @param string $criteria See http://php.net/imap_search for a complete list of available criteria
-     * @param bool $disableServerEncoding Disables server encoding while searching for mails (can be useful on Exchange servers)
+     * @param bool $disableServerEncoding Disables server encoding while searching
+     *  for mails (can be useful on Exchange servers)
      *
      * @return int[] mailsIds (or empty array)
      *
@@ -899,7 +921,8 @@ class Mailbox
     /**
      * Fetch mail headers for listed mails ids.
      *
-     * Returns an array of objects describing one mail header each. The object will only define a property if it exists. The possible properties are:
+     * Returns an array of objects describing one mail header each. The object will only
+     * define a property if it exists. The possible properties are:
      *  subject - the mails subject
      *  from - who sent it
      *  sender - who sent it

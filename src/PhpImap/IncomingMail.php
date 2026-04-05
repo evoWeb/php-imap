@@ -96,7 +96,7 @@ class IncomingMail extends IncomingMailHeader
     }
 
     /**
-     * @param DataPartInfo::TEXT_PLAIN|DataPartInfo::TEXT_HTML $type
+     * @phpstan-param DataPartInfo::TEXT_PLAIN|DataPartInfo::TEXT_HTML $type
      */
     public function addDataPartInfo(DataPartInfo $dataInfo, int $type): void
     {
@@ -106,7 +106,9 @@ class IncomingMail extends IncomingMailHeader
     public function addAttachment(IncomingMailAttachment $attachment): void
     {
         if (!\is_string($attachment->id)) {
-            throw new \InvalidArgumentException('Argument 1 passed to ' . __METHOD__ . '() does not have an id specified!');
+            throw new \InvalidArgumentException(
+                'Argument 1 passed to ' . __METHOD__ . '() does not have an id specified!'
+            );
         }
         $this->attachments[$attachment->id] = $attachment;
 
@@ -184,7 +186,9 @@ class IncomingMail extends IncomingMailHeader
             foreach ($this->attachments as $attachment) {
                 if ($attachment->contentId == $attachmentId) {
                     if (!\is_string($attachment->id)) {
-                        throw new \InvalidArgumentException('Argument 1 passed to ' . __METHOD__ . '() does not have an id specified!');
+                        throw new \InvalidArgumentException(
+                            'Argument 1 passed to ' . __METHOD__ . '() does not have an id specified!'
+                        );
                     }
                     $search[] = $placeholder;
                     $replace[] = $baseUri . \basename($this->attachments[$attachment->id]->filePath);
@@ -216,8 +220,8 @@ class IncomingMail extends IncomingMailHeader
                  * See https://github.com/barbushin/php-imap/issues/569.
                  *
                  * Re-fetch attachments each iteration so removed attachments are excluded.
-                 * Prefer contentId matching; only fall back to disposition-based matching when no contentId match exists,
-                 * to avoid embedding the wrong attachment when multiple inline images are present.
+                 * Prefer contentId matching; only fall back to disposition-based matching when no contentId
+                 * match exists, to avoid embedding the wrong attachment when multiple inline images are present.
                  */
                 $attachments = $this->getAttachments();
                 $matched = null;
@@ -242,7 +246,9 @@ class IncomingMail extends IncomingMailHeader
 
                     if (str_contains($contentType, 'image')) {
                         if (!\is_string($matched->id)) {
-                            throw new \InvalidArgumentException('Argument 1 passed to ' . __METHOD__ . '() does not have an id specified!');
+                            throw new \InvalidArgumentException(
+                                'Argument 1 passed to ' . __METHOD__ . '() does not have an id specified!'
+                            );
                         }
 
                         $base64encoded = \base64_encode($contents);

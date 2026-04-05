@@ -349,7 +349,12 @@ final class MailboxExtendedTest extends TestCase
      */
     public static function getMailHeaderFieldValueProvider(): array
     {
-        $headers = "From: sender@example.com\r\nTo: recipient@example.com\r\nSubject: Test Mail\r\nContent-Type: text/plain; charset=UTF-8\r\nX-Mailer: PHPUnit\r\nMIME-Version: 1.0";
+        $headers = 'From: sender@example.com
+        To: recipient@example.com
+        Subject: Test Mail
+        Content-Type: text/plain; charset=UTF-8
+        X-Mailer: PHPUnit
+        MIME-Version: 1.0';
 
         return [
             'From header' => [$headers, 'From'],

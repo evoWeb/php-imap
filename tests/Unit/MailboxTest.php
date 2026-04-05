@@ -11,6 +11,7 @@ namespace PhpImap\Tests\Unit;
 
 use PhpImap\Exceptions\InvalidParameterException;
 use PhpImap\Mailbox;
+use PhpImap\Tests\Fixtures\Mailbox as FixtureMailbox;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -47,17 +48,20 @@ final class MailboxTest extends TestCase
     /**
      * Test, that the constructor trims possible variables
      * Leading and ending spaces are not even possible in some variables.
+     *
+     * @throws \Exception
      */
     public function testConstructorTrimsPossibleVariables(): void
     {
         $imapPath = ' {imap.example.com:993/imap/ssl}INBOX     ';
         $login = '    php-imap@example.com';
         $password = '  v3rY!53cEt&P4sSWöRd$';
-        // directory names can contain spaces before AND after on Linux/Unix systems. Windows trims these spaces automatically.
+        // directory names can contain spaces before AND after on
+        // Linux/Unix systems. Windows trims these spaces automatically.
         $attachmentsDir = '.';
         $serverEncoding = 'UTF-8  ';
 
-        $mailbox = new \PhpImap\Tests\Fixtures\Mailbox($imapPath, $login, $password, $attachmentsDir, $serverEncoding);
+        $mailbox = new FixtureMailbox($imapPath, $login, $password, $attachmentsDir, $serverEncoding);
 
         self::assertSame('{imap.example.com:993/imap/ssl}INBOX', $mailbox->getImapPath());
         self::assertSame('php-imap@example.com', $mailbox->getLogin());
@@ -98,6 +102,8 @@ final class MailboxTest extends TestCase
 
     /**
      * Test, that the server encoding can be set.
+     *
+     * @throws \Exception
      */
     #[Test]
     #[DataProvider('SetAndGetServerEncodingProvider')]
@@ -132,10 +138,22 @@ final class MailboxTest extends TestCase
     public function testServerEncodingUppersSetting(): void
     {
         // Server encoding should be always upper formatted
-        $mailbox = new Mailbox($this->imapPath, $this->login, $this->password, $this->attachmentsDir, 'utf-8');
+        $mailbox = new Mailbox(
+            $this->imapPath,
+            $this->login,
+            $this->password,
+            $this->attachmentsDir,
+            'utf-8'
+        );
         self::assertSame('UTF-8', $mailbox->getServerEncoding());
 
-        $mailbox = new Mailbox($this->imapPath, $this->login, $this->password, $this->attachmentsDir, 'UTF7-IMAP');
+        $mailbox = new Mailbox(
+            $this->imapPath,
+            $this->login,
+            $this->password,
+            $this->attachmentsDir,
+            'UTF7-IMAP'
+        );
         $mailbox->setServerEncoding('uTf-8');
         self::assertSame('UTF-8', $mailbox->getServerEncoding());
     }
@@ -591,31 +609,47 @@ final class MailboxTest extends TestCase
      * Provides test data for testing mime encoding.
      *
      * @return string[][]
-     *
-     * @phpstan-return array{
-     *      0: array{0: '=?iso-8859-1?Q?Sebastian_Kr=E4tzig?= <sebastian.kraetzig@example.com>', 1: 'Sebastian Krätzig <sebastian.kraetzig@example.com>'},
-     *      1: array{0: '=?iso-8859-1?Q?Sebastian_Kr=E4tzig?=', 1: 'Sebastian Krätzig'},
-     *      2: array{0: 'sebastian.kraetzig', 1: 'sebastian.kraetzig'},
-     *      3: array{0: '=?US-ASCII?Q?Keith_Moore?= <km@ab.example.edu>', 1: 'Keith Moore <km@ab.example.edu>'},
-     *      4: array{0: '   ', 1: '   '},
-     *      5: array{0: '=?ISO-8859-1?Q?Max_J=F8rn_Simsen?= <max.joern.s@example.dk>', 1: 'Max Jørn Simsen <max.joern.s@example.dk>'},
-     *      6: array{0: '=?ISO-8859-1?Q?Andr=E9?= Muster <andre.muster@vm1.ulg.ac.be>', 1: 'André Muster <andre.muster@vm1.ulg.ac.be>'},
-     *      7: array{0: '=?ISO-8859-1?B?SWYgeW91IGNhbiByZWFkIHRoaXMgeW8=?= =?ISO-8859-2?B?dSB1bmRlcnN0YW5kIHRoZSBleGFtcGxlLg==?=', 1: 'If you can read this you understand the example.'},
-     *      8: array{0: '', 1: ''}
-     * }
      */
     public static function mimeEncodingProvider(): array
     {
         return [
-            ['=?iso-8859-1?Q?Sebastian_Kr=E4tzig?= <sebastian.kraetzig@example.com>', 'Sebastian Krätzig <sebastian.kraetzig@example.com>'],
-            ['=?iso-8859-1?Q?Sebastian_Kr=E4tzig?=', 'Sebastian Krätzig'],
-            ['sebastian.kraetzig', 'sebastian.kraetzig'],
-            ['=?US-ASCII?Q?Keith_Moore?= <km@ab.example.edu>', 'Keith Moore <km@ab.example.edu>'],
-            ['   ', '   '],
-            ['=?ISO-8859-1?Q?Max_J=F8rn_Simsen?= <max.joern.s@example.dk>', 'Max Jørn Simsen <max.joern.s@example.dk>'],
-            ['=?ISO-8859-1?Q?Andr=E9?= Muster <andre.muster@vm1.ulg.ac.be>', 'André Muster <andre.muster@vm1.ulg.ac.be>'],
-            ['=?ISO-8859-1?B?SWYgeW91IGNhbiByZWFkIHRoaXMgeW8=?= =?ISO-8859-2?B?dSB1bmRlcnN0YW5kIHRoZSBleGFtcGxlLg==?=', 'If you can read this you understand the example.'],
-            ['', ''], // barbushin/php-imap#501
+            [
+                '=?iso-8859-1?Q?Sebastian_Kr=E4tzig?= <sebastian.kraetzig@example.com>',
+                'Sebastian Krätzig <sebastian.kraetzig@example.com>',
+            ],
+            [
+                '=?iso-8859-1?Q?Sebastian_Kr=E4tzig?=',
+                'Sebastian Krätzig',
+            ],
+            [
+                'sebastian.kraetzig',
+                'sebastian.kraetzig',
+            ],
+            [
+                '=?US-ASCII?Q?Keith_Moore?= <km@ab.example.edu>',
+                'Keith Moore <km@ab.example.edu>',
+            ],
+            [
+                '   ',
+                '   ',
+            ],
+            [
+                '=?ISO-8859-1?Q?Max_J=F8rn_Simsen?= <max.joern.s@example.dk>',
+                'Max Jørn Simsen <max.joern.s@example.dk>',
+            ],
+            [
+                '=?ISO-8859-1?Q?Andr=E9?= Muster <andre.muster@vm1.ulg.ac.be>',
+                'André Muster <andre.muster@vm1.ulg.ac.be>',
+            ],
+            [
+                '=?ISO-8859-1?B?SWYgeW91IGNhbiByZWFkIHRoaXMgeW8=?='
+                . ' =?ISO-8859-2?B?dSB1bmRlcnN0YW5kIHRoZSBleGFtcGxlLg==?=',
+                'If you can read this you understand the example.',
+            ],
+            [
+                '',
+                '',
+            ], // barbushin/php-imap#501
         ];
     }
 
@@ -677,6 +711,8 @@ final class MailboxTest extends TestCase
      *
      * @phpstan-param 'assertNull'|'expectException' $assertMethod
      * @phpstan-param list<1|2|3|4> $types
+     *
+     * @throws \Exception
      */
     #[Test]
     #[DataProvider('timeoutsProvider')]
@@ -695,7 +731,12 @@ final class MailboxTest extends TestCase
     /**
      * Provides test data for testing connection args.
      *
-     * @phpstan-return \Generator<string, array{0: 'assertNull'|'expectException', 1: int, 2: 0, 3: array<empty, empty>}, mixed, void>
+     * @phpstan-return \Generator<string, array{
+     *     0: 'assertNull'|'expectException',
+     *     1: int,
+     *     2: 0,
+     *     3: array<empty, empty>
+     * }, mixed, void>
      */
     public static function connectionArgsProvider(): \Generator
     {
@@ -707,12 +748,42 @@ final class MailboxTest extends TestCase
             'debug, disable gssapi' => ['assertNull', \OP_DEBUG, 0, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
             'short cache, disable gssapi' => ['assertNull', \OP_SHORTCACHE, 0, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
             'silent, disable gssapi' => ['assertNull', \OP_SILENT, 0, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
-            'return driver prototype, disable gssapi' => ['assertNull', \OP_PROTOTYPE, 0, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
-            'don\'t do non-secure authentication, disable gssapi' => ['assertNull', \OP_SECURE, 0, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
-            'readonly, disable gssapi, 1 retry' => ['assertNull', \OP_READONLY, 1, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
-            'readonly, disable gssapi, 3 retries' => ['assertNull', \OP_READONLY, 3, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
-            'readonly, disable gssapi, 12 retries' => ['assertNull', \OP_READONLY, 12, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
-            'readonly debug, disable gssapi' => ['assertNull', \OP_READONLY | \OP_DEBUG, 0, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
+            'return driver prototype, disable gssapi' => [
+                'assertNull',
+                \OP_PROTOTYPE,
+                0,
+                ['DISABLE_AUTHENTICATOR' => 'GSSAPI'],
+            ],
+            'don\'t do non-secure authentication, disable gssapi' => [
+                'assertNull',
+                \OP_SECURE,
+                0,
+                ['DISABLE_AUTHENTICATOR' => 'GSSAPI'],
+            ],
+            'readonly, disable gssapi, 1 retry' => [
+                'assertNull',
+                \OP_READONLY,
+                1,
+                ['DISABLE_AUTHENTICATOR' => 'GSSAPI'],
+            ],
+            'readonly, disable gssapi, 3 retries' => [
+                'assertNull',
+                \OP_READONLY,
+                3,
+                ['DISABLE_AUTHENTICATOR' => 'GSSAPI'],
+            ],
+            'readonly, disable gssapi, 12 retries' => [
+                'assertNull',
+                \OP_READONLY,
+                12,
+                ['DISABLE_AUTHENTICATOR' => 'GSSAPI'],
+            ],
+            'readonly debug, disable gssapi' => [
+                'assertNull',
+                \OP_READONLY | \OP_DEBUG,
+                0,
+                ['DISABLE_AUTHENTICATOR' => 'GSSAPI'],
+            ],
             'readonly, -1 retries' => ['expectException', \OP_READONLY, -1, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
             'readonly, -3 retries' => ['expectException', \OP_READONLY, -3, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
             'readonly, -12 retries' => ['expectException', \OP_READONLY, -12, ['DISABLE_AUTHENTICATOR' => 'GSSAPI']],
@@ -791,17 +862,50 @@ final class MailboxTest extends TestCase
     public static function mimeStrDecodingProvider(): array
     {
         return [
-            '<bde36ec8-9710-47bc-9ea3-bf0425078e33@php.imap>' => ['<bde36ec8-9710-47bc-9ea3-bf0425078e33@php.imap>', '<bde36ec8-9710-47bc-9ea3-bf0425078e33@php.imap>'],
-            '<CAKBqNfyKo+ZXtkz6DUAHw6FjmsDjWDB-pvHkJy6kwO82jTbkNA@mail.gmail.com>' => ['<CAKBqNfyKo+ZXtkz6DUAHw6FjmsDjWDB-pvHkJy6kwO82jTbkNA@mail.gmail.com>', '<CAKBqNfyKo+ZXtkz6DUAHw6FjmsDjWDB-pvHkJy6kwO82jTbkNA@mail.gmail.com>'],
-            '<CAE78dO7vwnd_rkozHLZ5xSUnFEQA9fymcYREW2cwQ8DA2v7BTA@mail.gmail.com>' => ['<CAE78dO7vwnd_rkozHLZ5xSUnFEQA9fymcYREW2cwQ8DA2v7BTA@mail.gmail.com>', '<CAE78dO7vwnd_rkozHLZ5xSUnFEQA9fymcYREW2cwQ8DA2v7BTA@mail.gmail.com>'],
-            '<CAE78dO7vwnd_rkozHLZ5xSU-=nFE_QA9+fymcYREW2cwQ8DA2v7BTA@mail.gmail.com>' => ['<CAE78dO7vwnd_rkozHLZ5xSU-=nFE_QA9+fymcYREW2cwQ8DA2v7BTA@mail.gmail.com>', '<CAE78dO7vwnd_rkozHLZ5xSU-=nFE_QA9+fymcYREW2cwQ8DA2v7BTA@mail.gmail.com>'],
-            'Some subject here 😘' => ['=?UTF-8?q?Some_subject_here_?= =?UTF-8?q?=F0=9F=98=98?=', 'Some subject here 😘'],
-            'mountainguan测试' => ['=?UTF-8?Q?mountainguan=E6=B5=8B=E8=AF=95?=', 'mountainguan测试'],
-            "This is the Euro symbol ''." => ["This is the Euro symbol ''.", "This is the Euro symbol ''."],
-            'Some subject here 😘 US-ASCII' => ['=?UTF-8?q?Some_subject_here_?= =?UTF-8?q?=F0=9F=98=98?=', 'Some subject here 😘', 'US-ASCII'],
-            'mountainguan测试 US-ASCII' => ['=?UTF-8?Q?mountainguan=E6=B5=8B=E8=AF=95?=', 'mountainguan测试', 'US-ASCII'],
-            'مقتطفات من: صن تزو. "فن الحرب". كتب أبل. Something' => ['مقتطفات من: صن تزو. "فن الحرب". كتب أبل. Something', 'مقتطفات من: صن تزو. "فن الحرب". كتب أبل. Something'],
-            '(事件单编号:TESTA-111111)(通报)入口有陌生人' => ['=?utf-8?b?KOS6i+S7tuWNlee8luWPtzpURVNUQS0xMTExMTEpKOmAmuaKpSnl?= =?utf-8?b?haXlj6PmnInpmYznlJ/kuro=?=', '(事件单编号:TESTA-111111)(通报)入口有陌生人'],
+            '<bde36ec8-9710-47bc-9ea3-bf0425078e33@php.imap>' => [
+                '<bde36ec8-9710-47bc-9ea3-bf0425078e33@php.imap>',
+                '<bde36ec8-9710-47bc-9ea3-bf0425078e33@php.imap>',
+            ],
+            '<CAKBqNfyKo+ZXtkz6DUAHw6FjmsDjWDB-pvHkJy6kwO82jTbkNA@mail.gmail.com>' => [
+                '<CAKBqNfyKo+ZXtkz6DUAHw6FjmsDjWDB-pvHkJy6kwO82jTbkNA@mail.gmail.com>',
+                '<CAKBqNfyKo+ZXtkz6DUAHw6FjmsDjWDB-pvHkJy6kwO82jTbkNA@mail.gmail.com>',
+            ],
+            '<CAE78dO7vwnd_rkozHLZ5xSUnFEQA9fymcYREW2cwQ8DA2v7BTA@mail.gmail.com>' => [
+                '<CAE78dO7vwnd_rkozHLZ5xSUnFEQA9fymcYREW2cwQ8DA2v7BTA@mail.gmail.com>',
+                '<CAE78dO7vwnd_rkozHLZ5xSUnFEQA9fymcYREW2cwQ8DA2v7BTA@mail.gmail.com>',
+            ],
+            '<CAE78dO7vwnd_rkozHLZ5xSU-=nFE_QA9+fymcYREW2cwQ8DA2v7BTA@mail.gmail.com>' => [
+                '<CAE78dO7vwnd_rkozHLZ5xSU-=nFE_QA9+fymcYREW2cwQ8DA2v7BTA@mail.gmail.com>',
+                '<CAE78dO7vwnd_rkozHLZ5xSU-=nFE_QA9+fymcYREW2cwQ8DA2v7BTA@mail.gmail.com>',
+            ],
+            'Some subject here 😘' => [
+                '=?UTF-8?q?Some_subject_here_?= =?UTF-8?q?=F0=9F=98=98?=',
+                'Some subject here 😘',
+            ],
+            'mountainguan测试' => [
+                '=?UTF-8?Q?mountainguan=E6=B5=8B=E8=AF=95?=',
+                'mountainguan测试',
+            ],
+            "This is the Euro symbol ''." => [
+                "This is the Euro symbol ''.",
+                "This is the Euro symbol ''.",
+            ],
+            'Some subject here 😘 US-ASCII' => [
+                '=?UTF-8?q?Some_subject_here_?= =?UTF-8?q?=F0=9F=98=98?=',
+                'Some subject here 😘', 'US-ASCII',
+            ],
+            'mountainguan测试 US-ASCII' => [
+                '=?UTF-8?Q?mountainguan=E6=B5=8B=E8=AF=95?=',
+                'mountainguan测试', 'US-ASCII',
+            ],
+            'مقتطفات من: صن تزو. "فن الحرب". كتب أبل. Something' => [
+                'مقتطفات من: صن تزو. "فن الحرب". كتب أبل. Something',
+                'مقتطفات من: صن تزو. "فن الحرب". كتب أبل. Something',
+            ],
+            '(事件单编号:TESTA-111111)(通报)入口有陌生人' => [
+                '=?utf-8?b?KOS6i+S7tuWNlee8luWPtzpURVNUQS0xMTExMTEpKOmAmuaKpSnl?= =?utf-8?b?haXlj6PmnInpmYznlJ/kuro=?=',
+                '(事件单编号:TESTA-111111)(通报)入口有陌生人',
+            ],
         ];
     }
 
@@ -824,27 +928,35 @@ final class MailboxTest extends TestCase
     /**
      * Provides test data for testing base64 string decoding.
      *
-     * @phpstan-return array{
-     *      0: array{0: 'bm8tcmVwbHlAZXhhbXBsZS5jb20=', 1: 'no-reply@example.com'},
-     *      1: array{0: 'TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlzIHNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2YgdGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGludWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Yga25vd2xlZGdlLCBleGNlZWRzIHRoZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4=', 1: 'Man is distinguished, not only by his reason, but by this singular passion from other animals, which is a lust of the mind, that by a perseverance of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of any carnal pleasure.'},
-     *      2: array{0: 'SSBjYW4gZWF0IGdsYXNzIGFuZCBpdCBkb2VzIG5vdCBodXJ0IG1lLg==', 1: 'I can eat glass and it does not hurt me.'},
-     *      3: array{0: '77u/4KSV4KS+4KSa4KSCIOCktuCkleCljeCkqOCli+CkruCljeCkr+CkpOCljeCkpOClgeCkruCljSDgpaQg4KSo4KWL4KSq4KS54KS/4KSo4KS44KWN4KSk4KS/IOCkruCkvuCkruCljSDgpaU=', 1: '﻿काचं शक्नोम्यत्तुम् । नोपहिनस्ति माम् ॥'},
-     *      4: array{0: 'SmUgcGV1eCBtYW5nZXIgZHUgdmVycmUsIMOnYSBuZSBtZSBmYWl0IHBhcyBtYWwu', 1: 'Je peux manger du verre, ça ne me fait pas mal.'},
-     *      5: array{0: 'UG90IHPEgyBtxINuw6JuYyBzdGljbMSDIMiZaSBlYSBudSBtxIMgcsSDbmXImXRlLg==', 1: 'Pot să mănânc sticlă și ea nu mă rănește.'},
-     *      6: array{0: '5oiR6IO95ZCe5LiL546755KD6ICM5LiN5YK36Lqr6auU44CC', 1: '我能吞下玻璃而不傷身體。'}
-     * }
-     *
      * @return string[][]
      */
     public static function Base64DecodeProvider(): array
     {
         return [
             ['bm8tcmVwbHlAZXhhbXBsZS5jb20=', 'no-reply@example.com'],
-            ['TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlzIHNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2YgdGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGludWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Yga25vd2xlZGdlLCBleGNlZWRzIHRoZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4=', 'Man is distinguished, not only by his reason, but by this singular passion from other animals, which is a lust of the mind, that by a perseverance of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of any carnal pleasure.'],
+            [
+                'TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlzIHNpbmd1bGFyIHBhc3Npb'
+                . '24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2YgdGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlcmFu'
+                . 'Y2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGludWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Yga25vd2xlZGd'
+                . 'lLCBleGNlZWRzIHRoZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4=',
+                'Man is distinguished, not only by his reason, but by this singular passion from other animals, which'
+                . ' is a lust of the mind, that by a perseverance of delight in the continued and indefatigable'
+                . ' generation of knowledge, exceeds the short vehemence of any carnal pleasure.',
+            ],
             ['SSBjYW4gZWF0IGdsYXNzIGFuZCBpdCBkb2VzIG5vdCBodXJ0IG1lLg==', 'I can eat glass and it does not hurt me.'],
-            ['77u/4KSV4KS+4KSa4KSCIOCktuCkleCljeCkqOCli+CkruCljeCkr+CkpOCljeCkpOClgeCkruCljSDgpaQg4KSo4KWL4KSq4KS54KS/4KSo4KS44KWN4KSk4KS/IOCkruCkvuCkruCljSDgpaU=', '﻿काचं शक्नोम्यत्तुम् । नोपहिनस्ति माम् ॥'],
-            ['SmUgcGV1eCBtYW5nZXIgZHUgdmVycmUsIMOnYSBuZSBtZSBmYWl0IHBhcyBtYWwu', 'Je peux manger du verre, ça ne me fait pas mal.'],
-            ['UG90IHPEgyBtxINuw6JuYyBzdGljbMSDIMiZaSBlYSBudSBtxIMgcsSDbmXImXRlLg==', 'Pot să mănânc sticlă și ea nu mă rănește.'],
+            [
+                '77u/4KSV4KS+4KSa4KSCIOCktuCkleCljeCkqOCli+CkruCljeCkr+CkpOCljeCkpOClgeCkruCljSDgpaQg4KSo4KWL4KSq4K'
+                . 'S54KS/4KSo4KS44KWN4KSk4KS/IOCkruCkvuCkruCljSDgpaU=',
+                '﻿काचं शक्नोम्यत्तुम् । नोपहिनस्ति माम् ॥',
+            ],
+            [
+                'SmUgcGV1eCBtYW5nZXIgZHUgdmVycmUsIMOnYSBuZSBtZSBmYWl0IHBhcyBtYWwu',
+                'Je peux manger du verre, ça ne me fait pas mal.',
+            ],
+            [
+                'UG90IHPEgyBtxINuw6JuYyBzdGljbMSDIMiZaSBlYSBudSBtxIMgcsSDbmXImXRlLg==',
+                'Pot să mănânc sticlă și ea nu mă rănește.',
+            ],
             ['5oiR6IO95ZCe5LiL546755KD6ICM5LiN5YK36Lqr6auU44CC', '我能吞下玻璃而不傷身體。'],
         ];
     }
@@ -858,27 +970,6 @@ final class MailboxTest extends TestCase
     }
 
     /**
-     * @phpstan-return array{
-     *      0: array{
-     *          0: string,
-     *          1: '',
-     *          2: class-string<InvalidParameterException>,
-     *          3: 'setAttachmentsDir() expects a string as first parameter!'
-     *      },
-     *      1: array{
-     *          0: string,
-     *          1: " ",
-     *          2: class-string<InvalidParameterException>,
-     *          3: 'setAttachmentsDir() expects a string as first parameter!'
-     *      },
-     *      2: array{
-     *          0: string,
-     *          1: string,
-     *          2: class-string<InvalidParameterException>,
-     *          3: string
-     *      }
-     * }
-     *
      * @return string[][]
      */
     public static function attachmentDirFailureProvider(): array
@@ -930,8 +1021,17 @@ final class MailboxTest extends TestCase
         $mailbox->setAttachmentsDir($attachmentsDir);
     }
 
-    protected function getMailbox(): \PhpImap\Tests\Fixtures\Mailbox
+    /**
+     * @throws InvalidParameterException
+     */
+    protected function getMailbox(): FixtureMailbox
     {
-        return new \PhpImap\Tests\Fixtures\Mailbox($this->imapPath, $this->login, $this->password, $this->attachmentsDir, $this->serverEncoding);
+        return new FixtureMailbox(
+            $this->imapPath,
+            $this->login,
+            $this->password,
+            $this->attachmentsDir,
+            $this->serverEncoding
+        );
     }
 }

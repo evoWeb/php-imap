@@ -41,7 +41,8 @@ class MailboxIssue501Test extends AbstractMailboxTest
         $imapPath = ' {imap.example.com:993/imap/ssl}INBOX     ';
         $login = '    php-imap@example.com';
         $password = '  v3rY!53cEt&P4sSWöRd$';
-        // directory names can contain spaces before AND after on Linux/Unix systems. Windows trims these spaces automatically.
+        // directory names can contain spaces before AND after on
+        // Linux/Unix systems. Windows trims these spaces automatically.
         $attachmentsDir = '.';
         $serverEncoding = 'UTF-8  ';
 
