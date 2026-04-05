@@ -2071,12 +2071,10 @@ class Mailbox
     protected function getCombinedPath(string $folder, bool $absolute = false): string
     {
         if (empty(\trim($folder))) {
-            return $this->imapPath;
-        }
-        if (str_ends_with($this->imapPath, '}')) {
-            return $this->imapPath . $folder;
-        }
-        if ($absolute === true) {
+            $result = $this->imapPath;
+        } elseif (str_ends_with($this->imapPath, '}')) {
+            $result = $this->imapPath . $folder;
+        } elseif ($absolute === true) {
             $folder = ($folder === '/') ? '' : $folder;
             $posConnectionDefinitionEnd = \strpos($this->imapPath, '}');
 
@@ -2084,10 +2082,12 @@ class Mailbox
                 throw new \UnexpectedValueException('"}" was not present in IMAP path!');
             }
 
-            return \substr($this->imapPath, 0, $posConnectionDefinitionEnd + 1) . $folder;
+            $result = \substr($this->imapPath, 0, $posConnectionDefinitionEnd + 1) . $folder;
+        } else {
+            $result = $this->imapPath . $this->getPathDelimiter() . $folder;
         }
 
-        return $this->imapPath . $this->getPathDelimiter() . $folder;
+        return $result;
     }
 
     /**
