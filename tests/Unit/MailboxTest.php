@@ -5,6 +5,7 @@
  *
  * @author Sebastian Kraetzig <sebastian-kraetzig@gmx.de>
  */
+
 declare(strict_types=1);
 
 namespace PhpImap\Tests\Unit;

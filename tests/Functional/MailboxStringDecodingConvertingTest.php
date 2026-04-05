@@ -7,6 +7,7 @@
  *
  * @author Sebi94nbg
  */
+
 declare(strict_types=1);
 
 namespace PhpImap\Tests\Functional;

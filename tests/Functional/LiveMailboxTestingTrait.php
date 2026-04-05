@@ -7,6 +7,7 @@
  *
  * @author BAPCLTD-Marv
  */
+
 declare(strict_types=1);
 
 namespace PhpImap\Tests\Functional;
