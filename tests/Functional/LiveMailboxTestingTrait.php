@@ -28,7 +28,7 @@ trait LiveMailboxTestingTrait
      *
      * @return array<string, MAILBOX_ARGS>
      */
-    public static function MailBoxProvider(): array
+    public static function mailBoxProvider(): array
     {
         $sets = [];
 

@@ -33,7 +33,7 @@ class MailboxIssue490Test extends AbstractMailboxTest
      * @throws ConnectionException
      */
     #[Test]
-    #[DataProvider('MailBoxProvider')]
+    #[DataProvider('mailBoxProvider')]
     #[Group('live')]
     #[Group('live-issue-490')]
     public function testGetTextAttachments(
@@ -59,7 +59,7 @@ class MailboxIssue490Test extends AbstractMailboxTest
                 'subject' => 'barbushin/php-imap#501: ' . \bin2hex(\random_bytes(16)),
             ];
 
-            [$searchCriteria] = $this->SubjectSearchCriteriaAndSubject($envelope);
+            [$searchCriteria] = $this->subjectSearchCriteriaAndSubject($envelope);
 
             $search = $mailbox->searchMailbox($searchCriteria);
 

@@ -59,7 +59,7 @@ abstract class AbstractMailboxTest extends TestCase
      *      2: string
      * }, mixed, void>
      */
-    public static function ComposeProvider(): \Generator
+    public static function composeProvider(): \Generator
     {
         yield from [];
     }
@@ -71,7 +71,7 @@ abstract class AbstractMailboxTest extends TestCase
      *
      * @phpstan-return array{0: string, 1: string}
      */
-    protected function SubjectSearchCriteriaAndSubject(array $envelope): array
+    protected function subjectSearchCriteriaAndSubject(array $envelope): array
     {
         /** @var ?string $subject */
         $subject = $envelope['subject'] ?? null;
@@ -84,7 +84,7 @@ abstract class AbstractMailboxTest extends TestCase
         return [$searchCriteria, $subject];
     }
 
-    protected function MaybeSkipAppendTest(array $envelope): bool
+    protected function maybeSkipAppendTest(array $envelope): bool
     {
         if (!isset($envelope['subject'])) {
             self::markTestSkipped('Cannot search for message by subject, no subject specified!');

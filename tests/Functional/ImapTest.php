@@ -37,7 +37,7 @@ class ImapTest extends TestCase
      *      void
      * >
      */
-    public static function OpenFailure(): \Generator
+    public static function openFailure(): \Generator
     {
         yield 'empty mailbox/username/password' => [
             ConnectionException::class,
@@ -80,7 +80,7 @@ class ImapTest extends TestCase
      * @throws ConnectionException
      */
     #[Test]
-    #[DataProvider('OpenFailure')]
+    #[DataProvider('openFailure')]
     public function testOpenFailure(
         string $exception,
         string $message,
@@ -111,7 +111,7 @@ class ImapTest extends TestCase
      * @throws RandomException
      */
     #[Test]
-    #[DataProvider('MailBoxProvider')]
+    #[DataProvider('mailBoxProvider')]
     #[Group('live')]
     public function testSortEmpty(HiddenString $path, HiddenString $login, HiddenString $password): void
     {

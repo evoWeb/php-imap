@@ -44,7 +44,7 @@ class MailboxTest extends AbstractMailboxTest
      * @throws ConnectionException
      */
     #[Test]
-    #[DataProvider('MailBoxProvider')]
+    #[DataProvider('mailBoxProvider')]
     #[Group('live')]
     public function testGetImapStream(
         HiddenString $imapPath,
@@ -159,7 +159,7 @@ class MailboxTest extends AbstractMailboxTest
      *
      * @throws RandomException
      */
-    public static function ComposeProvider(): \Generator
+    public static function composeProvider(): \Generator
     {
         $randomSubject = 'test: ' . \bin2hex(\random_bytes(16));
         yield [
@@ -305,13 +305,13 @@ class MailboxTest extends AbstractMailboxTest
      * @phpstan-param COMPOSE_BODY $body
      */
     #[Test]
-    #[DataProvider('ComposeProvider')]
+    #[DataProvider('composeProvider')]
     #[Group('compose')]
     public function testMailCompose(array $envelope, array $body, string $expectedResult): void
     {
         $actualResult = Imap::mail_compose($envelope, $body);
 
-        $expectedResult = $this->ReplaceBoundaryHere($expectedResult, $actualResult);
+        $expectedResult = $this->replaceBoundaryHere($expectedResult, $actualResult);
 
         self::assertSame($expectedResult, $actualResult);
     }
@@ -328,7 +328,7 @@ class MailboxTest extends AbstractMailboxTest
      * @throws RandomException
      */
     #[Test]
-    #[DataProvider('AppendProvider')]
+    #[DataProvider('appendProvider')]
     #[Group('live')]
     public function testAppendNudgesMailboxCount(
         array $mailboxArguments,
@@ -336,11 +336,11 @@ class MailboxTest extends AbstractMailboxTest
         array $body,
         bool $preCompose,
     ): void {
-        if ($this->MaybeSkipAppendTest($envelope)) {
+        if ($this->maybeSkipAppendTest($envelope)) {
             return;
         }
 
-        [$searchCriteria] = $this->SubjectSearchCriteriaAndSubject($envelope);
+        [$searchCriteria] = $this->subjectSearchCriteriaAndSubject($envelope);
 
         [$mailbox, $removeMailbox, $path] = $this->getMailboxFromArgs($mailboxArguments);
 
@@ -417,7 +417,7 @@ class MailboxTest extends AbstractMailboxTest
      * @throws RandomException
      */
     #[Test]
-    #[DataProvider('AppendProvider')]
+    #[DataProvider('appendProvider')]
     #[Group('live')]
     public function testAppendSingleSearchMatchesSort(
         array $mailboxArguments,
@@ -425,11 +425,11 @@ class MailboxTest extends AbstractMailboxTest
         array $body,
         bool $preCompose,
     ): void {
-        if ($this->MaybeSkipAppendTest($envelope)) {
+        if ($this->maybeSkipAppendTest($envelope)) {
             return;
         }
 
-        [$searchCriteria] = $this->SubjectSearchCriteriaAndSubject($envelope);
+        [$searchCriteria] = $this->subjectSearchCriteriaAndSubject($envelope);
 
         [$mailbox, $removeMailbox, $path] = $this->getMailboxFromArgs($mailboxArguments);
 
@@ -503,7 +503,7 @@ class MailboxTest extends AbstractMailboxTest
      * @throws RandomException
      */
     #[Test]
-    #[DataProvider('AppendProvider')]
+    #[DataProvider('appendProvider')]
     #[Group('live')]
     public function testAppendRetrievalMatchesExpected(
         array $mailboxArguments,
@@ -512,11 +512,11 @@ class MailboxTest extends AbstractMailboxTest
         bool $preCompose,
         string $expectedComposeResult,
     ): void {
-        if ($this->MaybeSkipAppendTest($envelope)) {
+        if ($this->maybeSkipAppendTest($envelope)) {
             return;
         }
 
-        [$searchCriteria, $searchSubject] = $this->SubjectSearchCriteriaAndSubject($envelope);
+        [$searchCriteria, $searchSubject] = $this->subjectSearchCriteriaAndSubject($envelope);
 
         [$mailbox, $removeMailbox, $path] = $this->getMailboxFromArgs($mailboxArguments);
 
@@ -555,7 +555,7 @@ class MailboxTest extends AbstractMailboxTest
         $actualResult = $mailbox->getMailMboxFormat($search[0]);
 
         self::assertSame(
-            $this->ReplaceBoundaryHere(
+            $this->replaceBoundaryHere(
                 $expectedComposeResult,
                 $actualResult
             ),
@@ -564,7 +564,7 @@ class MailboxTest extends AbstractMailboxTest
 
         $actualResult = $mailbox->getRawMail($search[0]);
 
-        self::assertSame($this->ReplaceBoundaryHere($expectedComposeResult, $actualResult), $actualResult);
+        self::assertSame($this->replaceBoundaryHere($expectedComposeResult, $actualResult), $actualResult);
 
         $mail = $mailbox->getMail($search[0], false);
 
@@ -630,7 +630,7 @@ class MailboxTest extends AbstractMailboxTest
         );
     }
 
-    protected function ReplaceBoundaryHere(string $expectedResult, string $actualResult): string
+    protected function replaceBoundaryHere(string $expectedResult, string $actualResult): string
     {
         if (
             \preg_match('/{{REPLACE_BOUNDARY_HERE}}/', $expectedResult) === 1

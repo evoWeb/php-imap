@@ -33,7 +33,7 @@ class MailboxIssue514Test extends AbstractMailboxTest
      * @throws RandomException
      */
     #[Test]
-    #[DataProvider('MailBoxProvider')]
+    #[DataProvider('mailBoxProvider')]
     #[Group('live')]
     #[Group('live-issue-514')]
     public function testEmbed(
@@ -51,7 +51,7 @@ class MailboxIssue514Test extends AbstractMailboxTest
             'subject' => 'barbushin/php-imap#514--' . \bin2hex(\random_bytes(16)),
         ];
 
-        [$searchCriteria] = $this->SubjectSearchCriteriaAndSubject($envelope);
+        [$searchCriteria] = $this->subjectSearchCriteriaAndSubject($envelope);
 
         $body = [
             [

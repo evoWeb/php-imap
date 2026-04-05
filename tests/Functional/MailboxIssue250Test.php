@@ -35,7 +35,7 @@ class MailboxIssue250Test extends AbstractMailboxTest
      *
      * @throws RandomException
      */
-    public static function ComposeProvider(): \Generator
+    public static function composeProvider(): \Generator
     {
         $randomSubject = 'barbushin/php-imap#250 测试: ' . \bin2hex(\random_bytes(16));
 
@@ -66,7 +66,7 @@ class MailboxIssue250Test extends AbstractMailboxTest
      * @throws \Exception
      */
     #[Test]
-    #[DataProvider('AppendProvider')]
+    #[DataProvider('appendProvider')]
     #[Group('live')]
     #[Group('live-issue-250')]
     public function testAppend(

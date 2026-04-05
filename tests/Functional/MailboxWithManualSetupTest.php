@@ -28,7 +28,7 @@ class MailboxWithManualSetupTest extends AbstractMailboxTest
     /**
      * @phpstan-return \Generator<int, array{0: '.issue-499.Éléments envoyés'}, mixed, void>
      */
-    public static function RelativeToRootPathProvider(): \Generator
+    public static function relativeToRootPathProvider(): \Generator
     {
         yield [
             '.issue-499.Éléments envoyés',
@@ -40,8 +40,8 @@ class MailboxWithManualSetupTest extends AbstractMailboxTest
      */
     public static function statusProviderAbsolutePath(): \Generator
     {
-        foreach (self::RelativeToRootPathProvider() as $pathArguments) {
-            foreach (self::MailBoxProvider() as $args) {
+        foreach (self::relativeToRootPathProvider() as $pathArguments) {
+            foreach (self::mailBoxProvider() as $args) {
                 $args[0] = new HiddenString($args[0]->getString() . $pathArguments[0]);
 
                 yield [$args];

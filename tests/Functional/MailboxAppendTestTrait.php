@@ -37,16 +37,16 @@ trait MailboxAppendTestTrait
      *      4: string
      * }, mixed, void>
      */
-    public static function AppendProvider(): \Generator
+    public static function appendProvider(): \Generator
     {
-        foreach (static::MailBoxProvider() as $mailboxArguments) {
-            foreach (static::ComposeProvider() as $composeArguments) {
+        foreach (static::mailBoxProvider() as $mailboxArguments) {
+            foreach (static::composeProvider() as $composeArguments) {
                 [$envelope, $body, $expectedComposeResult] = $composeArguments;
 
                 yield [$mailboxArguments, $envelope, $body, false, $expectedComposeResult];
             }
 
-            foreach (static::ComposeProvider() as $composeArguments) {
+            foreach (static::composeProvider() as $composeArguments) {
                 [$envelope, $body, $expectedComposeResult] = $composeArguments;
 
                 yield [$mailboxArguments, $envelope, $body, true, $expectedComposeResult];
@@ -65,7 +65,7 @@ trait MailboxAppendTestTrait
      * @throws \Exception
      */
     #[Test]
-    #[DataProvider('AppendProvider')]
+    #[DataProvider('appendProvider')]
     public function testAppend(
         array $mailboxArguments,
         array $envelope,
@@ -91,11 +91,11 @@ trait MailboxAppendTestTrait
         array $body,
         bool $preCompose
     ): void {
-        if ($this->MaybeSkipAppendTest($envelope)) {
+        if ($this->maybeSkipAppendTest($envelope)) {
             return;
         }
 
-        [$searchCriteria] = $this->SubjectSearchCriteriaAndSubject($envelope);
+        [$searchCriteria] = $this->subjectSearchCriteriaAndSubject($envelope);
 
         [$mailbox, $removeMailbox, $path] = $this->getMailboxFromArgs($mailboxArguments);
 

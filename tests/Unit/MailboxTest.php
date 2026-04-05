@@ -76,7 +76,7 @@ final class MailboxTest extends TestCase
      *
      * @return string[][]
      */
-    public static function SetAndGetServerEncodingProvider(): array
+    public static function setAndGetServerEncodingProvider(): array
     {
         $data = [
             ['UTF-8'],
@@ -107,7 +107,7 @@ final class MailboxTest extends TestCase
      * @throws \Exception
      */
     #[Test]
-    #[DataProvider('SetAndGetServerEncodingProvider')]
+    #[DataProvider('setAndGetServerEncodingProvider')]
     public function testSetAndGetServerEncoding(string $encoding): void
     {
         $mailbox = $this->getMailbox();
@@ -931,7 +931,7 @@ final class MailboxTest extends TestCase
      *
      * @return string[][]
      */
-    public static function Base64DecodeProvider(): array
+    public static function base64DecodeProvider(): array
     {
         return [
             ['bm8tcmVwbHlAZXhhbXBsZS5jb20=', 'no-reply@example.com'],
@@ -963,7 +963,7 @@ final class MailboxTest extends TestCase
     }
 
     #[Test]
-    #[DataProvider('Base64DecodeProvider')]
+    #[DataProvider('base64DecodeProvider')]
     public function testBase64Decode(string $input, string $expected): void
     {
         self::assertSame($expected, \imap_base64(\preg_replace('~[^a-zA-Z0-9+=/]+~s', '', $input)));
