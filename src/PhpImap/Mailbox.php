@@ -940,6 +940,7 @@ class Mailbox
      *  deleted - this mail is flagged for deletion
      *  seen - this mail is flagged as already read
      *  draft - this mail is flagged as being a draft
+     * @see https://www.php.net/manual/en/function.imap-fetch-overview.php
      *
      * @return array $mailsIds Array of mail IDs
      *
@@ -954,50 +955,42 @@ class Mailbox
             \implode(',', $mailsIds),
             ($this->imapSearchOption === \SE_UID) ? \FT_UID : 0
         );
-        if (\count($mails)) {
-            foreach ($mails as $index => $mail) {
-                if (isset($mail->subject) && !\is_string($mail->subject)) {
-                    throw new \UnexpectedValueException(
-                        'subject property at index ' . $index
-                        . ' of argument 1 passed to ' . __METHOD__ . '() was not a string!'
-                    );
-                }
-                if (isset($mail->from) && !\is_string($mail->from)) {
-                    throw new \UnexpectedValueException(
-                        'from property at index ' . $index
-                        . ' of argument 1 passed to ' . __METHOD__ . '() was not a string!'
-                    );
-                }
-                if (isset($mail->sender) && !\is_string($mail->sender)) {
-                    throw new \UnexpectedValueException(
-                        'sender property at index ' . $index
-                        . ' of argument 1 passed to ' . __METHOD__ . '() was not a string!'
-                    );
-                }
-                if (isset($mail->to) && !\is_string($mail->to)) {
-                    throw new \UnexpectedValueException(
-                        'to property at index ' . $index
-                        . ' of argument 1 passed to ' . __METHOD__ . '() was not a string!'
-                    );
-                }
+        if (!\count($mails)) {
+            return [];
+        }
 
-                if (isset($mail->subject) && !empty(\trim($mail->subject))) {
-                    $mail->subject = $this->decodeMimeStr($mail->subject);
-                }
-                if (isset($mail->from) && !empty(\trim($mail->from))) {
-                    $mail->from = $this->decodeMimeStr($mail->from);
-                }
-                if (isset($mail->sender) && !empty(\trim($mail->sender))) {
-                    $mail->sender = $this->decodeMimeStr($mail->sender);
-                }
-                if (isset($mail->to) && !empty(\trim($mail->to))) {
-                    $mail->to = $this->decodeMimeStr($mail->to);
-                }
-            }
+        foreach ($mails as $index => $mail) {
+            $this->assertPropertyIsOfTypeString('subject', $index, __METHOD__);
+            $this->assertPropertyIsOfTypeString('from', $index, __METHOD__);
+            $this->assertPropertyIsOfTypeString('to', $index, __METHOD__);
+            $this->assertPropertyIsOfTypeString('sender', $index, __METHOD__);
+
+            $this->decodePropertyToString($mail, 'subject');
+            $this->decodePropertyToString($mail, 'from');
+            $this->decodePropertyToString($mail, 'to');
+            $this->decodePropertyToString($mail, 'sender');
         }
 
         /** @var list<object> */
         return $mails;
+    }
+
+    private function assertPropertyIsOfTypeString(string $property, int $index, string $method): void
+    {
+        $message = '%s property at index %d of argument 1 passed to %s() was not a string!';
+        if (isset($mail->{$property}) && !\is_string($mail->{$property})) {
+            throw new \UnexpectedValueException(sprintf($message, $property, $index, $method));
+        }
+    }
+
+    /**
+     * @throws \Exception
+     */
+    private function decodePropertyToString(object $mail, string $property): void
+    {
+        if (isset($mail->{$property}) && !empty(\trim($mail->{$property}))) {
+            $mail->{$property} = $this->decodeMimeStr($mail->{$property});
+        }
     }
 
     /**

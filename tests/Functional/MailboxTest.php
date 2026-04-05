@@ -627,11 +627,78 @@ class MailboxTest extends AbstractMailboxTest
         self::assertCount(
             0,
             $mailbox->searchMailbox($searchCriteria),
-            (
-                'If a subject was found,' .
-                ' then the message is was not expunged as requested.'
-            )
+            'If a subject was found,  then the message is was not expunged as requested.'
         );
+    }
+
+    /**
+     * @phpstan-param MAILBOX_ARGS $mailboxArguments
+     * @phpstan-param COMPOSE_ENVELOPE $envelope
+     * @phpstan-param COMPOSE_BODY $body
+     *
+     * @throws \Exception
+     */
+    #[Test]
+    #[DataProvider('appendProvider')]
+    #[Group('live')]
+    public function getMailsInfo(
+        array $mailboxArguments,
+        array $envelope,
+        array $body,
+        bool $preCompose,
+    ): void {
+        if ($this->maybeSkipAppendTest($envelope)) {
+            return;
+        }
+        $envelope['sender'] = 3;
+
+        [$searchCriteria, $searchSubject] = $this->subjectSearchCriteriaAndSubject($envelope);
+
+        [$mailbox, $removeMailbox, $path] = $this->getMailboxFromArgs($mailboxArguments);
+
+        $message = [$envelope, $body];
+
+        if ($preCompose) {
+            $message = Imap::mailCompose($envelope, $body);
+        }
+
+        $search = $mailbox->searchMailbox($searchCriteria);
+
+        self::assertCount(
+            0,
+            $search,
+            'If a subject was found, then the message is insufficiently unique to assert that'
+            . ' a newly-appended message was actually created.'
+        );
+
+        $mailbox->appendMessageToMailbox($message);
+
+        $search = $mailbox->searchMailbox($searchCriteria);
+
+        self::assertCount(
+            1,
+            $search,
+            'If a subject was not found, then Mailbox::appendMessageToMailbox()'
+            . ' failed despite not throwing an exception.'
+        );
+
+        $info = $mailbox->getMailsInfo($search);
+
+        self::assertCount(1, $info);
+
+        self::assertSame(
+            $searchSubject,
+            $info[0]->subject,
+            'If a retrieved mail did not have a matching subject despite'
+            . ' being found via search, then something has gone wrong.'
+        );
+
+        $mailbox->deleteMail($search[0]);
+
+        $mailbox->expungeDeletedMails();
+
+        $mailbox->switchMailbox($path->getString());
+        $mailbox->deleteMailbox($removeMailbox);
     }
 
     protected function replaceBoundaryHere(string $expectedResult, string $actualResult): string
