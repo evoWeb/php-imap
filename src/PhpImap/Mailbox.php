@@ -1285,11 +1285,13 @@ class Mailbox
                 $header->fromName,
                 $header->fromAddress
             ] = $this->possiblyGetHostNameAndAddress($head->from);
-        } elseif (\preg_match(
-            '/smtp.mailfrom=[-0-9a-zA-Z.+_]+@[-0-9a-zA-Z.+_]+.[a-zA-Z]{2,4}/',
-            $headersRaw,
-            $matches
-        )) {
+        } elseif (
+            \preg_match(
+                '/smtp.mailfrom=[-0-9a-zA-Z.+_]+@[-0-9a-zA-Z.+_]+.[a-zA-Z]{2,4}/',
+                $headersRaw,
+                $matches
+            )
+        ) {
             $header->fromAddress = \substr($matches[0], 14);
         }
 

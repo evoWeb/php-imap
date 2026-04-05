@@ -81,13 +81,15 @@ class MailboxTest extends AbstractMailboxTest
 
                 $check = $mailbox->checkMailbox();
 
-                foreach ([
-                    'Date',
-                    'Driver',
-                    'Mailbox',
-                    'Nmsgs',
-                    'Recent',
-                ] as $expectedProperty) {
+                foreach (
+                    [
+                        'Date',
+                        'Driver',
+                        'Mailbox',
+                        'Nmsgs',
+                        'Recent',
+                    ] as $expectedProperty
+                ) {
                     self::assertTrue(\property_exists($check, $expectedProperty));
                 }
 
@@ -122,13 +124,15 @@ class MailboxTest extends AbstractMailboxTest
 
                 $status = $mailbox->statusMailbox();
 
-                foreach ([
-                    'messages',
-                    'recent',
-                    'unseen',
-                    'uidnext',
-                    'uidvalidity',
-                ] as $expectedProperty) {
+                foreach (
+                    [
+                        'messages',
+                        'recent',
+                        'unseen',
+                        'uidnext',
+                        'uidvalidity',
+                    ] as $expectedProperty
+                ) {
                     self::assertTrue(\property_exists($status, $expectedProperty));
                 }
 
