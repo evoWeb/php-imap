@@ -73,7 +73,7 @@ class MailboxIssue490Test extends AbstractMailboxTest
                 )
             );
 
-            $message = Imap::mail_compose(
+            $message = Imap::mailCompose(
                 $envelope,
                 [
                     [

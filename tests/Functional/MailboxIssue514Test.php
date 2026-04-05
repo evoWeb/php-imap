@@ -98,7 +98,7 @@ class MailboxIssue514Test extends AbstractMailboxTest
             ],
         ];
 
-        $message = Imap::mail_compose($envelope, $body);
+        $message = Imap::mailCompose($envelope, $body);
 
         [$mailbox, $removeMailbox, $path] = $this->getMailboxFromArgs([
             $imapPath,

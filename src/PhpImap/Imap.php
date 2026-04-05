@@ -92,7 +92,7 @@ final class Imap
             throw new \UnexpectedValueException(
                 $message,
                 $code,
-                self::HandleErrors($errors ?? \imap_errors(), $function)
+                self::handleErrors($errors ?? \imap_errors(), $function)
             );
         }
     }
@@ -152,7 +152,7 @@ final class Imap
         return $result;
     }
 
-    public static function clearflag_full(
+    public static function cleaFlagFull(
         Connection $imapStream,
         int|string $sequence,
         string $flag,
@@ -162,7 +162,7 @@ final class Imap
 
         $result = \imap_clearflag_full(
             $imapStream,
-            self::encodeStringToUtf7Imap(self::EnsureRange(
+            self::encodeStringToUtf7Imap(self::ensureRange(
                 $sequence,
                 __METHOD__,
                 2,
@@ -175,6 +175,18 @@ final class Imap
         self::assertResultNotFalse($result, 'Could not clear flag on messages!', 0, 'imap_clearflag_full');
 
         return $result;
+    }
+
+    /**
+     * @deprecated since 5.x
+     */
+    public static function clearflag_full(
+        Connection $imapStream,
+        int|string $sequence,
+        string $flag,
+        int $options = 0
+    ): bool {
+        return self::cleaFlagFull($imapStream, $sequence, $flag, $options);
     }
 
     /**
@@ -211,7 +223,7 @@ final class Imap
 
     public static function delete(Connection $imapStream, string|int $msgNumber, int $options = 0): bool
     {
-        $msgNumber = self::encodeStringToUtf7Imap(self::EnsureRange(
+        $msgNumber = self::encodeStringToUtf7Imap(self::ensureRange(
             $msgNumber,
             __METHOD__,
             1
@@ -253,13 +265,13 @@ final class Imap
      *
      * @phpstan-return list<object>
      */
-    public static function fetch_overview(Connection $imapStream, int|string $sequence, int $options = 0): array
+    public static function fetchOverview(Connection $imapStream, int|string $sequence, int $options = 0): array
     {
         self::flushImapErrors();
 
         $result = \imap_fetch_overview(
             $imapStream,
-            self::encodeStringToUtf7Imap(self::EnsureRange(
+            self::encodeStringToUtf7Imap(self::ensureRange(
                 $sequence,
                 __METHOD__,
                 1,
@@ -277,6 +289,14 @@ final class Imap
 
         /** @phpstan-var list<object> $result */
         return $result;
+    }
+
+    /**
+     * @deprecated since 5.x
+     */
+    public static function fetch_overview(Connection $imapStream, int|string $sequence, int $options = 0): array
+    {
+        return self::fetchOverview($imapStream, $sequence, $options);
     }
 
     public static function fetchbody(
@@ -326,7 +346,7 @@ final class Imap
         return $result;
     }
 
-    public static function get_quotaroot(Connection $imapStream, string $quotaRoot): array
+    public static function getQuotaRoot(Connection $imapStream, string $quotaRoot): array
     {
         self::flushImapErrors();
 
@@ -335,6 +355,14 @@ final class Imap
         self::assertResultNotFalse($result, 'Could not quota for mailbox!', 0, 'imap_get_quotaroot');
 
         return $result;
+    }
+
+    /**
+     * @deprecated since 5.x
+     */
+    public static function get_quotaroot(Connection $imapStream, string $quotaRoot): array
+    {
+        return self::getQuotaRoot($imapStream, $quotaRoot);
     }
 
     /**
@@ -428,12 +456,20 @@ final class Imap
      * @phpstan-param COMPOSE_ENVELOPE $envelope An associative array of headers fields (docblock is not complete)
      * @phpstan-param COMPOSE_BODY $body An indexed array of bodies (docblock is not complete)
      */
-    public static function mail_compose(array $envelope, array $body): string
+    public static function mailCompose(array $envelope, array $body): string
     {
         return \imap_mail_compose($envelope, $body);
     }
 
-    public static function mail_copy(
+    /**
+     * @deprecated since 5.x
+     */
+    public static function mail_compose(array $envelope, array $body): string
+    {
+        return self::mailCompose($envelope, $body);
+    }
+
+    public static function mailCopy(
         Connection $imapStream,
         int|string $msglist,
         string $mailbox,
@@ -443,7 +479,7 @@ final class Imap
 
         $result = \imap_mail_copy(
             $imapStream,
-            self::encodeStringToUtf7Imap(self::EnsureRange(
+            self::encodeStringToUtf7Imap(self::ensureRange(
                 $msglist,
                 __METHOD__,
                 2,
@@ -458,7 +494,19 @@ final class Imap
         return $result;
     }
 
-    public static function mail_move(
+    /**
+     * @deprecated since 5.x
+     */
+    public static function mail_copy(
+        Connection $imapStream,
+        int|string $msglist,
+        string $mailbox,
+        int $options = 0
+    ): bool {
+        return self::mailCopy($imapStream, $msglist, $mailbox, $options);
+    }
+
+    public static function mailMove(
         Connection $imapStream,
         int|string $msglist,
         string $mailbox,
@@ -468,7 +516,7 @@ final class Imap
 
         $result = \imap_mail_move(
             $imapStream,
-            self::encodeStringToUtf7Imap(self::EnsureRange(
+            self::encodeStringToUtf7Imap(self::ensureRange(
                 $msglist,
                 __METHOD__,
                 2,
@@ -481,6 +529,18 @@ final class Imap
         self::assertResultNotFalse($result, 'Could not move messages!', 0, 'imap_mail_move');
 
         return $result;
+    }
+
+    /**
+     * @deprecated since 5.x
+     */
+    public static function mail_move(
+        Connection $imapStream,
+        int|string $msglist,
+        string $mailbox,
+        int $options = 0
+    ): bool {
+        return self::mailMove($imapStream, $msglist, $mailbox, $options);
     }
 
     public static function mailboxmsginfo(Connection $imapStream): \stdClass
@@ -499,7 +559,7 @@ final class Imap
         return $result;
     }
 
-    public static function num_msg(Connection $imapStream): int
+    public static function numMsg(Connection $imapStream): int
     {
         self::flushImapErrors();
 
@@ -513,6 +573,14 @@ final class Imap
         );
 
         return $result;
+    }
+
+    /**
+     * @deprecated since 5.x
+     */
+    public static function num_msg(Connection $imapStream): int
+    {
+        return self::numMsg($imapStream);
     }
 
     /**
@@ -592,7 +660,7 @@ final class Imap
         string $partNumber = '',
         int $options = 0
     ): bool {
-        $file = \is_string($file) ? $file : self::EnsureResource($file, __METHOD__, 2);
+        $file = \is_string($file) ? $file : self::ensureResource($file, __METHOD__, 2);
         $partNumber = self::encodeStringToUtf7Imap($partNumber);
 
         self::flushImapErrors();
@@ -649,7 +717,7 @@ final class Imap
         return $result;
     }
 
-    public static function setflag_full(
+    public static function setFlagFull(
         Connection $imapStream,
         int|string $sequence,
         string $flag,
@@ -659,7 +727,7 @@ final class Imap
 
         $result = \imap_setflag_full(
             $imapStream,
-            self::encodeStringToUtf7Imap(self::EnsureRange(
+            self::encodeStringToUtf7Imap(self::ensureRange(
                 $sequence,
                 __METHOD__,
                 2,
@@ -672,6 +740,18 @@ final class Imap
         self::assertResultNotFalse($result, 'Could not set flag on messages!', 0, 'imap_setflag_full');
 
         return $result;
+    }
+
+    /**
+     * @deprecated since 5.x
+     */
+    public static function setflag_full(
+        Connection $imapStream,
+        int|string $sequence,
+        string $flag,
+        int $options = 0
+    ): bool {
+        return self::setFlagFull($imapStream, $sequence, $flag, $options);
     }
 
     /**
@@ -812,7 +892,7 @@ final class Imap
      *
      * @return resource
      */
-    private static function EnsureResource(mixed $maybe, string $method, int $argument)
+    private static function ensureResource(mixed $maybe, string $method, int $argument)
     {
         self::assertResultNotFalse(
             (!$maybe || !\is_resource($maybe)),
@@ -826,7 +906,7 @@ final class Imap
     /**
      * @throws ConnectionException if $maybe is not a valid resource
      */
-    public static function EnsureConnection(mixed $maybe, string $method, int $argument): Connection
+    public static function ensureConnection(mixed $maybe, string $method, int $argument): Connection
     {
         if (!$maybe instanceof Connection) {
             throw new ConnectionException(
@@ -837,7 +917,7 @@ final class Imap
         return $maybe;
     }
 
-    private static function HandleErrors(array|false $errors, string $method): \UnexpectedValueException
+    private static function handleErrors(array|false $errors, string $method): \UnexpectedValueException
     {
         if ($errors) {
             return new \UnexpectedValueException(
@@ -848,7 +928,7 @@ final class Imap
         return new \UnexpectedValueException('IMAP method ' . $method . '() failed!');
     }
 
-    private static function EnsureRange(
+    private static function ensureRange(
         int|string $msgNumber,
         string $method,
         int $argument,

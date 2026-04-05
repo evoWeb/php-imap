@@ -766,7 +766,7 @@ class Mailbox
      */
     public function moveMail(string|int $mailId, string $mailBox): void
     {
-        Imap::mail_move($this->getImapStream(), $mailId, $mailBox, \CP_UID);
+        Imap::mailMove($this->getImapStream(), $mailId, $mailBox, \CP_UID);
         $this->expungeDeletedMails();
     }
 
@@ -781,7 +781,7 @@ class Mailbox
      */
     public function copyMail(string|int $mailId, string $mailBox): void
     {
-        Imap::mail_copy($this->getImapStream(), $mailId, $mailBox, \CP_UID);
+        Imap::mailCopy($this->getImapStream(), $mailId, $mailBox, \CP_UID);
         $this->expungeDeletedMails();
     }
 
@@ -877,7 +877,7 @@ class Mailbox
     {
         $flag = str_replace('\\', '', strtolower($flag));
 
-        $overview = Imap::fetch_overview($this->getImapStream(), $mailId, \ST_UID);
+        $overview = Imap::fetchOverview($this->getImapStream(), $mailId, \ST_UID);
 
         if ($overview[0]->$flag == 1) {
             return true;
@@ -897,7 +897,7 @@ class Mailbox
      */
     public function setFlag(array $mailsIds, string $flag): void
     {
-        Imap::setflag_full($this->getImapStream(), \implode(',', $mailsIds), $flag, \ST_UID);
+        Imap::setFlagFull($this->getImapStream(), \implode(',', $mailsIds), $flag, \ST_UID);
     }
 
     /**
@@ -949,7 +949,7 @@ class Mailbox
      */
     public function getMailsInfo(array $mailsIds): array
     {
-        $mails = Imap::fetch_overview(
+        $mails = Imap::fetchOverview(
             $this->getImapStream(),
             \implode(',', $mailsIds),
             ($this->imapSearchOption === \SE_UID) ? \FT_UID : 0
@@ -1083,7 +1083,7 @@ class Mailbox
      */
     public function countMails(): int
     {
-        return Imap::num_msg($this->getImapStream());
+        return Imap::numMsg($this->getImapStream());
     }
 
     /**
@@ -1779,7 +1779,7 @@ class Mailbox
             \count($message) === self::EXPECTED_SIZE_OF_MESSAGE_AS_ARRAY &&
             isset($message[0], $message[1])
         ) {
-            $message = Imap::mail_compose($message[0], $message[1]);
+            $message = Imap::mailCompose($message[0], $message[1]);
         }
 
         if (!\is_string($message)) {
@@ -1804,15 +1804,29 @@ class Mailbox
      *
      * @phpstan-return list<string>
      */
-    protected function lowercase_mb_list_encodings(): array
+    protected function lowercaseMbListEncodings(): array
     {
-        $lowercase_encodings = [];
+        $lowercaseEncodings = [];
         $encodings = \mb_list_encodings();
         foreach ($encodings as $encoding) {
-            $lowercase_encodings[] = \strtolower($encoding);
+            $lowercaseEncodings[] = \strtolower($encoding);
         }
 
-        return $lowercase_encodings;
+        return $lowercaseEncodings;
+    }
+
+    /**
+     * Returns the list of available encodings in lower case.
+     *
+     * @return string[]
+     *
+     * @phpstan-return list<string>
+     *
+     * @deprecated since 5.x
+     */
+    protected function lowercase_mb_list_encodings(): array
+    {
+        return $this->lowercaseMbListEncodings();
     }
 
     /**
@@ -1845,7 +1859,7 @@ class Mailbox
      */
     protected function getQuota(string $quotaRoot = 'INBOX'): array
     {
-        return Imap::get_quotaroot($this->getImapStream(), $quotaRoot);
+        return Imap::getQuotaRoot($this->getImapStream(), $quotaRoot);
     }
 
     /**

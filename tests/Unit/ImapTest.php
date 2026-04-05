@@ -85,7 +85,7 @@ final class ImapTest extends TestCase
     {
         $this->expectException(ConnectionException::class);
 
-        Imap::EnsureConnection('not a connection', 'testMethod', 1);
+        Imap::ensureConnection('not a connection', 'testMethod', 1);
     }
 
     #[Test]
@@ -93,7 +93,7 @@ final class ImapTest extends TestCase
     {
         $this->expectException(ConnectionException::class);
 
-        Imap::EnsureConnection(null, 'testMethod', 1);
+        Imap::ensureConnection(null, 'testMethod', 1);
     }
 
     #[Test]
@@ -101,7 +101,7 @@ final class ImapTest extends TestCase
     {
         $this->expectException(ConnectionException::class);
 
-        Imap::EnsureConnection(42, 'someMethod', 2);
+        Imap::ensureConnection(42, 'someMethod', 2);
     }
 
     #[Test]
@@ -115,7 +115,7 @@ final class ImapTest extends TestCase
             ],
         ];
 
-        $result = Imap::mail_compose($envelope, $body);
+        $result = Imap::mailCompose($envelope, $body);
 
         self::assertStringContainsString('Subject: Test Subject', $result);
         self::assertStringContainsString('Hello World', $result);
@@ -140,7 +140,7 @@ final class ImapTest extends TestCase
             ],
         ];
 
-        $result = Imap::mail_compose($envelope, $body);
+        $result = Imap::mailCompose($envelope, $body);
 
         self::assertStringContainsString('Subject: Multipart Test', $result);
         self::assertStringContainsString('MULTIPART/MIXED', $result);

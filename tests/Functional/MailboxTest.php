@@ -313,7 +313,7 @@ class MailboxTest extends AbstractMailboxTest
     #[Group('compose')]
     public function testMailCompose(array $envelope, array $body, string $expectedResult): void
     {
-        $actualResult = Imap::mail_compose($envelope, $body);
+        $actualResult = Imap::mailCompose($envelope, $body);
 
         $expectedResult = $this->replaceBoundaryHere($expectedResult, $actualResult);
 
@@ -353,7 +353,7 @@ class MailboxTest extends AbstractMailboxTest
         $message = [$envelope, $body];
 
         if ($preCompose) {
-            $message = Imap::mail_compose($envelope, $body);
+            $message = Imap::mailCompose($envelope, $body);
         }
 
         $search = $mailbox->searchMailbox($searchCriteria);
@@ -440,7 +440,7 @@ class MailboxTest extends AbstractMailboxTest
         $message = [$envelope, $body];
 
         if ($preCompose) {
-            $message = Imap::mail_compose($envelope, $body);
+            $message = Imap::mailCompose($envelope, $body);
         }
 
         $search = $mailbox->searchMailbox($searchCriteria);
@@ -527,7 +527,7 @@ class MailboxTest extends AbstractMailboxTest
         $message = [$envelope, $body];
 
         if ($preCompose) {
-            $message = Imap::mail_compose($envelope, $body);
+            $message = Imap::mailCompose($envelope, $body);
         }
 
         $search = $mailbox->searchMailbox($searchCriteria);

@@ -34,4 +34,9 @@
 
     <!-- no_empty_statement -->
     <rule ref="Generic.CodeAnalysis.EmptyStatement"/>
+
+    <!-- Allow underscore method names for deprecated fallback methods -->
+    <rule ref="PSR1.Methods.CamelCapsMethodName">
+        <exclude-pattern>*.php</exclude-pattern>
+    </rule>
 </ruleset>

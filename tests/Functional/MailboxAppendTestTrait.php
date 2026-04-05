@@ -120,7 +120,7 @@ trait MailboxAppendTestTrait
             $message = [$envelope, $body];
 
             if ($preCompose) {
-                $message = Imap::mail_compose($envelope, $body);
+                $message = Imap::mailCompose($envelope, $body);
             }
 
             $mailbox->appendMessageToMailbox($message);

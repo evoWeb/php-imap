@@ -168,7 +168,23 @@ print_r($mails_ids);
 
 BREAKING: Before each method in Imap checked if it really got a connection handed. Now
 the functions are enforcing connection with typed arguments. You are still able to use
-Imap::EnsureConnection() yourself if you need to check your argument
+Imap::EnsureConnection() yourself if you need to check your argument.
+
+Functions are convertest to camel case:
+- Imap::EnsureConnection -> Imap::ensureConnection (public)
+- Imap::EnsureRange -> Imap::ensureRange (private)
+- Imap::EnsureResource -> Imap::ensureResource (private)
+- Imap::fetch_overview -> Imap::fetchOverview (public)
+- Imap::get_quotaroot -> Imap::getQuotaRoot (public)
+- Imap::HandleErrors -> Imap::handleErrors (private)
+- Imap::mail_compose -> Imap::mailCompose (public)
+- Imap::mail_copy -> Imap::mailCopy (public)
+- Imap::mail_move -> Imap::mailMove (public)
+- Imap::num_msg -> Imap::numMsg (public)
+- Imap::clearflag_full -> Imap::clearFlagFull (public)
+- Imap::setflag_full -> Imap::setFlagFull (public)
+
+- Mailbox::lowercase_mb_list_encodings -> Mailbox::lowercaseMbListEncodings (protected)
 
 ### Upgrading from 3.x
 

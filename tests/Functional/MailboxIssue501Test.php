@@ -99,7 +99,7 @@ class MailboxIssue501Test extends AbstractMailboxTest
                 )
             );
 
-            $mailbox->appendMessageToMailbox(Imap::mail_compose(
+            $mailbox->appendMessageToMailbox(Imap::mailCompose(
                 $envelope,
                 [
                     [

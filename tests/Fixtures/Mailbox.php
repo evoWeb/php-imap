@@ -33,7 +33,7 @@ class Mailbox extends BaseMailbox
 
     public function exposedLowercaseMbListEncodings(): array
     {
-        return $this->lowercase_mb_list_encodings();
+        return $this->lowercaseMbListEncodings();
     }
 
     /**
