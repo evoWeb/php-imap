@@ -116,7 +116,7 @@ final class MailboxTest extends TestCase
 
         $encoding = \strtoupper(\trim($encoding));
 
-        self::assertEquals($mailbox->getServerEncoding(), $encoding);
+        self::assertEquals($encoding, $mailbox->getServerEncoding());
     }
 
     /**
@@ -230,6 +230,8 @@ final class MailboxTest extends TestCase
      * Test, that the IMAP search option has a default value
      * 1 => \SE_UID
      * 2 => \SE_FREE.
+     *
+     * @throws \Exception
      */
     public function testImapSearchOptionHasADefault(): void
     {
@@ -259,6 +261,8 @@ final class MailboxTest extends TestCase
 
     /**
      * Test, that the imap login can be retrieved.
+     *
+     * @throws \Exception
      */
     public function testGetLogin(): void
     {
@@ -267,6 +271,8 @@ final class MailboxTest extends TestCase
 
     /**
      * Test, that the path delimiter has a default value.
+     *
+     * @throws \Exception
      */
     public function testPathDelimiterHasADefault(): void
     {
@@ -344,6 +350,8 @@ final class MailboxTest extends TestCase
 
     /**
      * Test, that the path delimiter is checked for supported chars.
+     *
+     * @throws \Exception
      */
     #[Test]
     #[DataProvider('pathDelimiterProvider')]
@@ -379,6 +387,8 @@ final class MailboxTest extends TestCase
 
     /**
      * Test, that the attachments are not ignored by default.
+     *
+     * @throws \Exception
      */
     public function testGetAttachmentsAreNotIgnoredByDefault(): void
     {
@@ -401,6 +411,8 @@ final class MailboxTest extends TestCase
 
     /**
      * Test, that attachments can be ignored and only valid values are accepted.
+     *
+     * @throws \Exception
      */
     #[Test]
     #[DataProvider('attachmentsIgnoreProvider')]
@@ -408,7 +420,7 @@ final class MailboxTest extends TestCase
     {
         $mailbox = $this->getMailbox();
         $mailbox->setAttachmentsIgnore($paramValue);
-        self::assertEquals($mailbox->getAttachmentsIgnore(), $paramValue);
+        self::assertEquals($paramValue, $mailbox->getAttachmentsIgnore());
     }
 
     /**
@@ -485,6 +497,8 @@ final class MailboxTest extends TestCase
 
     /**
      * Test, that strings encoded to UTF-7 can be decoded back to UTF-8.
+     *
+     * @throws \Exception
      */
     #[Test]
     #[DataProvider('encodingTestStringsProvider')]
@@ -552,7 +566,7 @@ final class MailboxTest extends TestCase
     /**
      * Test, different datetimes conversions using differents timezones.
      *
-     * @throws InvalidParameterException
+     * @throws \Exception
      */
     #[Test]
     #[DataProvider('datetimeProvider')]
@@ -593,7 +607,7 @@ final class MailboxTest extends TestCase
     public function testParsedDateWithUnparseableDateTime(string $dateToParse): void
     {
         $parsedDt = $this->getMailbox()->parseDateTime($dateToParse);
-        self::assertEquals($parsedDt, $dateToParse);
+        self::assertEquals($dateToParse, $parsedDt);
     }
 
     /**
@@ -665,7 +679,7 @@ final class MailboxTest extends TestCase
     {
         $mailbox = $this->getMailbox();
 
-        self::assertEquals($mailbox->decodeMimeStr($str), $expected);
+        self::assertEquals($expected, $mailbox->decodeMimeStr($str));
     }
 
     /**
@@ -831,7 +845,7 @@ final class MailboxTest extends TestCase
      *
      * @phpstan-param array{DISABLE_AUTHENTICATOR?: string}|array<empty, empty> $param
      *
-     * @throws InvalidParameterException
+     * @throws \Exception
      */
     #[Test]
     #[DataProvider('connectionArgsProvider')]
@@ -923,7 +937,7 @@ final class MailboxTest extends TestCase
         $mailbox = $this->getMailbox();
 
         $mailbox->setServerEncoding($serverEncoding);
-        self::assertEquals($mailbox->decodeMimeStr($str), $expectedStr);
+        self::assertEquals($expectedStr, $mailbox->decodeMimeStr($str));
     }
 
     /**
@@ -966,8 +980,8 @@ final class MailboxTest extends TestCase
     #[DataProvider('base64DecodeProvider')]
     public function testBase64Decode(string $input, string $expected): void
     {
-        self::assertSame($expected, \imap_base64(\preg_replace('~[^a-zA-Z0-9+=/]+~s', '', $input)));
-        self::assertSame($expected, \base64_decode($input, false));
+        self::assertSame($expected, \imap_base64(\preg_replace('~[^a-zA-Z0-9+=/]+~', '', $input)));
+        self::assertSame($expected, \base64_decode($input));
     }
 
     /**
