@@ -592,20 +592,20 @@ final class Imap
         string $username,
         string $password,
         int $options = 0,
-        int $n_retries = 0,
+        int $retries = 0,
         array $params = []
     ): Connection {
         if (\preg_match("/^\{.*}(.*)$/", $mailbox, $matches)) {
-            $mailbox_name = $matches[1];
+            $mailboxName = $matches[1];
 
-            if (!\mb_detect_encoding($mailbox_name, 'ASCII', true)) {
+            if (!\mb_detect_encoding($mailboxName, 'ASCII', true)) {
                 $mailbox = self::encodeStringToUtf7Imap($mailbox);
             }
         }
 
         self::flushImapErrors();
 
-        $result = @\imap_open($mailbox, $username, $password, $options, $n_retries, $params);
+        $result = @\imap_open($mailbox, $username, $password, $options, $retries, $params);
 
         if (!$result) {
             throw new ConnectionException(\imap_errors() ?: []);
@@ -619,7 +619,7 @@ final class Imap
         return \imap_ping($imapStream);
     }
 
-    public static function renamemailbox(Connection $imapStream, string $oldMailbox, string $newMailbox): bool
+    public static function renameMailbox(Connection $imapStream, string $oldMailbox, string $newMailbox): bool
     {
         $oldMailbox = self::encodeStringToUtf7Imap($oldMailbox);
         $newMailbox = self::encodeStringToUtf7Imap($newMailbox);
@@ -653,7 +653,7 @@ final class Imap
     /**
      * @param string|false|resource $file
      */
-    public static function savebody(
+    public static function saveBody(
         Connection $imapStream,
         mixed $file,
         int $msgNumber,

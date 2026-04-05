@@ -586,7 +586,7 @@ class Mailbox
      */
     public function renameMailbox(string $oldName, string $newName): void
     {
-        Imap::renamemailbox(
+        Imap::renameMailbox(
             $this->getImapStream(),
             $this->getCombinedPath($oldName),
             $this->getCombinedPath($newName)
@@ -733,7 +733,7 @@ class Mailbox
      */
     public function saveMail(int $mailId, string $filename = 'email.eml'): void
     {
-        Imap::savebody(
+        Imap::saveBody(
             $this->getImapStream(),
             $filename,
             $mailId,

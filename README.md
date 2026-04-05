@@ -181,6 +181,8 @@ Functions are convertest to camel case:
 - Imap::mail_copy -> Imap::mailCopy (public)
 - Imap::mail_move -> Imap::mailMove (public)
 - Imap::num_msg -> Imap::numMsg (public)
+- Imap::renamemailbox -> Imap::renameMailbox (public)
+- Imap::savebody -> Imap::saveBody (public)
 - Imap::clearflag_full -> Imap::clearFlagFull (public)
 - Imap::setflag_full -> Imap::setFlagFull (public)
 
