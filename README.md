@@ -2,10 +2,10 @@
 
 ## <mark>Based on works until December 2022 in [barbushin/php-imap](https://github.com/barbushin/php-imap) with merged pull requests</mark>
 
-[![GitHub release](https://img.shields.io/github/release/evoweb/php-imap.svg?style=flat-square)](https://packagist.org/packages/evoweb/php-imap)
-[![Supported PHP Version](https://img.shields.io/packagist/php-v/php-imap/php-imap.svg)](README.md)
-[![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
-[![Packagist](https://img.shields.io/packagist/dt/evoweb/php-imap.svg?style=flat-square)](https://packagist.org/packages/evoweb/php-imap)
+[![GitHub release](https://img.shields.io/packagist/v/evoweb/php-imap)](https://packagist.org/packages/evoweb/php-imap)
+[![Supported PHP Version](https://img.shields.io/packagist/php-v/evoweb/php-imap)](README.md)
+[![Software License](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
+[![Downloads Packagist](https://img.shields.io/packagist/dt/evoweb/php-imap)](https://packagist.org/packages/evoweb/php-imap)
 
 [![CI PHP Unit Tests](https://github.com/evoweb/php-imap/actions/workflows/php_unit_tests.yml/badge.svg?branch=master)](https://github.com/evoweb/php-imap/actions/workflows/php_unit_tests.yml)
 [![CI PHP Static Analysis](https://github.com/evoweb/php-imap/actions/workflows/php_static_analysis.yml/badge.svg?branch=master)](https://github.com/evoweb/php-imap/actions/workflows/php_static_analysis.yml)
