@@ -960,10 +960,10 @@ class Mailbox
         }
 
         foreach ($mails as $index => $mail) {
-            $this->assertPropertyIsOfTypeString('subject', $index, __METHOD__);
-            $this->assertPropertyIsOfTypeString('from', $index, __METHOD__);
-            $this->assertPropertyIsOfTypeString('to', $index, __METHOD__);
-            $this->assertPropertyIsOfTypeString('sender', $index, __METHOD__);
+            $this->assertPropertyIsOfTypeString($mail, 'subject', $index, __METHOD__);
+            $this->assertPropertyIsOfTypeString($mail, 'from', $index, __METHOD__);
+            $this->assertPropertyIsOfTypeString($mail, 'to', $index, __METHOD__);
+            $this->assertPropertyIsOfTypeString($mail, 'sender', $index, __METHOD__);
 
             $this->decodePropertyToString($mail, 'subject');
             $this->decodePropertyToString($mail, 'from');
@@ -975,10 +975,11 @@ class Mailbox
         return $mails;
     }
 
-    private function assertPropertyIsOfTypeString(string $property, int $index, string $method): void
+    private function assertPropertyIsOfTypeString(object $mail, string $property, int $index, string $method): void
     {
         $message = '%s property at index %d of argument 1 passed to %s() was not a string!';
-        if (isset($mail->{$property}) && !\is_string($mail->{$property})) {
+        $value = $mail->{$property} ?? '';
+        if (!\is_string($value)) {
             throw new \UnexpectedValueException(sprintf($message, $property, $index, $method));
         }
     }

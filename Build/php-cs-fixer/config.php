@@ -44,14 +44,14 @@ return (new \PhpCsFixer\Config())
                 'get_class_this',
                 'php_sapi_name',
                 'phpversion',
-                'pi'
-            ]
+                'pi',
+            ],
         ],
         'type_declaration_spaces' => true,
         'global_namespace_import' => [
             'import_classes' => false,
             'import_constants' => false,
-            'import_functions' => false
+            'import_functions' => false,
         ],
         'list_syntax' => ['syntax' => 'short'],
         // @todo: Can be dropped once we enable @PER-CS2x0
