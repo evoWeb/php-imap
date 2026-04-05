@@ -835,7 +835,7 @@ final class MailboxTest extends TestCase
                 $key = \implode(', ', $fields);
 
                 yield $key => ['assertNull', $value, 0, []];
-                yield ('INVALID + ' . $key) => ['expectException', $value | 128, 0, []];
+                yield 'INVALID + ' . $key => ['expectException', $value | 128, 0, []];
             }
         }
     }
