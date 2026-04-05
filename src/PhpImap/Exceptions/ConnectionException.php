@@ -28,8 +28,8 @@ class ConnectionException extends \Exception
                 $message = json_decode($message);
                 return $message[\count($message) - 1];
 
-            default:
             case 'first':
+            default:
                 $message = json_decode($message);
                 return $message[0];
         }
