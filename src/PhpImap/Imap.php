@@ -202,13 +202,13 @@ final class Imap
         return $result;
     }
 
-    public static function createmailbox(Connection $imapStream, string $mailbox): bool
+    public static function createMailbox(Connection $imapStream, string $mailbox): bool
     {
         self::flushImapErrors();
 
         $result = \imap_createmailbox($imapStream, self::encodeStringToUtf7Imap($mailbox));
 
-        self::assertResultNotFalse($result, 'Could not create mailbox!', 0, 'createmailbox');
+        self::assertResultNotFalse($result, 'Could not create mailbox!', 0, 'createMailbox');
 
         return $result;
     }
@@ -230,13 +230,13 @@ final class Imap
         return $result;
     }
 
-    public static function deletemailbox(Connection $imapStream, string $mailbox): bool
+    public static function deleteMailbox(Connection $imapStream, string $mailbox): bool
     {
         self::flushImapErrors();
 
         $result = \imap_deletemailbox($imapStream, self::encodeStringToUtf7Imap($mailbox));
 
-        self::assertResultNotFalse($result, 'Could not delete mailbox!', 0, 'imap_deletemailbox');
+        self::assertResultNotFalse($result, 'Could not delete mailbox!', 0, 'deleteMailbox');
 
         return $result;
     }
@@ -291,7 +291,7 @@ final class Imap
         return self::fetchOverview($imapStream, $sequence, $options);
     }
 
-    public static function fetchbody(
+    public static function fetchBody(
         Connection $imapStream,
         int $msgNumber,
         int|string $section,
@@ -306,23 +306,23 @@ final class Imap
             $options
         );
 
-        self::assertResultNotFalse($result, 'Could not fetch message body from mailbox!', 0, 'imap_fetchbody');
+        self::assertResultNotFalse($result, 'Could not fetch message body from mailbox!', 0, 'fetchBody');
 
         return $result;
     }
 
-    public static function fetchheader(Connection $imapStream, int $msgNumber, int $options = 0): string
+    public static function fetchHeader(Connection $imapStream, int $msgNumber, int $options = 0): string
     {
         self::flushImapErrors();
 
         $result = \imap_fetchheader($imapStream, $msgNumber, $options);
 
-        self::assertResultNotFalse($result, 'Could not fetch message header from mailbox!', 0, 'imap_fetchheader');
+        self::assertResultNotFalse($result, 'Could not fetch message header from mailbox!', 0, 'fetchHeader');
 
         return $result;
     }
 
-    public static function fetchstructure(Connection $imapStream, int $msgNumber, int $options = 0): \stdClass
+    public static function fetchStructure(Connection $imapStream, int $msgNumber, int $options = 0): \stdClass
     {
         self::flushImapErrors();
 
@@ -332,7 +332,7 @@ final class Imap
             $result,
             'Could not fetch message structure from mailbox!',
             0,
-            'imap_fetchstructure'
+            'fetchStructure'
         );
 
         return $result;
@@ -360,7 +360,7 @@ final class Imap
     /**
      * @return object[]
      */
-    public static function getmailboxes(Connection $imapStream, string $ref, string $pattern): array
+    public static function getMailboxes(Connection $imapStream, string $ref, string $pattern): array
     {
         self::flushImapErrors();
 
@@ -382,7 +382,7 @@ final class Imap
             $result,
             'Call to imap_getmailboxes() with supplied arguments returned false, not array!',
             0,
-            'imap_getmailboxes',
+            'getMailboxes',
             $errors
         );
 
@@ -393,7 +393,7 @@ final class Imap
     /**
      * @return object[]
      */
-    public static function getsubscribed(Connection $imapStream, string $ref, string $pattern): array
+    public static function getSubscribed(Connection $imapStream, string $ref, string $pattern): array
     {
         self::flushImapErrors();
 
@@ -403,7 +403,7 @@ final class Imap
             $result,
             'Call to imap_getsubscribed() with supplied arguments returned false, not array!',
             0,
-            'imap_getsubscribed'
+            'getSubscribed'
         );
 
         /** @phpstan-var list<object> */
@@ -512,14 +512,14 @@ final class Imap
      */
     public static function mail_move(
         Connection $imapStream,
-        int|string $msglist,
+        int|string $msgList,
         string $mailbox,
         int $options = 0
     ): bool {
-        return self::mailMove($imapStream, $msglist, $mailbox, $options);
+        return self::mailMove($imapStream, $msgList, $mailbox, $options);
     }
 
-    public static function mailboxmsginfo(Connection $imapStream): \stdClass
+    public static function mailboxMsgInfo(Connection $imapStream): \stdClass
     {
         self::flushImapErrors();
 
@@ -527,9 +527,9 @@ final class Imap
 
         self::assertResultNotFalse(
             $result,
-            'Could not fetch mailboxmsginfo from mailbox!',
+            'Could not fetch message info from mailbox!',
             0,
-            'imap_mailboxmsginfo'
+            'mailboxMsgInfo'
         );
 
         return $result;
@@ -604,7 +604,7 @@ final class Imap
 
         $result = \imap_renamemailbox($imapStream, $oldMailbox, $newMailbox);
 
-        self::assertResultNotFalse($result, 'Could not rename mailbox!', 0, 'imap_renamemailbox');
+        self::assertResultNotFalse($result, 'Could not rename mailbox!', 0, 'renameMailbox');
 
         return $result;
     }
@@ -643,7 +643,7 @@ final class Imap
 
         $result = \imap_savebody($imapStream, $file, $msgNumber, $partNumber, $options);
 
-        self::assertResultNotFalse($result, 'Could not reopen mailbox!', 0, 'imap_savebody');
+        self::assertResultNotFalse($result, 'Could not reopen mailbox!', 0, 'saveBody');
 
         return true;
     }

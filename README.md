@@ -171,15 +171,23 @@ the functions are enforcing connection with typed arguments. You are still able 
 Imap::EnsureConnection() yourself if you need to check your argument.
 
 Functions are convertest to camel case:
+- Imap::createmailbox -> Imap::createMailbox (public)
+- Imap::deletemailbox -> Imap::deleteMailbox (public)
 - Imap::EnsureConnection -> Imap::ensureConnection (public)
 - Imap::EnsureRange -> Imap::ensureRange (private)
 - Imap::EnsureResource -> Imap::ensureResource (private)
+- Imap::fetchbody -> Imap::fetchBody (public)
+- Imap::fetchheader -> Imap::fetchHeader (public)
+- Imap::fetchstructure -> Imap::fetchStructure (public)
+- Imap::getmailboxes -> Imap::getMailboxes (public)
+- Imap::getsubscribed -> Imap::getSubscribed (public)
 - Imap::fetch_overview -> Imap::fetchOverview (public)
 - Imap::get_quotaroot -> Imap::getQuotaRoot (public)
 - Imap::HandleErrors -> Imap::handleErrors (private)
 - Imap::mail_compose -> Imap::mailCompose (public)
 - Imap::mail_copy -> Imap::mailCopy (public)
 - Imap::mail_move -> Imap::mailMove (public)
+- Imap::mailboxmsginfo -> Imap::mailboxMsgInfo (public)
 - Imap::num_msg -> Imap::numMsg (public)
 - Imap::renamemailbox -> Imap::renameMailbox (public)
 - Imap::savebody -> Imap::saveBody (public)

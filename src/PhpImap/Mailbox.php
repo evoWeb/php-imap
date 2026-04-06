@@ -557,7 +557,7 @@ class Mailbox
      */
     public function createMailbox(string $name): void
     {
-        Imap::createmailbox($this->getImapStream(), $this->getCombinedPath($name));
+        Imap::createMailbox($this->getImapStream(), $this->getCombinedPath($name));
     }
 
     /**
@@ -570,7 +570,7 @@ class Mailbox
      */
     public function deleteMailbox(string $name, bool $absolute = false): bool
     {
-        return Imap::deletemailbox($this->getImapStream(), $this->getCombinedPath($name, $absolute));
+        return Imap::deleteMailbox($this->getImapStream(), $this->getCombinedPath($name, $absolute));
     }
 
     /**
@@ -1039,7 +1039,7 @@ class Mailbox
      */
     public function getMailboxInfo(): \stdClass
     {
-        return Imap::mailboxmsginfo($this->getImapStream());
+        return Imap::mailboxMsgInfo($this->getImapStream());
     }
 
     /**
@@ -1136,7 +1136,7 @@ class Mailbox
             $options |= \FT_PEEK;
         }
 
-        return Imap::fetchbody($this->getImapStream(), $msgId, '', $options);
+        return Imap::fetchBody($this->getImapStream(), $msgId, '', $options);
     }
 
     /**
@@ -1169,7 +1169,7 @@ class Mailbox
      */
     public function getMailHeader(int $mailId): IncomingMailHeader
     {
-        $headersRaw = Imap::fetchheader(
+        $headersRaw = Imap::fetchHeader(
             $this->getImapStream(),
             $mailId,
             ($this->imapSearchOption === \SE_UID) ? \FT_UID : 0
@@ -1386,7 +1386,7 @@ class Mailbox
         $mail = new IncomingMail();
         $mail->setHeader($this->getMailHeader($mailId));
 
-        $mailStructure = Imap::fetchstructure(
+        $mailStructure = Imap::fetchStructure(
             $this->getImapStream(),
             $mailId,
             ($this->imapSearchOption === \SE_UID) ? \FT_UID : 0
@@ -1573,8 +1573,6 @@ class Mailbox
      * @param string $string MIME string to decode
      *
      * @return string Converted string if conversion was successful, or the original string if not
-     *
-     * @throws \Exception
      */
     public function decodeMimeStr(string $string): string
     {
@@ -1644,7 +1642,7 @@ class Mailbox
     {
         $option = ($this->imapSearchOption == \SE_UID) ? \FT_UID : 0;
 
-        return Imap::fetchheader($this->getImapStream(), $mailId, $option | \FT_PREFETCHTEXT)
+        return Imap::fetchHeader($this->getImapStream(), $mailId, $option | \FT_PREFETCHTEXT)
             . Imap::body($this->getImapStream(), $mailId, $option);
     }
 
@@ -1659,7 +1657,7 @@ class Mailbox
     public function getMailboxes(string $search = '*'): array
     {
         /** @phpstan-var array<int, scalar|array|object{name?: string}|resource|null> $mailboxes */
-        $mailboxes = Imap::getmailboxes($this->getImapStream(), $this->imapPath, $search);
+        $mailboxes = Imap::getMailboxes($this->getImapStream(), $this->imapPath, $search);
 
         return $this->possiblyGetMailboxes($mailboxes);
     }
@@ -1675,7 +1673,7 @@ class Mailbox
     public function getSubscribedMailboxes(string $search = '*'): array
     {
         /** @phpstan-var array<int, scalar|array|object{name?: string}|resource|null> $mailboxes */
-        $mailboxes = Imap::getsubscribed($this->getImapStream(), $this->imapPath, $search);
+        $mailboxes = Imap::getSubscribed($this->getImapStream(), $this->imapPath, $search);
 
         return $this->possiblyGetMailboxes($mailboxes);
     }
