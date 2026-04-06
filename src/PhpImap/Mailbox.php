@@ -1545,7 +1545,7 @@ class Mailbox
                 break;
             default:
                 // If charset exists in mb_list_encodings(), convert using mb_convert function
-                if (\in_array($fromCharset, $this->lowercase_mb_list_encodings(), true)) {
+                if (\in_array($fromCharset, $this->lowercaseMbListEncodings(), true)) {
                     $newString .= \mb_convert_encoding($string, 'UTF-8', $fromCharset);
                 } else {
                     // Fallback: Try to convert with iconv()
@@ -1620,13 +1620,7 @@ class Mailbox
             return $dateHeader;
         }
 
-        $dateHeaderRfc3339 = \date(\DATE_RFC3339, $dateHeaderUnixtimestamp);
-
-        if (!$dateHeaderRfc3339) {
-            return $dateHeader;
-        }
-
-        return $dateHeaderRfc3339;
+        return \date(\DATE_RFC3339, $dateHeaderUnixtimestamp);
     }
 
     /**
