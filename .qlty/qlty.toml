@@ -3,13 +3,12 @@ config_version = "0"
 exclude_patterns = [
     "**/.ddev/**",
     "**/.github/**",
+    "**/examples/**",
 ]
 
 test_patterns = [
     "**/tests/**",
 ]
-
-radarlint.rules.php.S108 = false
 
 [smells]
 mode = "comment"
