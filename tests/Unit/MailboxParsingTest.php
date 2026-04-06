@@ -29,7 +29,7 @@ final class MailboxParsingTest extends TestCase
     {
         $headers = 'From: sender@example.com
         To: recipient@example.com
-        Subject: Test Mail
+        ' . Constants::SUBJECT . 'Test Mail
         Content-Type: text/plain; charset=UTF-8
         X-Mailer: PHPUnit
         MIME-Version: 1.0';

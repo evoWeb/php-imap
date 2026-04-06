@@ -49,7 +49,7 @@ class MailboxIssue250Test extends AbstractMailboxTest
                 ],
             ],
             implode(LF, [
-                'Subject: ' . $randomSubject,
+                Constants::SUBJECT . $randomSubject,
                 Constants::MIME1,
                 Constants::CONTENT_PLAIN,
                 '',

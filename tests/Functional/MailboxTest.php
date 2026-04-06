@@ -176,7 +176,7 @@ class MailboxTest extends AbstractMailboxTest
                 ],
             ],
             implode(LF, [
-                'Subject: ' . $randomSubject,
+                Constants::SUBJECT . $randomSubject,
                 Constants::MIME1,
                 Constants::CONTENT_PLAIN,
                 '',
@@ -202,7 +202,7 @@ class MailboxTest extends AbstractMailboxTest
                 ],
             ],
             implode(LF, [
-                'Subject: ' . $randomSubject,
+                Constants::SUBJECT . $randomSubject,
                 Constants::MIME1,
                 'Content-Type: APPLICATION/octet-stream; name=' . Constants::GITIGNORE,
                 Constants::TRANSFER_BASE64,
@@ -230,7 +230,7 @@ class MailboxTest extends AbstractMailboxTest
                 ],
             ],
             implode(LF, [
-                'Subject: ' . $randomSubject,
+                Constants::SUBJECT . $randomSubject,
                 Constants::MIME1,
                 'Content-Type: APPLICATION/octet-stream; name=gitignore.',
                 Constants::TRANSFER_BASE64,
@@ -277,7 +277,7 @@ class MailboxTest extends AbstractMailboxTest
                 ],
             ],
             implode(LF, [
-                'Subject: ' . $randomSubject,
+                Constants::SUBJECT . $randomSubject,
                 Constants::MIME1,
                 'Content-Type: MULTIPART/MIXED; BOUNDARY="{{REPLACE_BOUNDARY_HERE}}"',
                 '',

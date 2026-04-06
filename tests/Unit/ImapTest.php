@@ -118,7 +118,7 @@ final class ImapTest extends TestCase
 
         $result = Imap::mailCompose($envelope, $body);
 
-        self::assertStringContainsString('Subject: Test Subject', $result);
+        self::assertStringContainsString(Constants::SUBJECT . 'Test Subject', $result);
         self::assertStringContainsString(Constants::HELLO_WORLD, $result);
     }
 
@@ -143,7 +143,7 @@ final class ImapTest extends TestCase
 
         $result = Imap::mailCompose($envelope, $body);
 
-        self::assertStringContainsString('Subject: Multipart Test', $result);
+        self::assertStringContainsString(Constants::SUBJECT . 'Multipart Test', $result);
         self::assertStringContainsString('MULTIPART/MIXED', $result);
         self::assertStringContainsString('plain text', $result);
         self::assertStringContainsString('<b>html</b>', $result);
