@@ -29,7 +29,7 @@ use PhpImap\Exceptions\InvalidParameterException;
  *      ifdisposition?: string,
  *      description: string,
  *      subtype: string,
- *      disposition?: string,
+ *      disposition?: string|null,
  *      bytes?: int
  * }
  * @phpstan-type HOSTNAMEANDADDRESS_ENTRY = object{host?: string, personal?: string, mailbox: string}
@@ -477,11 +477,7 @@ class Mailbox
     {
         $out = mb_convert_encoding($str, 'UTF-8', 'UTF7-IMAP');
 
-        if (!\is_string($out)) {
-            throw new \UnexpectedValueException(
-                'mb_convert_encoding($str, \'UTF-8\', \'UTF7-IMAP\') could not convert $str'
-            );
-        }
+        $this->assertValueIsString($out, 'out', __METHOD__);
 
         return $out;
     }
@@ -915,7 +911,7 @@ class Mailbox
      */
     public function clearFlag(array $mailsIds, string $flag): void
     {
-        Imap::clearflag_full($this->getImapStream(), \implode(',', $mailsIds), $flag, \ST_UID);
+        Imap::clearFlagFull($this->getImapStream(), \implode(',', $mailsIds), $flag, \ST_UID);
     }
 
     /**
@@ -960,10 +956,10 @@ class Mailbox
         }
 
         foreach ($mails as $index => $mail) {
-            $this->assertPropertyIsOfTypeString($mail, 'subject', $index, __METHOD__);
-            $this->assertPropertyIsOfTypeString($mail, 'from', $index, __METHOD__);
-            $this->assertPropertyIsOfTypeString($mail, 'to', $index, __METHOD__);
-            $this->assertPropertyIsOfTypeString($mail, 'sender', $index, __METHOD__);
+            $this->assertPropertyIsStringIfNotNull($mail, 'subject', $index, __METHOD__);
+            $this->assertPropertyIsStringIfNotNull($mail, 'from', $index, __METHOD__);
+            $this->assertPropertyIsStringIfNotNull($mail, 'to', $index, __METHOD__);
+            $this->assertPropertyIsStringIfNotNull($mail, 'sender', $index, __METHOD__);
 
             $this->decodePropertyToString($mail, 'subject');
             $this->decodePropertyToString($mail, 'from');
@@ -975,12 +971,28 @@ class Mailbox
         return $mails;
     }
 
-    private function assertPropertyIsOfTypeString(object $mail, string $property, int $index, string $method): void
+    private function assertPropertyIsStringIfNotNull(object $object, string $name, int $index, string $method): void
     {
         $message = '%s property at index %d of argument 1 passed to %s() was not a string!';
-        $value = $mail->{$property} ?? '';
+        $value = $object->{$name} ?? '';
         if (!\is_string($value)) {
-            throw new \UnexpectedValueException(sprintf($message, $property, $index, $method));
+            throw new \UnexpectedValueException(sprintf($message, $name, $index, $method));
+        }
+    }
+
+    private function assertValueIsString(mixed $value, string $name, string $method): void
+    {
+        $message = '%s was present in %s() but was not a string!';
+        if (!\is_string($value)) {
+            throw new \UnexpectedValueException(sprintf($message, $name, $method));
+        }
+    }
+
+    private function assertValueIsIntegerIfNotNull(mixed $value, string $name, string $method): void
+    {
+        $message = '%s was present in %s() but was not an integer!';
+        if (!\is_int($value ?? 0)) {
+            throw new \UnexpectedValueException(sprintf($message, $name, $method));
         }
     }
 
@@ -1178,15 +1190,15 @@ class Mailbox
          */
         $head = \imap_rfc822_parse_headers($headersRaw);
 
-        $this->assertPropertyIsOfTypeString($head, 'date', $mailId, __METHOD__);
-        $this->assertPropertyIsOfTypeString($head, 'Date', $mailId, __METHOD__);
-        $this->assertPropertyIsOfTypeString($head, 'subject', $mailId, __METHOD__);
-        $this->assertPropertyIsOfTypeString($head, 'from', $mailId, __METHOD__);
-        $this->assertPropertyIsOfTypeString($head, 'sender', $mailId, __METHOD__);
-        $this->assertPropertyIsOfTypeString($head, 'to', $mailId, __METHOD__);
-        $this->assertPropertyIsOfTypeString($head, 'cc', $mailId, __METHOD__);
-        $this->assertPropertyIsOfTypeString($head, 'bcc', $mailId, __METHOD__);
-        $this->assertPropertyIsOfTypeString($head, 'reply_to', $mailId, __METHOD__);
+        $this->assertPropertyIsStringIfNotNull($head, 'date', $mailId, __METHOD__);
+        $this->assertPropertyIsStringIfNotNull($head, 'Date', $mailId, __METHOD__);
+        $this->assertPropertyIsStringIfNotNull($head, 'subject', $mailId, __METHOD__);
+        $this->assertPropertyIsStringIfNotNull($head, 'from', $mailId, __METHOD__);
+        $this->assertPropertyIsStringIfNotNull($head, 'sender', $mailId, __METHOD__);
+        $this->assertPropertyIsStringIfNotNull($head, 'to', $mailId, __METHOD__);
+        $this->assertPropertyIsStringIfNotNull($head, 'cc', $mailId, __METHOD__);
+        $this->assertPropertyIsStringIfNotNull($head, 'bcc', $mailId, __METHOD__);
+        $this->assertPropertyIsStringIfNotNull($head, 'reply_to', $mailId, __METHOD__);
 
         $header = new IncomingMailHeader();
         $header->headersRaw = $headersRaw;
@@ -1297,11 +1309,7 @@ class Mailbox
         }
 
         if (isset($head->message_id)) {
-            if (!\is_string($head->message_id)) {
-                throw new \UnexpectedValueException(
-                    'Message ID was expected to be a string, ' . \gettype($head->message_id) . ' found!'
-                );
-            }
+            $this->assertValueIsString($head->message_id, 'Message ID', __METHOD__);
             $header->messageId = $head->message_id;
         }
 
@@ -1413,9 +1421,11 @@ class Mailbox
         object $partStructure,
         bool $emlOrigin = false
     ): IncomingMailAttachment {
-        $dispositionAttachment = (isset($partStructure->disposition) &&
-            \is_string($partStructure->disposition) &&
-            \mb_strtolower($partStructure->disposition) === 'attachment');
+        $dispositionAttachment = (
+            isset($partStructure->disposition)
+            && \is_string($partStructure->disposition)
+            && \mb_strtolower($partStructure->disposition) === 'attachment'
+        );
 
         if ($partStructure->subtype == 'RFC822' && $dispositionAttachment) {
             $fileName = \strtolower($partStructure->subtype) . '.eml';
@@ -1441,20 +1451,11 @@ class Mailbox
         /** @var scalar|array|object|null $encoding */
         $encoding = $partStructure->encoding ?? null;
 
-        if ($sizeInBytes !== null && !\is_int($sizeInBytes)) {
-            throw new \UnexpectedValueException(
-                'Supplied part structure specifies a non-integer, non-null bytes header!'
-            );
-        }
-        if ($encoding !== null && !\is_int($encoding)) {
-            throw new \UnexpectedValueException(
-                'Supplied part structure specifies a non-integer, non-null encoding header!'
-            );
-        }
-        if (isset($partStructure->type) && !\is_int($partStructure->type)) {
-            throw new \UnexpectedValueException(
-                'Supplied part structure specifies a non-integer, non-null type header!'
-            );
+        $this->assertValueIsIntegerIfNotNull($sizeInBytes, 'sizeInBytes', __METHOD__);
+        $this->assertValueIsIntegerIfNotNull($encoding, 'encoding', __METHOD__);
+
+        if (isset($partStructure->type)) {
+            $this->assertValueIsIntegerIfNotNull($partStructure->type, 'type', __METHOD__);
         }
 
         $partStructure_id = ($partStructure->ifid && isset($partStructure->id)) ? \trim($partStructure->id) : null;
@@ -1481,11 +1482,10 @@ class Mailbox
         /** @var ?string $charset */
         $charset = $params['charset'] ?? null;
 
-        if (isset($charset) && !\is_string($charset)) {
-            throw new \InvalidArgumentException(
-                'Argument 2 passed to ' . __METHOD__ . '() must specify charset as a string when specified!'
-            );
+        if (isset($charset)) {
+            $this->assertValueIsString($charset, 'charset', __METHOD__);
         }
+
         $attachment->charset = (isset($charset) && !empty(\trim($charset))) ? $charset : null;
         $attachment->emlOrigin = $emlOrigin;
 
@@ -2048,28 +2048,13 @@ class Mailbox
     protected function possiblyGetEmailAndNameFromRecipient(object $recipient): ?array
     {
         if (isset($recipient->mailbox, $recipient->host)) {
-            /** @var string $recipientMailbox */
-            $recipientMailbox = $recipient->mailbox;
-            /** @var string $recipientHost */
-            $recipientHost = $recipient->host;
-            /** @var string|null $recipientPersonal */
-            $recipientPersonal = $recipient->personal ?? null;
+            $this->assertValueIsString($recipient->mailbox, 'recipientMailbox', __METHOD__);
+            $this->assertValueIsString($recipient->host, 'recipientHost', __METHOD__);
+            $this->assertPropertyIsStringIfNotNull($recipient, 'recipientPersonal', 1, __METHOD__);
 
-            if (!\is_string($recipientMailbox)) {
-                throw new \UnexpectedValueException(
-                    'mailbox was present on argument 1 passed to ' . __METHOD__ . '() but was not a string!'
-                );
-            }
-            if (!\is_string($recipientHost)) {
-                throw new \UnexpectedValueException(
-                    'host was present on argument 1 passed to ' . __METHOD__ . '() but was not a string!'
-                );
-            }
-            if ($recipientPersonal !== null && !\is_string($recipientPersonal)) {
-                throw new \UnexpectedValueException(
-                    'personal was present on argument 1 passed to ' . __METHOD__ . '() but was not a string!'
-                );
-            }
+            $recipientMailbox = $recipient->mailbox;
+            $recipientHost = $recipient->host;
+            $recipientPersonal = $recipient->personal ?? null;
 
             if (\trim($recipientMailbox) !== '' && \trim($recipientHost) !== '') {
                 $recipientEmail = \strtolower($recipientMailbox . '@' . $recipientHost);
@@ -2115,24 +2100,19 @@ class Mailbox
                         . '() was missing one or more of the required properties "name", "attributes", "delimiter"!'
                     );
                 }
-                if (!\is_string($itemName)) {
-                    throw new \UnexpectedValueException(
-                        'The object at index ' . $index . ' of argument 1 passed to '
-                        . __METHOD__ . '() has a non-string value for the name property!'
-                    );
-                }
+                $this->assertValueIsString($itemName, 'itemName', __METHOD__);
 
                 // https://github.com/barbushin/php-imap/issues/339
                 $name = $this->decodeStringFromUtf7ImapToUtf8($itemName);
-                $name_pos = \strpos($name, '}');
-                if ($name_pos === false) {
+                $namePosition = \strpos($name, '}');
+                if ($namePosition === false) {
                     throw new \UnexpectedValueException('Expected token "}" not found in subscription name!');
                 }
                 $arr[] = [
                     'fullpath' => $name,
                     'attributes' => $item->attributes,
                     'delimiter' => $item->delimiter,
-                    'shortpath' => \substr($name, $name_pos + 1),
+                    'shortpath' => \substr($name, $namePosition + 1),
                 ];
             }
         }
