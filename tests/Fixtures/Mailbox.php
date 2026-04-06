@@ -51,4 +51,12 @@ class Mailbox extends BaseMailbox
     {
         return $this->possiblyGetHostNameAndAddress($t);
     }
+
+    /**
+     * @throws \Exception
+     */
+    public function exposeParseRecipientList(array $recipients): array
+    {
+        return $this->parseRecipientList($recipients);
+    }
 }

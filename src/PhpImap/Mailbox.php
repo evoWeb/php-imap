@@ -1227,19 +1227,51 @@ class Mailbox
         $header->failedRecipients = $this->getMailHeaderFieldValue($headersRaw, 'Failed-Recipients');
         $header->xOriginalTo = $this->getMailHeaderFieldValue($headersRaw, 'X-Original-To');
 
-        if (isset($head->date) && !empty(\trim($head->date))) {
-            $header->date = self::parseDateTime($head->date);
-        } elseif (isset($head->Date) && !empty(\trim($head->Date))) {
-            $header->date = self::parseDateTime($head->Date);
-        } else {
-            $now = new \DateTime();
-            $header->date = self::parseDateTime($now->format('Y-m-d H:i:s'));
-        }
+        $header->date = $this->parseDateFromHead($head);
 
         $header->subject = isset($head->subject) && !empty(\trim($head->subject))
             ? $this->decodeMimeStr($head->subject)
             : null;
 
+        $this->populateSenderFields($header, $head, $headersRaw);
+
+        if (isset($head->to)) {
+            [$header->to, $header->toString] = $this->parseRecipientList($head->to);
+        }
+        if (isset($head->cc)) {
+            [$header->cc, $header->ccString] = $this->parseRecipientList($head->cc);
+        }
+        if (isset($head->bcc)) {
+            [$header->bcc] = $this->parseRecipientList($head->bcc);
+        }
+        if (isset($head->reply_to)) {
+            [$header->replyTo] = $this->parseRecipientList($head->reply_to);
+        }
+
+        if (isset($head->message_id)) {
+            $this->assertValueIsString($head->message_id, 'Message ID', __METHOD__);
+            $header->messageId = $head->message_id;
+        }
+
+        return $header;
+    }
+
+    /**
+     * @throws InvalidParameterException
+     */
+    private function parseDateFromHead(\stdClass $head): string
+    {
+        if (isset($head->date) && !empty(\trim($head->date))) {
+            return self::parseDateTime($head->date);
+        }
+        if (isset($head->Date) && !empty(\trim($head->Date))) {
+            return self::parseDateTime($head->Date);
+        }
+        return self::parseDateTime((new \DateTime())->format('Y-m-d H:i:s'));
+    }
+
+    private function populateSenderFields(IncomingMailHeader $header, \stdClass $head, string $headersRaw): void
+    {
         if (!empty($head->from)) {
             [
                 $header->fromHost,
@@ -1263,57 +1295,28 @@ class Mailbox
                 $header->senderAddress
             ] = $this->possiblyGetHostNameAndAddress($head->sender);
         }
+    }
 
-        if (isset($head->to)) {
-            $toStrings = [];
-            foreach ($head->to as $to) {
-                $toParsed = $this->possiblyGetEmailAndNameFromRecipient($to);
-                if ($toParsed) {
-                    [$toEmail, $toName] = $toParsed;
-                    $toStrings[] = $toName ? "$toName <$toEmail>" : $toEmail;
-                    $header->to[$toEmail] = $toName;
-                }
-            }
-            $header->toString = \implode(', ', $toStrings);
-        }
-
-        if (isset($head->cc)) {
-            $ccStrings = [];
-            foreach ($head->cc as $cc) {
-                $ccParsed = $this->possiblyGetEmailAndNameFromRecipient($cc);
-                if ($ccParsed) {
-                    [$ccEmail, $ccName] = $ccParsed;
-                    $ccStrings[] = $ccName ? "$ccName <$ccEmail>" : $ccEmail;
-                    $header->cc[$ccEmail] = $ccName;
-                }
-            }
-            $header->ccString = \implode(', ', $ccStrings);
-        }
-
-        if (isset($head->bcc)) {
-            foreach ($head->bcc as $bcc) {
-                $bccParsed = $this->possiblyGetEmailAndNameFromRecipient($bcc);
-                if ($bccParsed) {
-                    $header->bcc[$bccParsed[0]] = $bccParsed[1];
-                }
+    /**
+     * @param object[] $recipients
+     *
+     * @return array{0: array<string, string|null>, 1: string}
+     *
+     * @throws \Exception
+     */
+    protected function parseRecipientList(array $recipients): array
+    {
+        $emailMap = [];
+        $strings = [];
+        foreach ($recipients as $recipient) {
+            $parsed = $this->possiblyGetEmailAndNameFromRecipient($recipient);
+            if ($parsed !== null) {
+                [$email, $name] = $parsed;
+                $strings[] = $name ? "{$name} <{$email}>" : $email;
+                $emailMap[$email] = $name;
             }
         }
-
-        if (isset($head->reply_to)) {
-            foreach ($head->reply_to as $replyTo) {
-                $replyToParsed = $this->possiblyGetEmailAndNameFromRecipient($replyTo);
-                if ($replyToParsed) {
-                    $header->replyTo[$replyToParsed[0]] = $replyToParsed[1];
-                }
-            }
-        }
-
-        if (isset($head->message_id)) {
-            $this->assertValueIsString($head->message_id, 'Message ID', __METHOD__);
-            $header->messageId = $head->message_id;
-        }
-
-        return $header;
+        return [$emailMap, \implode(', ', $strings)];
     }
 
     /**

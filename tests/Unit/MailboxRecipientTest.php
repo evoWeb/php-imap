@@ -191,6 +191,92 @@ final class MailboxRecipientTest extends TestCase
     }
 
     /**
+     * @throws \Exception
+     */
+    #[Test]
+    public function testParseRecipientListEmpty(): void
+    {
+        $result = $this->getMailbox()->exposeParseRecipientList([]);
+
+        self::assertSame([], $result[0]);
+        self::assertSame('', $result[1]);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    #[Test]
+    public function testParseRecipientListSingleWithName(): void
+    {
+        $recipient = new \stdClass();
+        $recipient->mailbox = 'john';
+        $recipient->host = 'example.com';
+        $recipient->personal = 'John Doe';
+
+        $result = $this->getMailbox()->exposeParseRecipientList([$recipient]);
+
+        self::assertSame(['john@example.com' => 'John Doe'], $result[0]);
+        self::assertSame('John Doe <john@example.com>', $result[1]);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    #[Test]
+    public function testParseRecipientListSingleWithoutName(): void
+    {
+        $recipient = new \stdClass();
+        $recipient->mailbox = 'jane';
+        $recipient->host = 'example.com';
+
+        $result = $this->getMailbox()->exposeParseRecipientList([$recipient]);
+
+        self::assertSame(['jane@example.com' => null], $result[0]);
+        self::assertSame('jane@example.com', $result[1]);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    #[Test]
+    public function testParseRecipientListMultiple(): void
+    {
+        $r1 = new \stdClass();
+        $r1->mailbox = 'alice';
+        $r1->host = 'example.com';
+        $r1->personal = 'Alice';
+
+        $r2 = new \stdClass();
+        $r2->mailbox = 'bob';
+        $r2->host = 'example.com';
+
+        $result = $this->getMailbox()->exposeParseRecipientList([$r1, $r2]);
+
+        self::assertSame(['alice@example.com' => 'Alice', 'bob@example.com' => null], $result[0]);
+        self::assertSame('Alice <alice@example.com>, bob@example.com', $result[1]);
+    }
+
+    /**
+     * Invalid recipients (missing mailbox/host) are silently skipped.
+     *
+     * @throws \Exception
+     */
+    #[Test]
+    public function testParseRecipientListSkipsInvalidRecipients(): void
+    {
+        $invalid = new \stdClass();
+
+        $valid = new \stdClass();
+        $valid->mailbox = 'valid';
+        $valid->host = 'example.com';
+
+        $result = $this->getMailbox()->exposeParseRecipientList([$invalid, $valid]);
+
+        self::assertSame(['valid@example.com' => null], $result[0]);
+        self::assertSame('valid@example.com', $result[1]);
+    }
+
+    /**
      * @throws InvalidParameterException
      */
     private function getMailbox(): FixtureMailbox
