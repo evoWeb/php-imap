@@ -9,6 +9,8 @@ test_patterns = [
     "**/tests/**",
 ]
 
+radarlint.rules.php.S108 = false
+
 [smells]
 mode = "comment"
 
