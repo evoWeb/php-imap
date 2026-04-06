@@ -1991,7 +1991,7 @@ class Mailbox
      */
     protected function decodeRFC2231(string $string): string
     {
-        if (\preg_match("/^(.*?)'.*?'(.*?)$/", $string, $matches)) {
+        if (\preg_match("/^(.*?)'.*?'(.*)$/", $string, $matches)) {
             $data = $matches[2];
             if ($this->isUrlEncoded($data)) {
                 $string = $this->decodeMimeStr(\urldecode($data));
