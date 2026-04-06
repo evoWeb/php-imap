@@ -89,8 +89,8 @@ final class MailboxExtendedTest extends TestCase
     #[Test]
     public function testConstructorWithNullAttachmentsDir(): void
     {
-        new Mailbox($this->imapPath, $this->login, $this->password, null);
-
+        $mailbox = new Mailbox($this->imapPath, $this->login, $this->password, null);
+        $mailbox->setPathDelimiter('.');
         // attachmentsDir is uninitialized when null is passed, so we just verify construction succeeds
         $this->addToAssertionCount(1);
     }
