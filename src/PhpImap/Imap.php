@@ -158,23 +158,15 @@ final class Imap
         string $flag,
         int $options = 0
     ): bool {
-        self::flushImapErrors();
-
-        $result = \imap_clearflag_full(
+        return self::callWithSequenceAndString(
+            \imap_clearflag_full(...),
             $imapStream,
-            self::encodeStringToUtf7Imap(self::ensureRange(
-                $sequence,
-                __METHOD__,
-                2,
-                true
-            )),
-            self::encodeStringToUtf7Imap($flag),
-            $options
+            $sequence,
+            $flag,
+            $options,
+            __METHOD__,
+            'Could not clear flag on messages!'
         );
-
-        self::assertResultNotFalse($result, 'Could not clear flag on messages!', 0, 'imap_clearflag_full');
-
-        return $result;
     }
 
     /**
@@ -471,27 +463,19 @@ final class Imap
 
     public static function mailCopy(
         Connection $imapStream,
-        int|string $msglist,
+        int|string $msgList,
         string $mailbox,
         int $options = 0
     ): bool {
-        self::flushImapErrors();
-
-        $result = \imap_mail_copy(
+        return self::callWithSequenceAndString(
+            \imap_mail_copy(...),
             $imapStream,
-            self::encodeStringToUtf7Imap(self::ensureRange(
-                $msglist,
-                __METHOD__,
-                2,
-                true
-            )),
-            self::encodeStringToUtf7Imap($mailbox),
-            $options
+            $msgList,
+            $mailbox,
+            $options,
+            __METHOD__,
+            'Could not copy messages!'
         );
-
-        self::assertResultNotFalse($result, 'Could not copy messages!', 0, 'imap_mail_copy');
-
-        return $result;
     }
 
     /**
@@ -499,36 +483,28 @@ final class Imap
      */
     public static function mail_copy(
         Connection $imapStream,
-        int|string $msglist,
+        int|string $msgList,
         string $mailbox,
         int $options = 0
     ): bool {
-        return self::mailCopy($imapStream, $msglist, $mailbox, $options);
+        return self::mailCopy($imapStream, $msgList, $mailbox, $options);
     }
 
     public static function mailMove(
         Connection $imapStream,
-        int|string $msglist,
+        int|string $msgList,
         string $mailbox,
         int $options = 0
     ): bool {
-        self::flushImapErrors();
-
-        $result = \imap_mail_move(
+        return self::callWithSequenceAndString(
+            \imap_mail_move(...),
             $imapStream,
-            self::encodeStringToUtf7Imap(self::ensureRange(
-                $msglist,
-                __METHOD__,
-                2,
-                true
-            )),
-            self::encodeStringToUtf7Imap($mailbox),
-            $options
+            $msgList,
+            $mailbox,
+            $options,
+            __METHOD__,
+            'Could not move messages!'
         );
-
-        self::assertResultNotFalse($result, 'Could not move messages!', 0, 'imap_mail_move');
-
-        return $result;
     }
 
     /**
@@ -723,23 +699,15 @@ final class Imap
         string $flag,
         int $options = 0
     ): bool {
-        self::flushImapErrors();
-
-        $result = \imap_setflag_full(
+        return self::callWithSequenceAndString(
+            \imap_setflag_full(...),
             $imapStream,
-            self::encodeStringToUtf7Imap(self::ensureRange(
-                $sequence,
-                __METHOD__,
-                2,
-                true
-            )),
-            self::encodeStringToUtf7Imap($flag),
-            $options
+            $sequence,
+            $flag,
+            $options,
+            __METHOD__,
+            'Could not set flag on messages!'
         );
-
-        self::assertResultNotFalse($result, 'Could not set flag on messages!', 0, 'imap_setflag_full');
-
-        return $result;
     }
 
     /**
@@ -926,6 +894,39 @@ final class Imap
         }
 
         return new \UnexpectedValueException('IMAP method ' . $method . '() failed!');
+    }
+
+    private static function encodeSequence(int|string $sequence, string $method): string
+    {
+        return self::encodeStringToUtf7Imap(self::ensureRange($sequence, $method, 2, true));
+    }
+
+    private static function callWithSequenceAndString(
+        \Closure $fn,
+        Connection $imapStream,
+        int|string $sequence,
+        string $str,
+        int $options,
+        string $method,
+        string $errorMessage
+    ): bool {
+        self::flushImapErrors();
+
+        $result = $fn(
+            $imapStream,
+            self::encodeSequence($sequence, $method),
+            self::encodeStringToUtf7Imap($str),
+            $options
+        );
+
+        self::assertResultNotFalse(
+            $result,
+            $errorMessage,
+            0,
+            (new \ReflectionFunction($fn))->getName()
+        );
+
+        return $result;
     }
 
     private static function ensureRange(
