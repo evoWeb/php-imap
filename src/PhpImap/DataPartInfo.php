@@ -48,20 +48,13 @@ class DataPartInfo
 
     public function decodeAfterFetch(string $data): string
     {
-        switch ($this->encoding) {
-            case \ENC8BIT:
-                $this->data = \imap_utf8($data);
-                break;
-            case \ENCBINARY:
-                $this->data = \imap_binary($data);
-                break;
-            case \ENCBASE64:
-                $this->data = \base64_decode($data);
-                break;
-            case \ENCQUOTEDPRINTABLE:
-                $this->data = \quoted_printable_decode($data);
-                break;
-        }
+        $this->data = match ($this->encoding) {
+            \ENCBINARY => \imap_binary($data),
+            \ENCBASE64 => \base64_decode($data),
+            \ENCQUOTEDPRINTABLE => \quoted_printable_decode($data),
+            // also responsible for \ENC8BIT
+            default => \imap_utf8($data),
+        };
 
         return $this->convertEncodingAfterFetch();
     }
