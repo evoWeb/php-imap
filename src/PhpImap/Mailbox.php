@@ -362,7 +362,7 @@ class Mailbox
             $this->imapRetriesNum = $retriesNum;
         }
 
-        if (\is_array($params) && \count($params) > 0) {
+        if (\is_array($params) && !empty($params)) {
             $supported_params = ['DISABLE_AUTHENTICATOR'];
 
             foreach (\array_keys($params) as $key) {
