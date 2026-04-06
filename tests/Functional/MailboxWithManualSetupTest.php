@@ -15,6 +15,7 @@ namespace PhpImap\Tests\Functional;
 use ParagonIE\HiddenString\HiddenString;
 use PhpImap\Exceptions\ConnectionException;
 use PhpImap\Exceptions\InvalidParameterException;
+use PhpImap\Tests\Fixtures\Constants;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -26,12 +27,12 @@ use Random\RandomException;
 class MailboxWithManualSetupTest extends AbstractMailboxTest
 {
     /**
-     * @phpstan-return \Generator<int, array{0: '.issue-499.Éléments envoyés'}, mixed, void>
+     * @phpstan-return \Generator<int, array{0: string}, mixed, void>
      */
     public static function relativeToRootPathProvider(): \Generator
     {
         yield [
-            '.issue-499.Éléments envoyés',
+            '.issue-499.' . Constants::ENVOYES,
         ];
     }
 

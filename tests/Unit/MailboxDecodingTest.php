@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace PhpImap\Tests\Unit;
 
 use PhpImap\Exceptions\InvalidParameterException;
+use PhpImap\Tests\Fixtures\Constants;
 use PhpImap\Tests\Fixtures\Mailbox as FixtureMailbox;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -21,17 +22,17 @@ final class MailboxDecodingTest extends TestCase
     /**
      * Holds the imap path.
      */
-    private string $imapPath = '{imap.example.com:993/imap/ssl/novalidate-cert}INBOX';
+    private string $imapPath = Constants::IMAP_PATH_INBOX_NO_VALID_SSL;
 
     /**
      * Holds the imap username.
      */
-    private string $login = 'php-imap@example.com';
+    private string $login = Constants::LOGIN;
 
     /**
      * Holds the imap user password.
      */
-    private string $password = 'v3rY!53cEt&P4sSWöRd$';
+    private string $password = Constants::PASSWORD;
 
     /**
      * Holds the relative name of the directory, where email attachments will be saved.
@@ -46,37 +47,6 @@ final class MailboxDecodingTest extends TestCase
     /**
      * Provides test data for testing encoding.
      *
-     * @phpstan-return array{
-     *      Avañe’ẽ: array{0: 'Avañe’ẽ'},
-     *      azərbaycanca: array{0: 'azərbaycanca'},
-     *      Bokmål: array{0: 'Bokmål'},
-     *      chiCheŵa: array{0: 'chiCheŵa'},
-     *      Deutsch: array{0: 'Deutsch'},
-     *      'U.S. English': array{0: 'U.S. English'},
-     *      français: array{0: 'français'},
-     *      'Éléments envoyés': array{0: 'Éléments envoyés'},
-     *      føroyskt: array{0: 'føroyskt'},
-     *      Kĩmĩrũ: array{0: 'Kĩmĩrũ'},
-     *      Kɨlaangi: array{0: 'Kɨlaangi'},
-     *      oʼzbekcha: array{0: 'oʼzbekcha'},
-     *      Plattdüütsch: array{0: 'Plattdüütsch'},
-     *      română: array{0: 'română'}, Sängö: array{0: 'Sängö'},
-     *      'Tiếng Việt': array{0: 'Tiếng Việt'},
-     *      ɔl-Maa: array{0: 'ɔl-Maa'},
-     *      Ελληνικά: array{0: 'Ελληνικά'},
-     *      Ўзбек: array{0: 'Ўзбек'},
-     *      Азәрбајҹан: array{0: 'Азәрбајҹан'},
-     *      Српски: array{0: 'Српски'},
-     *      русский: array{0: 'русский'},
-     *      'ѩзыкъ словѣньскъ': array{0: 'ѩзыкъ словѣньскъ'},
-     *      العربية: array{0: 'العربية'},
-     *      नेपाली: array{0: 'नेपाली'},
-     *      日本語: array{0: '日本語'},
-     *      简体中文: array{0: '简体中文'},
-     *      繁體中文: array{0: '繁體中文'},
-     *      한국어: array{0: '한국어'},
-     *      ąčęėįšųūžĄČĘĖĮŠŲŪŽ: array{0: 'ąčęėįšųūžĄČĘĖĮŠŲŪŽ'}}
-     *
      * @return string[][]
      */
     public static function encodingTestStringsProvider(): array
@@ -89,7 +59,7 @@ final class MailboxDecodingTest extends TestCase
             'Deutsch' => ['Deutsch'], // German
             'U.S. English' => ['U.S. English'], // U.S. English
             'français' => ['français'], // French
-            'Éléments envoyés' => ['Éléments envoyés'], // issue 499
+            Constants::ENVOYES => [Constants::ENVOYES], // issue 499
             'føroyskt' => ['føroyskt'], // Faroese
             'Kĩmĩrũ' => ['Kĩmĩrũ'], // Kimîîru
             'Kɨlaangi' => ['Kɨlaangi'], // Langi
@@ -171,45 +141,51 @@ final class MailboxDecodingTest extends TestCase
     public static function mimeStrDecodingProvider(): array
     {
         return [
-            '<bde36ec8-9710-47bc-9ea3-bf0425078e33@php.imap>' => [
-                '<bde36ec8-9710-47bc-9ea3-bf0425078e33@php.imap>',
-                '<bde36ec8-9710-47bc-9ea3-bf0425078e33@php.imap>',
+            Constants::EMAIL_A => [
+                Constants::EMAIL_A,
+                Constants::EMAIL_A,
             ],
-            '<CAKBqNfyKo+ZXtkz6DUAHw6FjmsDjWDB-pvHkJy6kwO82jTbkNA@mail.gmail.com>' => [
-                '<CAKBqNfyKo+ZXtkz6DUAHw6FjmsDjWDB-pvHkJy6kwO82jTbkNA@mail.gmail.com>',
-                '<CAKBqNfyKo+ZXtkz6DUAHw6FjmsDjWDB-pvHkJy6kwO82jTbkNA@mail.gmail.com>',
+            Constants::EMAIL_B => [
+                Constants::EMAIL_B,
+                Constants::EMAIL_B,
             ],
-            '<CAE78dO7vwnd_rkozHLZ5xSUnFEQA9fymcYREW2cwQ8DA2v7BTA@mail.gmail.com>' => [
-                '<CAE78dO7vwnd_rkozHLZ5xSUnFEQA9fymcYREW2cwQ8DA2v7BTA@mail.gmail.com>',
-                '<CAE78dO7vwnd_rkozHLZ5xSUnFEQA9fymcYREW2cwQ8DA2v7BTA@mail.gmail.com>',
+            Constants::EMAIL_C => [
+                Constants::EMAIL_C,
+                Constants::EMAIL_C,
             ],
-            '<CAE78dO7vwnd_rkozHLZ5xSU-=nFE_QA9+fymcYREW2cwQ8DA2v7BTA@mail.gmail.com>' => [
-                '<CAE78dO7vwnd_rkozHLZ5xSU-=nFE_QA9+fymcYREW2cwQ8DA2v7BTA@mail.gmail.com>',
-                '<CAE78dO7vwnd_rkozHLZ5xSU-=nFE_QA9+fymcYREW2cwQ8DA2v7BTA@mail.gmail.com>',
+            Constants::EMAIL_D => [
+                Constants::EMAIL_D,
+                Constants::EMAIL_D,
             ],
-            'Some subject here 😘' => [
+            Constants::SUBJECT_SMILE => [
                 '=?UTF-8?q?Some_subject_here_?= =?UTF-8?q?=F0=9F=98=98?=',
-                'Some subject here 😘',
+                Constants::SUBJECT_SMILE,
             ],
-            'mountainguan测试' => [
+            Constants::MOUNTAIN_GUAN => [
                 '=?UTF-8?Q?mountainguan=E6=B5=8B=E8=AF=95?=',
-                'mountainguan测试',
+                Constants::MOUNTAIN_GUAN,
             ],
-            "This is the Euro symbol ''." => [
-                "This is the Euro symbol ''.",
-                "This is the Euro symbol ''.",
+            'This is the Euro symbol € (Q-encoded)' => [
+                '=?UTF-8?Q?This_is_the_Euro_symbol_=E2=82=AC.?=',
+                'This is the Euro symbol €.',
+            ],
+            'This is the Euro symbol € (B-encoded)' => [
+                '=?UTF-8?B?VGhpcyBpcyB0aGUgRXVybyBzeW1ib2wg4oKsLg==?=',
+                'This is the Euro symbol €.',
             ],
             'Some subject here 😘 US-ASCII' => [
                 '=?UTF-8?q?Some_subject_here_?= =?UTF-8?q?=F0=9F=98=98?=',
-                'Some subject here 😘', 'US-ASCII',
+                Constants::SUBJECT_SMILE,
+                'US-ASCII',
             ],
             'mountainguan测试 US-ASCII' => [
                 '=?UTF-8?Q?mountainguan=E6=B5=8B=E8=AF=95?=',
-                'mountainguan测试', 'US-ASCII',
+                Constants::MOUNTAIN_GUAN,
+                'US-ASCII',
             ],
-            'مقتطفات من: صن تزو. "فن الحرب". كتب أبل. Something' => [
-                'مقتطفات من: صن تزو. "فن الحرب". كتب أبل. Something',
-                'مقتطفات من: صن تزو. "فن الحرب". كتب أبل. Something',
+            Constants::SOMETHING_KEY => [
+                Constants::SOMETHING_KEY,
+                Constants::SOMETHING_KEY,
             ],
             '(事件单编号:TESTA-111111)(通报)入口有陌生人' => [
                 '=?utf-8?b?KOS6i+S7tuWNlee8luWPtzpURVNUQS0xMTExMTEpKOmAmuaKpSnl?= =?utf-8?b?haXlj6PmnInpmYznlJ/kuro=?=',

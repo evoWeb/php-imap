@@ -106,9 +106,7 @@ class IncomingMail extends IncomingMailHeader
     public function addAttachment(IncomingMailAttachment $attachment): void
     {
         if (!\is_string($attachment->id)) {
-            throw new \InvalidArgumentException(
-                'Argument 1 passed to ' . __METHOD__ . '() does not have an id specified!'
-            );
+            throw new \InvalidArgumentException(sprintf(Constants::INVALID_ID, 1, __METHOD__));
         }
         $this->attachments[$attachment->id] = $attachment;
 
@@ -186,9 +184,7 @@ class IncomingMail extends IncomingMailHeader
             foreach ($this->attachments as $attachment) {
                 if ($attachment->contentId == $attachmentId) {
                     if (!\is_string($attachment->id)) {
-                        throw new \InvalidArgumentException(
-                            'Argument 1 passed to ' . __METHOD__ . '() does not have an id specified!'
-                        );
+                        throw new \InvalidArgumentException(sprintf(Constants::INVALID_ID, 1, __METHOD__));
                     }
                     $search[] = $placeholder;
                     $replace[] = $baseUri . \basename($this->attachments[$attachment->id]->filePath);
@@ -263,9 +259,7 @@ class IncomingMail extends IncomingMailHeader
 
         if (str_contains($contentType, 'image')) {
             if (!\is_string($matched->id)) {
-                throw new \InvalidArgumentException(
-                    'Argument 1 passed to ' . __METHOD__ . '() does not have an id specified!'
-                );
+                throw new \InvalidArgumentException(sprintf(Constants::INVALID_ID, 1, __METHOD__));
             }
 
             $base64encoded = \base64_encode($contents);

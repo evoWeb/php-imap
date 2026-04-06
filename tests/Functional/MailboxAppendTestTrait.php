@@ -15,6 +15,7 @@ namespace PhpImap\Tests\Functional;
 use PhpImap\Exceptions\ConnectionException;
 use PhpImap\Exceptions\InvalidParameterException;
 use PhpImap\Imap;
+use PhpImap\Tests\Fixtures\Constants;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Random\RandomException;
@@ -107,15 +108,7 @@ trait MailboxAppendTestTrait
         try {
             $search = $mailbox->searchMailbox($searchCriteria);
 
-            self::assertCount(
-                0,
-                $search,
-                (
-                    'If a subject was found,' .
-                    ' then the message is insufficiently unique to assert that' .
-                    ' a newly-appended message was actually created.'
-                )
-            );
+            self::assertCount(0, $search, Constants::SUBJECT_INSUFFICIENT_UNIQUE);
 
             $message = [$envelope, $body];
 
@@ -127,15 +120,7 @@ trait MailboxAppendTestTrait
 
             $search = $mailbox->searchMailbox($searchCriteria);
 
-            self::assertCount(
-                1,
-                $search,
-                (
-                    'If a subject was not found, ' .
-                    ' then Mailbox::appendMessageToMailbox() failed' .
-                    ' despite not throwing an exception.'
-                )
-            );
+            self::assertCount(1, $search, Constants::SUBJECT_NOT_FOUND);
 
             $mailbox->deleteMail($search[0]);
 
@@ -148,10 +133,7 @@ trait MailboxAppendTestTrait
             self::assertCount(
                 0,
                 $mailbox->searchMailbox($searchCriteria),
-                (
-                    'If a subject was found,' .
-                    ' then the message is was not expunged as requested.'
-                )
+                Constants::SUBJECT_INSUFFICIENT_UNIQUE
             );
         } catch (\Exception $exception) {
         } finally {

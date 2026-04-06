@@ -4,18 +4,20 @@ declare(strict_types=1);
 
 namespace PhpImap\Tests\Unit;
 
+use PhpImap\Exceptions\InvalidParameterException;
 use PhpImap\Mailbox;
+use PhpImap\Tests\Fixtures\Constants;
 use PhpImap\Tests\Fixtures\Mailbox as FixtureMailbox;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 final class MailboxConstructorTest extends TestCase
 {
-    private string $imapPath = '{imap.example.com:993/imap/ssl/novalidate-cert}INBOX';
+    private string $imapPath = Constants::IMAP_PATH_INBOX_NO_VALID_SSL;
 
-    private string $login = 'php-imap@example.com';
+    private string $login = Constants::LOGIN;
 
-    private string $password = 'v3rY!53cEt&P4sSWöRd$';
+    private string $password = Constants::PASSWORD;
 
     private string $attachmentsDir = '.';
 
@@ -28,9 +30,9 @@ final class MailboxConstructorTest extends TestCase
     #[Test]
     public function testConstructorTrimsPossibleVariables(): void
     {
-        $imapPath = ' {imap.example.com:993/imap/ssl}INBOX     ';
-        $login = '    php-imap@example.com';
-        $password = '  v3rY!53cEt&P4sSWöRd$';
+        $imapPath = ' ' . Constants::IMAP_PATH_INBOX_SSL . '     ';
+        $login = '    ' . Constants::LOGIN;
+        $password = '  ' . Constants::PASSWORD;
         // directory names can contain spaces before AND after on
         // Linux/Unix systems. Windows trims these spaces automatically.
         $attachmentsDir = '.';
@@ -38,9 +40,9 @@ final class MailboxConstructorTest extends TestCase
 
         $mailbox = new FixtureMailbox($imapPath, $login, $password, $attachmentsDir, $serverEncoding);
 
-        self::assertSame('{imap.example.com:993/imap/ssl}INBOX', $mailbox->getImapPath());
-        self::assertSame('php-imap@example.com', $mailbox->getLogin());
-        self::assertSame('  v3rY!53cEt&P4sSWöRd$', $mailbox->getImapPassword());
+        self::assertSame(Constants::IMAP_PATH_INBOX_SSL, $mailbox->getImapPath());
+        self::assertSame(Constants::LOGIN, $mailbox->getLogin());
+        self::assertSame('  ' . Constants::PASSWORD, $mailbox->getImapPassword());
         self::assertSame(\realpath('.'), $mailbox->getAttachmentsDir());
         self::assertSame('UTF-8', $mailbox->getServerEncoding());
     }
@@ -65,27 +67,36 @@ final class MailboxConstructorTest extends TestCase
     #[Test]
     public function testGetLogin(): void
     {
-        self::assertEquals('php-imap@example.com', $this->getMailbox()->getLogin());
+        self::assertEquals(Constants::LOGIN, $this->getMailbox()->getLogin());
     }
 
+    /**
+     * @throws InvalidParameterException
+     */
     #[Test]
     public function testConstructorWithTrimImapPathFalse(): void
     {
-        $imapPath = '  {imap.example.com:993/imap/ssl}INBOX  ';
+        $imapPath = '  ' . Constants::IMAP_PATH_INBOX_SSL . '  ';
         $mailbox = new FixtureMailbox($imapPath, $this->login, $this->password, $this->attachmentsDir, 'UTF-8', false);
 
         self::assertSame($imapPath, $mailbox->getImapPath());
     }
 
+    /**
+     * @throws InvalidParameterException
+     */
     #[Test]
     public function testConstructorWithTrimImapPathTrue(): void
     {
-        $imapPath = '  {imap.example.com:993/imap/ssl}INBOX  ';
+        $imapPath = '  ' . Constants::IMAP_PATH_INBOX_SSL . '  ';
         $mailbox = new FixtureMailbox($imapPath, $this->login, $this->password, $this->attachmentsDir, 'UTF-8', true);
 
-        self::assertSame('{imap.example.com:993/imap/ssl}INBOX', $mailbox->getImapPath());
+        self::assertSame(Constants::IMAP_PATH_INBOX_SSL, $mailbox->getImapPath());
     }
 
+    /**
+     * @throws InvalidParameterException
+     */
     #[Test]
     public function testConstructorWithAttachmentFilenameModeTrue(): void
     {
@@ -102,6 +113,9 @@ final class MailboxConstructorTest extends TestCase
         self::assertTrue($mailbox->getAttachmentFilenameMode());
     }
 
+    /**
+     * @throws InvalidParameterException
+     */
     #[Test]
     public function testConstructorWithAttachmentFilenameModeFalse(): void
     {
@@ -118,6 +132,9 @@ final class MailboxConstructorTest extends TestCase
         self::assertFalse($mailbox->getAttachmentFilenameMode());
     }
 
+    /**
+     * @throws InvalidParameterException
+     */
     #[Test]
     public function testConstructorWithNullAttachmentsDir(): void
     {
@@ -127,22 +144,28 @@ final class MailboxConstructorTest extends TestCase
         $this->addToAssertionCount(1);
     }
 
+    /**
+     * @throws InvalidParameterException
+     */
     #[Test]
     public function testSetMailboxFolderFromImapPath(): void
     {
-        $mailbox = new Mailbox('{imap.example.com:993}Sent', '', '');
+        $mailbox = new Mailbox(Constants::IMAP_PATH . 'Sent', '', '');
 
-        self::assertSame('{imap.example.com:993}Sent', $mailbox->getImapPath());
+        self::assertSame(Constants::IMAP_PATH . 'Sent', $mailbox->getImapPath());
     }
 
     #[Test]
     public function testSetMailboxFolderDefaultsToInbox(): void
     {
-        $mailbox = new Mailbox('{imap.example.com:993}', '', '');
+        $mailbox = new Mailbox(Constants::IMAP_PATH, '', '');
 
-        self::assertSame('{imap.example.com:993}', $mailbox->getImapPath());
+        self::assertSame(Constants::IMAP_PATH, $mailbox->getImapPath());
     }
 
+    /**
+     * @throws InvalidParameterException
+     */
     private function getMailbox(): FixtureMailbox
     {
         return new FixtureMailbox(

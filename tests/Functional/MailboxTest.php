@@ -16,6 +16,7 @@ use ParagonIE\HiddenString\HiddenString;
 use PhpImap\Exceptions\ConnectionException;
 use PhpImap\Exceptions\InvalidParameterException;
 use PhpImap\Imap;
+use PhpImap\Tests\Fixtures\Constants;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -176,8 +177,8 @@ class MailboxTest extends AbstractMailboxTest
             ],
             implode(LF, [
                 'Subject: ' . $randomSubject,
-                'MIME-Version: 1.0',
-                'Content-Type: TEXT/PLAIN; CHARSET=US-ASCII',
+                Constants::MIME1,
+                Constants::CONTENT_PLAIN,
                 '',
                 'test',
                 '',
@@ -185,7 +186,7 @@ class MailboxTest extends AbstractMailboxTest
         ];
 
         $randomSubject = 'barbushin/php-imap#448: dot first:' . \bin2hex(\random_bytes(16));
-        $contentsData = \base64_encode(\file_get_contents(__DIR__ . '/../../.gitignore'));
+        $contentsData = \base64_encode(\file_get_contents(__DIR__ . '/../../' . Constants::GITIGNORE));
         yield [
             ['subject' => $randomSubject],
             [
@@ -193,20 +194,20 @@ class MailboxTest extends AbstractMailboxTest
                     'type' => \TYPEAPPLICATION,
                     'encoding' => \ENCBASE64,
                     'subtype' => 'octet-stream',
-                    'description' => '.gitignore',
+                    'description' => Constants::GITIGNORE,
                     'disposition.type' => 'attachment',
-                    'disposition' => ['filename' => '.gitignore'],
-                    'type.parameters' => ['name' => '.gitignore'],
+                    'disposition' => ['filename' => Constants::GITIGNORE],
+                    'type.parameters' => ['name' => Constants::GITIGNORE],
                     'contents.data' => $contentsData,
                 ],
             ],
             implode(LF, [
                 'Subject: ' . $randomSubject,
-                'MIME-Version: 1.0',
-                'Content-Type: APPLICATION/octet-stream; name=.gitignore',
-                'Content-Transfer-Encoding: BASE64',
-                'Content-Description: .gitignore',
-                'Content-Disposition: attachment; filename=.gitignore',
+                Constants::MIME1,
+                'Content-Type: APPLICATION/octet-stream; name=' . Constants::GITIGNORE,
+                Constants::TRANSFER_BASE64,
+                'Content-Description: ' . Constants::GITIGNORE,
+                'Content-Disposition: attachment; filename=' . Constants::GITIGNORE,
                 '',
                 $contentsData,
                 '',
@@ -230,9 +231,9 @@ class MailboxTest extends AbstractMailboxTest
             ],
             implode(LF, [
                 'Subject: ' . $randomSubject,
-                'MIME-Version: 1.0',
+                Constants::MIME1,
                 'Content-Type: APPLICATION/octet-stream; name=gitignore.',
-                'Content-Transfer-Encoding: BASE64',
+                Constants::TRANSFER_BASE64,
                 'Content-Description: gitignore.',
                 'Content-Disposition: attachment; filename=gitignore.',
                 '',
@@ -277,28 +278,28 @@ class MailboxTest extends AbstractMailboxTest
             ],
             implode(LF, [
                 'Subject: ' . $randomSubject,
-                'MIME-Version: 1.0',
+                Constants::MIME1,
                 'Content-Type: MULTIPART/MIXED; BOUNDARY="{{REPLACE_BOUNDARY_HERE}}"',
                 '',
-                '--{{REPLACE_BOUNDARY_HERE}}',
+                Constants::BOUNDARY,
                 'Content-Type: TEXT/PLAIN; CHARSET=US-ASCII',
                 '',
                 'test',
-                '--{{REPLACE_BOUNDARY_HERE}}',
+                Constants::BOUNDARY,
                 'Content-Type: APPLICATION/octet-stream; name=foo.bin',
-                'Content-Transfer-Encoding: BASE64',
+                Constants::TRANSFER_BASE64,
                 'Content-Description: foo.bin',
                 'Content-Disposition: attachment; filename=foo.bin',
                 '',
                 $randomAttachmentA,
-                '--{{REPLACE_BOUNDARY_HERE}}',
+                Constants::BOUNDARY,
                 'Content-Type: APPLICATION/octet-stream; name=foo.bin',
-                'Content-Transfer-Encoding: BASE64',
+                Constants::TRANSFER_BASE64,
                 'Content-Description: foo.bin',
                 'Content-Disposition: attachment; filename=foo.bin',
                 '',
                 $randomAttachmentB,
-                '--{{REPLACE_BOUNDARY_HERE}}--',
+                Constants::BOUNDARY . '--',
                 '',
             ]),
         ];
@@ -358,29 +359,13 @@ class MailboxTest extends AbstractMailboxTest
 
         $search = $mailbox->searchMailbox($searchCriteria);
 
-        self::assertCount(
-            0,
-            $search,
-            (
-                'If a subject was found,' .
-                ' then the message is insufficiently unique to assert that' .
-                ' a newly-appended message was actually created.'
-            )
-        );
+        self::assertCount(0, $search, Constants::SUBJECT_INSUFFICIENT_UNIQUE);
 
         $mailbox->appendMessageToMailbox($message);
 
         $search = $mailbox->searchMailbox($searchCriteria);
 
-        self::assertCount(
-            1,
-            $search,
-            (
-                'If a subject was not found, ' .
-                ' then Mailbox::appendMessageToMailbox() failed' .
-                ' despite not throwing an exception.'
-            )
-        );
+        self::assertCount(1, $search, Constants::SUBJECT_NOT_FOUND);
 
         self::assertSame(
             $count + 1,
@@ -445,29 +430,13 @@ class MailboxTest extends AbstractMailboxTest
 
         $search = $mailbox->searchMailbox($searchCriteria);
 
-        self::assertCount(
-            0,
-            $search,
-            (
-                'If a subject was found,' .
-                ' then the message is insufficiently unique to assert that' .
-                ' a newly-appended message was actually created.'
-            )
-        );
+        self::assertCount(0, $search, Constants::SUBJECT_INSUFFICIENT_UNIQUE);
 
         $mailbox->appendMessageToMailbox($message);
 
         $search = $mailbox->searchMailbox($searchCriteria);
 
-        self::assertCount(
-            1,
-            $search,
-            (
-                'If a subject was not found, ' .
-                ' then Mailbox::appendMessageToMailbox() failed' .
-                ' despite not throwing an exception.'
-            )
-        );
+        self::assertCount(1, $search, Constants::SUBJECT_NOT_FOUND);
 
         self::assertSame($search, $mailbox->sortMails(\SORTARRIVAL, true, $searchCriteria));
 
@@ -532,29 +501,13 @@ class MailboxTest extends AbstractMailboxTest
 
         $search = $mailbox->searchMailbox($searchCriteria);
 
-        self::assertCount(
-            0,
-            $search,
-            (
-                'If a subject was found,' .
-                ' then the message is insufficiently unique to assert that' .
-                ' a newly-appended message was actually created.'
-            )
-        );
+        self::assertCount(0, $search, Constants::SUBJECT_INSUFFICIENT_UNIQUE);
 
         $mailbox->appendMessageToMailbox($message);
 
         $search = $mailbox->searchMailbox($searchCriteria);
 
-        self::assertCount(
-            1,
-            $search,
-            (
-                'If a subject was not found, ' .
-                ' then Mailbox::appendMessageToMailbox() failed' .
-                ' despite not throwing an exception.'
-            )
-        );
+        self::assertCount(1, $search, Constants::SUBJECT_NOT_FOUND);
 
         $actualResult = $mailbox->getMailMboxFormat($search[0]);
 
@@ -611,7 +564,7 @@ class MailboxTest extends AbstractMailboxTest
 
             if ($matches[1] === '448') {
                 self::assertSame(
-                    \file_get_contents(__DIR__ . '/../../.gitignore'),
+                    \file_get_contents(__DIR__ . '/../../' . Constants::GITIGNORE),
                     \current($attachments)->getContents()
                 );
             }
@@ -664,23 +617,13 @@ class MailboxTest extends AbstractMailboxTest
 
         $search = $mailbox->searchMailbox($searchCriteria);
 
-        self::assertCount(
-            0,
-            $search,
-            'If a subject was found, then the message is insufficiently unique to assert that'
-            . ' a newly-appended message was actually created.'
-        );
+        self::assertCount(0, $search, Constants::SUBJECT_INSUFFICIENT_UNIQUE);
 
         $mailbox->appendMessageToMailbox($message);
 
         $search = $mailbox->searchMailbox($searchCriteria);
 
-        self::assertCount(
-            1,
-            $search,
-            'If a subject was not found, then Mailbox::appendMessageToMailbox()'
-            . ' failed despite not throwing an exception.'
-        );
+        self::assertCount(1, $search, Constants::SUBJECT_NOT_FOUND);
 
         $info = $mailbox->getMailsInfo($search);
 

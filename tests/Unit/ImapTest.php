@@ -6,6 +6,7 @@ namespace PhpImap\Tests\Unit;
 
 use PhpImap\Exceptions\ConnectionException;
 use PhpImap\Imap;
+use PhpImap\Tests\Fixtures\Constants;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -51,7 +52,7 @@ final class ImapTest extends TestCase
         return [
             'ASCII' => ['INBOX', 'INBOX'],
             'German umlauts' => ['Über uns', 'Über uns'],
-            'French accents' => ['Éléments envoyés', 'Éléments envoyés'],
+            'French accents' => [Constants::ENVOYES, Constants::ENVOYES],
             'Japanese' => ['日本語', '日本語'],
             'Chinese' => ['简体中文', '简体中文'],
             'Russian' => ['русский', 'русский'],
@@ -75,7 +76,7 @@ final class ImapTest extends TestCase
     #[Test]
     public function testEncodeStringToUtf7ImapProducesValidUtf7(): void
     {
-        $result = Imap::encodeStringToUtf7Imap('Éléments envoyés');
+        $result = Imap::encodeStringToUtf7Imap(Constants::ENVOYES);
 
         self::assertSame('&AMk-l&AOk-ments envoy&AOk-s', $result);
     }
@@ -111,14 +112,14 @@ final class ImapTest extends TestCase
         $body = [
             [
                 'type' => \TYPETEXT,
-                'contents.data' => 'Hello World',
+                'contents.data' => Constants::HELLO_WORLD,
             ],
         ];
 
         $result = Imap::mailCompose($envelope, $body);
 
         self::assertStringContainsString('Subject: Test Subject', $result);
-        self::assertStringContainsString('Hello World', $result);
+        self::assertStringContainsString(Constants::HELLO_WORLD, $result);
     }
 
     #[Test]

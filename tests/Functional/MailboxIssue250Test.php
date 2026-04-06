@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace PhpImap\Tests\Functional;
 
+use PhpImap\Tests\Fixtures\Constants;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -49,8 +50,8 @@ class MailboxIssue250Test extends AbstractMailboxTest
             ],
             implode(LF, [
                 'Subject: ' . $randomSubject,
-                'MIME-Version: 1.0',
-                'Content-Type: TEXT/PLAIN; CHARSET=US-ASCII',
+                Constants::MIME1,
+                Constants::CONTENT_PLAIN,
                 '',
                 'test',
                 '',

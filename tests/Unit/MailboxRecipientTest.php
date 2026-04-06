@@ -5,17 +5,18 @@ declare(strict_types=1);
 namespace PhpImap\Tests\Unit;
 
 use PhpImap\Exceptions\InvalidParameterException;
+use PhpImap\Tests\Fixtures\Constants;
 use PhpImap\Tests\Fixtures\Mailbox as FixtureMailbox;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 final class MailboxRecipientTest extends TestCase
 {
-    private string $imapPath = '{imap.example.com:993/imap/ssl/novalidate-cert}INBOX';
+    private string $imapPath = Constants::IMAP_PATH_INBOX_NO_VALID_SSL;
 
-    private string $login = 'php-imap@example.com';
+    private string $login = Constants::LOGIN;
 
-    private string $password = 'v3rY!53cEt&P4sSWöRd$';
+    private string $password = Constants::PASSWORD;
 
     private string $attachmentsDir = '.';
 
@@ -30,13 +31,13 @@ final class MailboxRecipientTest extends TestCase
         $recipient = new \stdClass();
         $recipient->mailbox = 'john';
         $recipient->host = 'example.com';
-        $recipient->personal = 'John Doe';
+        $recipient->personal = Constants::JOHN_DOE;
 
         $result = $mailbox->exposedPossiblyGetEmailAndNameFromRecipient($recipient);
 
         self::assertNotNull($result);
-        self::assertSame('john@example.com', $result[0]);
-        self::assertSame('John Doe', $result[1]);
+        self::assertSame(Constants::JOHN, $result[0]);
+        self::assertSame(Constants::JOHN_DOE, $result[1]);
     }
 
     /**
@@ -54,7 +55,7 @@ final class MailboxRecipientTest extends TestCase
         $result = $mailbox->exposedPossiblyGetEmailAndNameFromRecipient($recipient);
 
         self::assertNotNull($result);
-        self::assertSame('jane@example.com', $result[0]);
+        self::assertSame(Constants::JANE, $result[0]);
         self::assertNull($result[1]);
     }
 
@@ -123,7 +124,7 @@ final class MailboxRecipientTest extends TestCase
         $result = $mailbox->exposedPossiblyGetEmailAndNameFromRecipient($recipient);
 
         self::assertNotNull($result);
-        self::assertSame('john@example.com', $result[0]);
+        self::assertSame(Constants::JOHN, $result[0]);
         self::assertNull($result[1]);
     }
 
@@ -138,13 +139,13 @@ final class MailboxRecipientTest extends TestCase
         $entry = new \stdClass();
         $entry->mailbox = 'john';
         $entry->host = 'example.com';
-        $entry->personal = 'John Doe';
+        $entry->personal = Constants::JOHN_DOE;
 
         $result = $mailbox->exposedPossiblyGetHostNameAndAddress([$entry]);
 
         self::assertSame('example.com', $result[0]);
-        self::assertSame('John Doe', $result[1]);
-        self::assertSame('john@example.com', $result[2]);
+        self::assertSame(Constants::JOHN_DOE, $result[1]);
+        self::assertSame(Constants::JOHN, $result[2]);
     }
 
     /**
@@ -167,7 +168,7 @@ final class MailboxRecipientTest extends TestCase
 
         self::assertSame('example.com', $result[0]);
         self::assertSame('Fallback Name', $result[1]);
-        self::assertSame('john@example.com', $result[2]);
+        self::assertSame(Constants::JOHN, $result[2]);
     }
 
     /**
@@ -211,12 +212,12 @@ final class MailboxRecipientTest extends TestCase
         $recipient = new \stdClass();
         $recipient->mailbox = 'john';
         $recipient->host = 'example.com';
-        $recipient->personal = 'John Doe';
+        $recipient->personal = Constants::JOHN_DOE;
 
         $result = $this->getMailbox()->exposeParseRecipientList([$recipient]);
 
-        self::assertSame(['john@example.com' => 'John Doe'], $result[0]);
-        self::assertSame('John Doe <john@example.com>', $result[1]);
+        self::assertSame([Constants::JOHN => Constants::JOHN_DOE], $result[0]);
+        self::assertSame(Constants::JOHN_DOE . ' <' . Constants::JOHN . '>', $result[1]);
     }
 
     /**
@@ -231,8 +232,8 @@ final class MailboxRecipientTest extends TestCase
 
         $result = $this->getMailbox()->exposeParseRecipientList([$recipient]);
 
-        self::assertSame(['jane@example.com' => null], $result[0]);
-        self::assertSame('jane@example.com', $result[1]);
+        self::assertSame([Constants::JANE => null], $result[0]);
+        self::assertSame(Constants::JANE, $result[1]);
     }
 
     /**

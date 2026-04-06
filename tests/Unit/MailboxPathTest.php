@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpImap\Tests\Unit;
 
 use PhpImap\Exceptions\InvalidParameterException;
+use PhpImap\Tests\Fixtures\Constants;
 use PhpImap\Tests\Fixtures\Mailbox as FixtureMailbox;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -12,11 +13,11 @@ use PHPUnit\Framework\TestCase;
 
 final class MailboxPathTest extends TestCase
 {
-    private string $imapPath = '{imap.example.com:993/imap/ssl/novalidate-cert}INBOX';
+    private string $imapPath = Constants::IMAP_PATH_INBOX_NO_VALID_SSL;
 
-    private string $login = 'php-imap@example.com';
+    private string $login = Constants::LOGIN;
 
-    private string $password = 'v3rY!53cEt&P4sSWöRd$';
+    private string $password = Constants::PASSWORD;
 
     private string $attachmentsDir = '.';
 
@@ -106,49 +107,49 @@ final class MailboxPathTest extends TestCase
     #[Test]
     public function testGetCombinedPathEmptyFolder(): void
     {
-        $mailbox = new FixtureMailbox('{imap.example.com:993}INBOX', '', '');
+        $mailbox = new FixtureMailbox(Constants::IMAP_PATH_INBOX, '', '');
 
-        self::assertSame('{imap.example.com:993}INBOX', $mailbox->exposedGetCombinedPath(''));
+        self::assertSame(Constants::IMAP_PATH_INBOX, $mailbox->exposedGetCombinedPath(''));
     }
 
     #[Test]
     public function testGetCombinedPathSpacesOnly(): void
     {
-        $mailbox = new FixtureMailbox('{imap.example.com:993}INBOX', '', '');
+        $mailbox = new FixtureMailbox(Constants::IMAP_PATH_INBOX, '', '');
 
-        self::assertSame('{imap.example.com:993}INBOX', $mailbox->exposedGetCombinedPath('   '));
+        self::assertSame(Constants::IMAP_PATH_INBOX, $mailbox->exposedGetCombinedPath('   '));
     }
 
     #[Test]
     public function testGetCombinedPathWithFolder(): void
     {
-        $mailbox = new FixtureMailbox('{imap.example.com:993}INBOX', '', '');
+        $mailbox = new FixtureMailbox(Constants::IMAP_PATH_INBOX, '', '');
 
-        self::assertSame('{imap.example.com:993}INBOX.Sent', $mailbox->exposedGetCombinedPath('Sent'));
+        self::assertSame(Constants::IMAP_PATH_INBOX . '.Sent', $mailbox->exposedGetCombinedPath('Sent'));
     }
 
     #[Test]
     public function testGetCombinedPathEndingWithBrace(): void
     {
-        $mailbox = new FixtureMailbox('{imap.example.com:993}', '', '');
+        $mailbox = new FixtureMailbox(Constants::IMAP_PATH, '', '');
 
-        self::assertSame('{imap.example.com:993}INBOX', $mailbox->exposedGetCombinedPath('INBOX'));
+        self::assertSame(Constants::IMAP_PATH_INBOX, $mailbox->exposedGetCombinedPath('INBOX'));
     }
 
     #[Test]
     public function testGetCombinedPathAbsolute(): void
     {
-        $mailbox = new FixtureMailbox('{imap.example.com:993}INBOX', '', '');
+        $mailbox = new FixtureMailbox(Constants::IMAP_PATH_INBOX, '', '');
 
-        self::assertSame('{imap.example.com:993}Sent', $mailbox->exposedGetCombinedPath('Sent', true));
+        self::assertSame(Constants::IMAP_PATH . 'Sent', $mailbox->exposedGetCombinedPath('Sent', true));
     }
 
     #[Test]
     public function testGetCombinedPathAbsoluteWithSlash(): void
     {
-        $mailbox = new FixtureMailbox('{imap.example.com:993}INBOX', '', '');
+        $mailbox = new FixtureMailbox(Constants::IMAP_PATH_INBOX, '', '');
 
-        self::assertSame('{imap.example.com:993}', $mailbox->exposedGetCombinedPath('/', true));
+        self::assertSame(Constants::IMAP_PATH, $mailbox->exposedGetCombinedPath('/', true));
     }
 
     #[Test]
@@ -168,10 +169,10 @@ final class MailboxPathTest extends TestCase
     #[Test]
     public function testGetCombinedPathWithSlashDelimiter(): void
     {
-        $mailbox = new FixtureMailbox('{imap.example.com:993}INBOX', '', '');
+        $mailbox = new FixtureMailbox(Constants::IMAP_PATH_INBOX, '', '');
         $mailbox->setPathDelimiter('/');
 
-        self::assertSame('{imap.example.com:993}INBOX/Sent', $mailbox->exposedGetCombinedPath('Sent'));
+        self::assertSame(Constants::IMAP_PATH_INBOX . '/Sent', $mailbox->exposedGetCombinedPath('Sent'));
     }
 
     /**

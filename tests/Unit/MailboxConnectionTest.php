@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpImap\Tests\Unit;
 
 use PhpImap\Exceptions\InvalidParameterException;
+use PhpImap\Tests\Fixtures\Constants;
 use PhpImap\Tests\Fixtures\Mailbox as FixtureMailbox;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -12,11 +13,11 @@ use PHPUnit\Framework\TestCase;
 
 final class MailboxConnectionTest extends TestCase
 {
-    private string $imapPath = '{imap.example.com:993/imap/ssl/novalidate-cert}INBOX';
+    private string $imapPath = Constants::IMAP_PATH_INBOX_NO_VALID_SSL;
 
-    private string $login = 'php-imap@example.com';
+    private string $login = Constants::LOGIN;
 
-    private string $password = 'v3rY!53cEt&P4sSWöRd$';
+    private string $password = Constants::PASSWORD;
 
     private string $attachmentsDir = '.';
 

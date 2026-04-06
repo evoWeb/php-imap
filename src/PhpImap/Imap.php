@@ -864,7 +864,7 @@ final class Imap
     {
         self::assertResultNotFalse(
             (!$maybe || !\is_resource($maybe)),
-            'Argument ' . $argument . ' passed to ' . $method . ' must be a valid resource!',
+            sprintf(Constants::INVALID_RESOURCE, $argument, $method),
             0,
             'is_resource'
         );
@@ -878,7 +878,7 @@ final class Imap
     {
         if (!$maybe instanceof Connection) {
             throw new ConnectionException(
-                ['Argument ' . $argument . ' passed to ' . $method . ' must be valid resource!'],
+                [sprintf(Constants::INVALID_RESOURCE, $argument, $method)],
                 0,
             );
         }

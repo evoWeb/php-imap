@@ -798,7 +798,7 @@ class Mailbox
      */
     public function markMailAsRead(int $mailId): void
     {
-        $this->setFlag([$mailId], '\\Seen');
+        $this->setFlag([$mailId], Constants::SEEN);
     }
 
     /**
@@ -807,7 +807,7 @@ class Mailbox
      */
     public function markMailAsUnread(int $mailId): void
     {
-        $this->clearFlag([$mailId], '\\Seen');
+        $this->clearFlag([$mailId], Constants::SEEN);
     }
 
     /**
@@ -829,7 +829,7 @@ class Mailbox
      */
     public function markMailsAsRead(array $mailId): void
     {
-        $this->setFlag($mailId, '\\Seen');
+        $this->setFlag($mailId, Constants::SEEN);
     }
 
     /**
@@ -842,7 +842,7 @@ class Mailbox
      */
     public function markMailsAsUnread(array $mailId): void
     {
-        $this->clearFlag($mailId, '\\Seen');
+        $this->clearFlag($mailId, Constants::SEEN);
     }
 
     /**
@@ -1206,7 +1206,7 @@ class Mailbox
         $header->id = $mailId;
         $header->imapPath = $this->imapPath;
         $header->mailboxFolder = $this->mailboxFolder;
-        $header->isSeen = $this->flagIsSet($mailId, '\Seen');
+        $header->isSeen = $this->flagIsSet($mailId, Constants::SEEN);
         $header->isAnswered = $this->flagIsSet($mailId, '\Answered');
         $header->isRecent = $this->flagIsSet($mailId, '\Recent');
         $header->isFlagged = $this->flagIsSet($mailId, '\Flagged');

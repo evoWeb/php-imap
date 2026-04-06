@@ -16,6 +16,7 @@ use ParagonIE\HiddenString\HiddenString;
 use PhpImap\Exceptions\ConnectionException;
 use PhpImap\Exceptions\InvalidParameterException;
 use PhpImap\Imap;
+use PhpImap\Tests\Fixtures\Constants;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -63,15 +64,7 @@ class MailboxIssue490Test extends AbstractMailboxTest
 
             $search = $mailbox->searchMailbox($searchCriteria);
 
-            self::assertCount(
-                0,
-                $search,
-                (
-                    'If a subject was found,' .
-                    ' then the message is insufficiently unique to assert that' .
-                    ' a newly-appended message was actually created.'
-                )
-            );
+            self::assertCount(0, $search, Constants::SUBJECT_INSUFFICIENT_UNIQUE);
 
             $message = Imap::mailCompose(
                 $envelope,
@@ -108,15 +101,7 @@ class MailboxIssue490Test extends AbstractMailboxTest
 
             $search = $mailbox->searchMailbox($searchCriteria);
 
-            self::assertCount(
-                1,
-                $search,
-                (
-                    'If a subject was not found, ' .
-                    ' then Mailbox::appendMessageToMailbox() failed' .
-                    ' despite not throwing an exception.'
-                )
-            );
+            self::assertCount(1, $search, Constants::SUBJECT_NOT_FOUND);
 
             $mail = $mailbox->getMail($search[0], false);
 

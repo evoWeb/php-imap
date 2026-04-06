@@ -6,6 +6,7 @@ namespace PhpImap\Tests\Unit;
 
 use PhpImap\Exceptions\InvalidParameterException;
 use PhpImap\Mailbox;
+use PhpImap\Tests\Fixtures\Constants;
 use PhpImap\Tests\Fixtures\Mailbox as FixtureMailbox;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -13,11 +14,11 @@ use PHPUnit\Framework\TestCase;
 
 final class MailboxEncodingTest extends TestCase
 {
-    private string $imapPath = '{imap.example.com:993/imap/ssl/novalidate-cert}INBOX';
+    private string $imapPath = Constants::IMAP_PATH_INBOX_NO_VALID_SSL;
 
-    private string $login = 'php-imap@example.com';
+    private string $login = Constants::LOGIN;
 
-    private string $password = 'v3rY!53cEt&P4sSWöRd$';
+    private string $password = Constants::PASSWORD;
 
     private string $attachmentsDir = '.';
 
@@ -103,7 +104,7 @@ final class MailboxEncodingTest extends TestCase
         return [
             'encoded string' => ['hello%20world', true],
             'encoded special chars' => ['file%2Fname%3Fquery', true],
-            'not encoded - plain' => ['hello world', false],
+            'not encoded - plain' => [Constants::HELLO_WORLD, false],
             'not encoded - no percent' => ['helloworld', false],
             'encoded with plus' => ['hello+world%20test', true],
             'only percent without valid hex' => ['100%', false],
@@ -116,9 +117,9 @@ final class MailboxEncodingTest extends TestCase
     public static function convertToUtf8Provider(): array
     {
         return [
-            'UTF-8 passthrough' => ['Hello World', 'utf-8'],
-            'default charset passthrough' => ['Hello World', 'default'],
-            'ASCII passthrough' => ['Hello World', 'default'],
+            'UTF-8 passthrough' => [Constants::HELLO_WORLD, 'utf-8'],
+            'default charset passthrough' => [Constants::HELLO_WORLD, 'default'],
+            'ASCII passthrough' => [Constants::HELLO_WORLD, 'default'],
             'ISO-8859-1 umlaut' => [\mb_convert_encoding('Ä', 'ISO-8859-1', 'UTF-8'), 'iso-8859-1'],
             'unknown charset fallback' => ['test string', 'x-unknown-charset-999'],
         ];

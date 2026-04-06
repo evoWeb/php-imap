@@ -6,6 +6,7 @@ namespace PhpImap\Tests\Unit;
 
 use PhpImap\Exceptions\InvalidParameterException;
 use PhpImap\Mailbox;
+use PhpImap\Tests\Fixtures\Constants;
 use PhpImap\Tests\Fixtures\Mailbox as FixtureMailbox;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -13,11 +14,11 @@ use PHPUnit\Framework\TestCase;
 
 final class MailboxAttachmentTest extends TestCase
 {
-    private string $imapPath = '{imap.example.com:993/imap/ssl/novalidate-cert}INBOX';
+    private string $imapPath = Constants::IMAP_PATH_INBOX_NO_VALID_SSL;
 
-    private string $login = 'php-imap@example.com';
+    private string $login = Constants::LOGIN;
 
-    private string $password = 'v3rY!53cEt&P4sSWöRd$';
+    private string $password = Constants::PASSWORD;
 
     private string $attachmentsDir = '.';
 
@@ -45,13 +46,13 @@ final class MailboxAttachmentTest extends TestCase
                 __DIR__,
                 '',
                 InvalidParameterException::class,
-                'setAttachmentsDir() expects a string as first parameter!',
+                Constants::ERROR_ATTACHMENTS_DIR,
             ],
             [
                 __DIR__,
                 ' ',
                 InvalidParameterException::class,
-                'setAttachmentsDir() expects a string as first parameter!',
+                Constants::ERROR_ATTACHMENTS_DIR,
             ],
             [
                 __DIR__,
@@ -165,7 +166,7 @@ final class MailboxAttachmentTest extends TestCase
         $mailbox = $this->getMailbox();
 
         $this->expectException(InvalidParameterException::class);
-        $this->expectExceptionMessage('setAttachmentsDir() expects a string as first parameter!');
+        $this->expectExceptionMessage(Constants::ERROR_ATTACHMENTS_DIR);
 
         $mailbox->setAttachmentsDir('');
     }

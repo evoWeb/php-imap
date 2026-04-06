@@ -17,6 +17,7 @@ use PhpImap\Exceptions\ConnectionException;
 use PhpImap\Exceptions\InvalidParameterException;
 use PhpImap\Imap;
 use PhpImap\Mailbox;
+use PhpImap\Tests\Fixtures\Constants;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -39,9 +40,9 @@ class MailboxIssue501Test extends AbstractMailboxTest
         self::assertSame([], \imap_mime_header_decode(''));
 
         // example credentials copied from MailboxTest::testConstructorTrimsPossibleVariables()
-        $imapPath = ' {imap.example.com:993/imap/ssl}INBOX     ';
-        $login = '    php-imap@example.com';
-        $password = '  v3rY!53cEt&P4sSWöRd$';
+        $imapPath = ' ' . Constants::IMAP_PATH_INBOX_SSL . '     ';
+        $login = '    ' . Constants::LOGIN;
+        $password = '  ' . Constants::PASSWORD;
         // directory names can contain spaces before AND after on
         // Linux/Unix systems. Windows trims these spaces automatically.
         $attachmentsDir = '.';
@@ -89,15 +90,7 @@ class MailboxIssue501Test extends AbstractMailboxTest
 
             $search = $mailbox->searchMailbox($searchCriteria);
 
-            self::assertCount(
-                0,
-                $search,
-                (
-                    'If a subject was found,' .
-                    ' then the message is insufficiently unique to assert that' .
-                    ' a newly-appended message was actually created.'
-                )
-            );
+            self::assertCount(0, $search, Constants::SUBJECT_INSUFFICIENT_UNIQUE);
 
             $mailbox->appendMessageToMailbox(Imap::mailCompose(
                 $envelope,
@@ -111,15 +104,7 @@ class MailboxIssue501Test extends AbstractMailboxTest
 
             $search = $mailbox->searchMailbox($searchCriteria);
 
-            self::assertCount(
-                1,
-                $search,
-                (
-                    'If a subject was not found, ' .
-                    ' then Mailbox::appendMessageToMailbox() failed' .
-                    ' despite not throwing an exception.'
-                )
-            );
+            self::assertCount(1, $search, Constants::SUBJECT_NOT_FOUND);
 
             $mail = $mailbox->getMail($search[0], false);
 

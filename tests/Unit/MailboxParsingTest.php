@@ -6,6 +6,7 @@ namespace PhpImap\Tests\Unit;
 
 use PhpImap\Exceptions\InvalidParameterException;
 use PhpImap\Mailbox;
+use PhpImap\Tests\Fixtures\Constants;
 use PhpImap\Tests\Fixtures\Mailbox as FixtureMailbox;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -13,11 +14,11 @@ use PHPUnit\Framework\TestCase;
 
 final class MailboxParsingTest extends TestCase
 {
-    private string $imapPath = '{imap.example.com:993/imap/ssl/novalidate-cert}INBOX';
+    private string $imapPath = Constants::IMAP_PATH_INBOX_NO_VALID_SSL;
 
-    private string $login = 'php-imap@example.com';
+    private string $login = Constants::LOGIN;
 
-    private string $password = 'v3rY!53cEt&P4sSWöRd$';
+    private string $password = Constants::PASSWORD;
 
     private string $attachmentsDir = '.';
 
@@ -44,20 +45,6 @@ final class MailboxParsingTest extends TestCase
     }
 
     /**
-     * @phpstan-return array{
-     *      'Sun, 14 Aug 2005 16:13:03 +0000 (CEST)': array{0: '2005-08-14T16:13:03+00:00', 1: 1124035983},
-     *      'Sun, 14 Aug 2005 16:13:03 +0000': array{0: '2005-08-14T16:13:03+00:00', 1: 1124035983},
-     *      'Sun, 14 Aug 2005 16:13:03 +1000 (CEST)': array{0: '2005-08-14T06:13:03+00:00', 1: 1123999983},
-     *      'Sun, 14 Aug 2005 16:13:03 +1000': array{0: '2005-08-14T06:13:03+00:00', 1: 1123999983},
-     *      'Sun, 14 Aug 2005 16:13:03 -1000': array{0: '2005-08-15T02:13:03+00:00', 1: 1124071983},
-     *      'Sun, 14 Aug 2005 16:13:03 +1100 (CEST)': array{0: '2005-08-14T05:13:03+00:00', 1: 1123996383},
-     *      'Sun, 14 Aug 2005 16:13:03 +1100': array{0: '2005-08-14T05:13:03+00:00', 1: 1123996383},
-     *      'Sun, 14 Aug 2005 16:13:03 -1100': array{0: '2005-08-15T03:13:03+00:00', 1: 1124075583},
-     *      '14 Aug 2005 16:13:03 +1000 (CEST)': array{0: '2005-08-14T06:13:03+00:00', 1: 1123999983},
-     *      '14 Aug 2005 16:13:03 +1000': array{0: '2005-08-14T06:13:03+00:00', 1: 1123999983},
-     *      '14 Aug 2005 16:13:03 -1000': array{0: '2005-08-15T02:13:03+00:00', 1: 1124071983}
-     * }
-     *
      * @return array<string, array<int, (string|int)>>
      */
     public static function datetimeProvider(): array
@@ -66,27 +53,21 @@ final class MailboxParsingTest extends TestCase
             'Sun, 14 Aug 2005 16:13:03 +0000 (CEST)' => ['2005-08-14T16:13:03+00:00', 1124035983],
             'Sun, 14 Aug 2005 16:13:03 +0000' => ['2005-08-14T16:13:03+00:00', 1124035983],
 
-            'Sun, 14 Aug 2005 16:13:03 +1000 (CEST)' => ['2005-08-14T06:13:03+00:00', 1123999983],
-            'Sun, 14 Aug 2005 16:13:03 +1000' => ['2005-08-14T06:13:03+00:00', 1123999983],
+            'Sun, 14 Aug 2005 16:13:03 +1000 (CEST)' => [Constants::DATE_2005, 1123999983],
+            'Sun, 14 Aug 2005 16:13:03 +1000' => [Constants::DATE_2005, 1123999983],
             'Sun, 14 Aug 2005 16:13:03 -1000' => ['2005-08-15T02:13:03+00:00', 1124071983],
 
             'Sun, 14 Aug 2005 16:13:03 +1100 (CEST)' => ['2005-08-14T05:13:03+00:00', 1123996383],
             'Sun, 14 Aug 2005 16:13:03 +1100' => ['2005-08-14T05:13:03+00:00', 1123996383],
             'Sun, 14 Aug 2005 16:13:03 -1100' => ['2005-08-15T03:13:03+00:00', 1124075583],
 
-            '14 Aug 2005 16:13:03 +1000 (CEST)' => ['2005-08-14T06:13:03+00:00', 1123999983],
-            '14 Aug 2005 16:13:03 +1000' => ['2005-08-14T06:13:03+00:00', 1123999983],
+            '14 Aug 2005 16:13:03 +1000 (CEST)' => [Constants::DATE_2005, 1123999983],
+            '14 Aug 2005 16:13:03 +1000' => [Constants::DATE_2005, 1123999983],
             '14 Aug 2005 16:13:03 -1000' => ['2005-08-15T02:13:03+00:00', 1124071983],
         ];
     }
 
     /**
-     * @phpstan-return array{
-     *      'Sun, 14 Aug 2005 16:13:03 +9000 (CEST)': array{0: 'Sun, 14 Aug 2005 16:13:03 +9000 (CEST)'},
-     *      'Sun, 14 Aug 2005 16:13:03 +9000': array{0: 'Sun, 14 Aug 2005 16:13:03 +9000'},
-     *      'Sun, 14 Aug 2005 16:13:03 -9000': array{0: 'Sun, 14 Aug 2005 16:13:03 -9000'}
-     * }
-     *
      * @return array<string, string[]>
      */
     public static function invalidDatetimeProvider(): array

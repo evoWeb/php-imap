@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpImap\Tests\Unit;
 
 use PhpImap\Exceptions\ConnectionException;
+use PhpImap\Tests\Fixtures\Constants;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -49,39 +50,39 @@ final class ConnectionExceptionTest extends TestCase
     #[Test]
     public function testGetErrorsFirstReturnsFirstElement(): void
     {
-        $exception = new ConnectionException(['first error', 'second error', 'third error']);
+        $exception = new ConnectionException([Constants::ERROR_FIRST, Constants::ERROR_SECOND, Constants::ERROR_THIRD]);
 
-        self::assertSame('first error', $exception->getErrors());
+        self::assertSame(Constants::ERROR_FIRST, $exception->getErrors());
     }
 
     #[Test]
     public function testGetErrorsDefaultReturnsFirstElement(): void
     {
-        $exception = new ConnectionException(['first error', 'second error']);
+        $exception = new ConnectionException([Constants::ERROR_FIRST, Constants::ERROR_SECOND]);
 
-        self::assertSame('first error', $exception->getErrors());
+        self::assertSame(Constants::ERROR_FIRST, $exception->getErrors());
     }
 
     #[Test]
     public function testGetErrorsLastReturnsLastElement(): void
     {
-        $exception = new ConnectionException(['first error', 'second error', 'third error']);
+        $exception = new ConnectionException([Constants::ERROR_FIRST, Constants::ERROR_SECOND, Constants::ERROR_THIRD]);
 
-        self::assertSame('third error', $exception->getErrors('last'));
+        self::assertSame(Constants::ERROR_THIRD, $exception->getErrors('last'));
     }
 
     #[Test]
     public function testGetErrorsLastWithSingleElement(): void
     {
-        $exception = new ConnectionException(['only error']);
+        $exception = new ConnectionException([Constants::ERROR_ONLY]);
 
-        self::assertSame('only error', $exception->getErrors('last'));
+        self::assertSame(Constants::ERROR_ONLY, $exception->getErrors('last'));
     }
 
     #[Test]
     public function testGetErrorsAllReturnsAllElements(): void
     {
-        $errors = ['first error', 'second error', 'third error'];
+        $errors = [Constants::ERROR_FIRST, Constants::ERROR_SECOND, Constants::ERROR_THIRD];
         $exception = new ConnectionException($errors);
 
         self::assertSame($errors, $exception->getErrors('all'));
@@ -90,9 +91,9 @@ final class ConnectionExceptionTest extends TestCase
     #[Test]
     public function testGetErrorsAllWithSingleElement(): void
     {
-        $exception = new ConnectionException(['only error']);
+        $exception = new ConnectionException([Constants::ERROR_ONLY]);
 
-        self::assertSame(['only error'], $exception->getErrors('all'));
+        self::assertSame([Constants::ERROR_ONLY], $exception->getErrors('all'));
     }
 
     #[Test]
