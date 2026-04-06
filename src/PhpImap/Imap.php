@@ -152,7 +152,7 @@ final class Imap
         return $result;
     }
 
-    public static function cleaFlagFull(
+    public static function clearFlagFull(
         Connection $imapStream,
         int|string $sequence,
         string $flag,
@@ -186,7 +186,7 @@ final class Imap
         string $flag,
         int $options = 0
     ): bool {
-        return self::cleaFlagFull($imapStream, $sequence, $flag, $options);
+        return self::clearFlagFull($imapStream, $sequence, $flag, $options);
     }
 
     /**
