@@ -50,13 +50,13 @@ Initially released in December 2012, the PHP IMAP Mailbox is a powerful and open
 
 ### Installation by Composer
 
-Install the [latest available release](https://github.com/barbushin/php-imap/releases):
+Install the [latest available release](https://github.com/evoWeb/php-imap/releases):
 
-	$ composer require php-imap/php-imap
+	$ composer require evoWeb/php-imap
 
-Install the latest available and stable source code from `master`, which may not be released / tagged yet:
+Install the latest available and stable source code from `develop`, which may not be released / tagged yet:
 
-	$ composer require php-imap/php-imap:dev-master
+	$ composer require evoWeb/php-imap:dev-develop
 
 ### Run Tests
 
