@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PhpImap;
 
+use PhpImap\Exceptions\ConnectionException;
+
 /**
  * The PhpImap IncomingMail class.
  *
@@ -41,6 +43,8 @@ class IncomingMail extends IncomingMailHeader
      * @param string $name Name of the property (eg. textPlain)
      *
      * @return string Value of the property (eg. Plain text message)
+     *
+     * @throws ConnectionException
      */
     public function __get(string $name): string
     {
@@ -78,6 +82,8 @@ class IncomingMail extends IncomingMailHeader
      * @param string $name Name of the property (eg. textPlain)
      *
      * @return bool True, if property is set or empty
+     *
+     * @throws ConnectionException
      */
     public function __isset(string $name): bool
     {
@@ -163,6 +169,8 @@ class IncomingMail extends IncomingMailHeader
      * @return array attachmentId => link placeholder
      *
      * @phpstan-return array<string, string>
+     *
+     * @throws ConnectionException
      */
     public function getInternalLinksPlaceholders(): array
     {
@@ -174,6 +182,9 @@ class IncomingMail extends IncomingMailHeader
         return $match ? \array_combine($matches[2], $matches[1]) : [];
     }
 
+    /**
+     * @throws ConnectionException
+     */
     public function replaceInternalLinks(string $baseUri): string
     {
         $baseUri = \rtrim($baseUri, '\\/') . '/';
@@ -199,6 +210,8 @@ class IncomingMail extends IncomingMailHeader
     /**
      * Embed inline image attachments as base64 to allow for
      * email HTML to display inline images automatically.
+     *
+     * @throws ConnectionException
      */
     public function embedImageAttachments(): void
     {

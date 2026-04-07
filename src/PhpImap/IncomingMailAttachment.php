@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PhpImap;
 
+use PhpImap\Exceptions\ConnectionException;
+
 /**
  * @see https://github.com/barbushin/php-imap
  *
@@ -69,11 +71,6 @@ class IncomingMailAttachment
         }
 
         $this->filePath = $this->file_path;
-
-        if (@\file_exists($this->file_path)) {
-            return $this->filePath;
-        }
-
         return $this->filePath;
     }
 
@@ -90,29 +87,34 @@ class IncomingMailAttachment
     /**
      * Sets the data part info.
      *
-     * @param DataPartInfo $dataInfo Date info (file content)
+     * @param DataPartInfo $dataInformation Date info (file content)
      */
-    public function addDataPartInfo(DataPartInfo $dataInfo): void
+    public function addDataPartInfo(DataPartInfo $dataInformation): void
     {
-        $this->dataInfo = $dataInfo;
+        $this->dataInfo = $dataInformation;
     }
 
     /**
      * Gets information about a file.
      *
-     * @param int $fileinfoConst Any predefined constant. See https://www.php.net/manual/en/fileinfo.constants.php
+     * @param int $fileInformationConstant Any predefined constant.
+     *      See https://www.php.net/manual/en/fileinfo.constants.php
      *
-     * @phpstan-param fileinfoconst $fileinfoConst
+     * @phpstan-param fileinfoconst $fileInformationConstant
+     *
+     * @throws ConnectionException
      */
-    public function getFileInfo(int $fileinfoConst = \FILEINFO_NONE): string
+    public function getFileInfo(int $fileInformationConstant = \FILEINFO_NONE): string
     {
-        $finfo = new \finfo($fileinfoConst);
+        $fileInformation = new \finfo($fileInformationConstant);
 
-        return $finfo->buffer($this->getContents());
+        return $fileInformation->buffer($this->getContents());
     }
 
     /**
      * Gets the file content.
+     *
+     * @throws ConnectionException
      */
     public function getContents(): string
     {
@@ -123,6 +125,8 @@ class IncomingMailAttachment
      * Saves the attachment object on the disk.
      *
      * @return bool True, if it could save the attachment on the disk
+     *
+     * @throws ConnectionException
      */
     public function saveToDisk(): bool
     {

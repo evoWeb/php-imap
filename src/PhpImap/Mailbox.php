@@ -66,6 +66,8 @@ class Mailbox
         | \OP_SECURE // 256
     ;
 
+    public const TIMEOUT_TYPES = [\IMAP_OPENTIMEOUT, \IMAP_READTIMEOUT, \IMAP_WRITETIMEOUT, \IMAP_CLOSETIMEOUT];
+
     public string $decodeMimeStrDefaultCharset = 'default';
 
     protected string $imapPath;
@@ -112,7 +114,7 @@ class Mailbox
         string $imapPath,
         string $login,
         string $password,
-        ?string $attachmentsDir = null,
+        ?string $attachmentsDirectory = null,
         string $serverEncoding = 'UTF-8',
         bool $trimImapPath = true,
         bool $attachmentFilenameMode = false
@@ -121,8 +123,8 @@ class Mailbox
         $this->imapLogin = \trim($login);
         $this->imapPassword = $password;
         $this->setServerEncoding($serverEncoding);
-        if ($attachmentsDir != null) {
-            $this->setAttachmentsDir($attachmentsDir);
+        if ($attachmentsDirectory != null) {
+            $this->setAttachmentsDir($attachmentsDirectory);
         }
         $this->setAttachmentFilenameMode($attachmentFilenameMode);
 
@@ -303,15 +305,13 @@ class Mailbox
      *
      * @throws InvalidParameterException
      */
-    public function setTimeouts(
-        int $timeout,
-        array $types = [\IMAP_OPENTIMEOUT, \IMAP_READTIMEOUT, \IMAP_WRITETIMEOUT, \IMAP_CLOSETIMEOUT]
-    ): void {
-        $supported_types = [\IMAP_OPENTIMEOUT, \IMAP_READTIMEOUT, \IMAP_WRITETIMEOUT, \IMAP_CLOSETIMEOUT];
+    public function setTimeouts(int $timeout, array $types = self::TIMEOUT_TYPES): void
+    {
+        $supportedTypes = [\IMAP_OPENTIMEOUT, \IMAP_READTIMEOUT, \IMAP_WRITETIMEOUT, \IMAP_CLOSETIMEOUT];
 
-        $found_types = \array_intersect($types, $supported_types);
+        $foundTypes = \array_intersect($types, $supportedTypes);
 
-        if (\count($types) != \count($found_types)) {
+        if (\count($types) != \count($foundTypes)) {
             throw new InvalidParameterException(
                 'You have provided at least one unsupported timeout type.'
                 . ' Supported types are: IMAP_OPENTIMEOUT, IMAP_READTIMEOUT, IMAP_WRITETIMEOUT, IMAP_CLOSETIMEOUT'
@@ -334,13 +334,13 @@ class Mailbox
     /**
      * Set custom connection arguments of imap_open method. See http://php.net/imap_open.
      *
-     * @param string[]|null $params
+     * @param string[]|null $parameters
      *
-     * @phpstan-param array{DISABLE_AUTHENTICATOR?:string}|array<empty, empty>|null $params
+     * @phpstan-param array{DISABLE_AUTHENTICATOR?:string}|array<empty, empty>|null $parameters
      *
      * @throws InvalidParameterException
      */
-    public function setConnectionArgs(int $options = 0, int $retriesNum = 0, ?array $params = null): void
+    public function setConnectionArgs(int $options = 0, int $retries = 0, ?array $parameters = null): void
     {
         if ($options !== 0) {
             if (($options & self::IMAP_OPTIONS_SUPPORTED_VALUES) !== $options) {
@@ -352,21 +352,21 @@ class Mailbox
             $this->imapOptions = $options;
         }
 
-        if ($retriesNum != 0) {
-            if ($retriesNum < 0) {
+        if ($retries != 0) {
+            if ($retries < 0) {
                 throw new InvalidParameterException(
                     'Invalid number of retries provided for setConnectionArgs()!'
                     . ' It must be a positive integer. (eg. 1 or 3)'
                 );
             }
-            $this->imapRetriesNum = $retriesNum;
+            $this->imapRetriesNum = $retries;
         }
 
-        if (\is_array($params) && !empty($params)) {
-            $supported_params = ['DISABLE_AUTHENTICATOR'];
+        if (\is_array($parameters) && !empty($parameters)) {
+            $supportedParameters = ['DISABLE_AUTHENTICATOR'];
 
-            foreach (\array_keys($params) as $key) {
-                if (!\in_array($key, $supported_params, true)) {
+            foreach (\array_keys($parameters) as $key) {
+                if (!\in_array($key, $supportedParameters, true)) {
                     throw new InvalidParameterException(
                         'Invalid array key of params provided for setConnectionArgs()!'
                         . ' Only DISABLE_AUTHENTICATOR is currently valid.'
@@ -374,7 +374,7 @@ class Mailbox
                 }
             }
 
-            $this->imapParams = $params;
+            $this->imapParams = $parameters;
         }
     }
 
@@ -382,19 +382,19 @@ class Mailbox
      * Set custom folder for attachments in case you want to have tree of folders for each email
      * i.e. a/1 b/1 c/1 where a,b,c - senders, i.e. john@smith.com.
      *
-     * @param string $attachmentsDir Folder where to save attachments
+     * @param string $attachmentsDirectory Folder where to save attachments
      *
      * @throws InvalidParameterException
      */
-    public function setAttachmentsDir(string $attachmentsDir): void
+    public function setAttachmentsDir(string $attachmentsDirectory): void
     {
-        if (empty(\trim($attachmentsDir))) {
+        if (empty(\trim($attachmentsDirectory))) {
             throw new InvalidParameterException('setAttachmentsDir() expects a string as first parameter!');
         }
-        if (!\is_dir($attachmentsDir)) {
-            throw new InvalidParameterException('Directory "' . $attachmentsDir . '" not found');
+        if (!\is_dir($attachmentsDirectory)) {
+            throw new InvalidParameterException('Directory "' . $attachmentsDirectory . '" not found');
         }
-        $this->attachmentsDir = \rtrim(\realpath($attachmentsDir), '\\/');
+        $this->attachmentsDir = \rtrim(\realpath($attachmentsDirectory), '\\/');
     }
 
     /**
@@ -410,9 +410,9 @@ class Mailbox
     /**
      * Sets / Changes the attempts / retries to connect.
      */
-    public function setConnectionRetry(int $maxAttempts): void
+    public function setConnectionRetry(int $connectionRetry): void
     {
-        $this->connectionRetry = $maxAttempts;
+        $this->connectionRetry = $connectionRetry;
     }
 
     /**
@@ -463,9 +463,9 @@ class Mailbox
      *
      * @return string $str UTF-7 encoded string
      */
-    public function encodeStringToUtf7Imap(string $str): string
+    public function encodeStringToUtf7Imap(string $string): string
     {
-        return \mb_convert_encoding($str, 'UTF7-IMAP', 'UTF-8');
+        return \mb_convert_encoding($string, 'UTF7-IMAP', 'UTF-8');
     }
 
     /**
@@ -473,9 +473,9 @@ class Mailbox
      *
      * @return string $str UTF-7 encoded string or same as before, when it's no string
      */
-    public function decodeStringFromUtf7ImapToUtf8(string $str): string
+    public function decodeStringFromUtf7ImapToUtf8(string $string): string
     {
-        $out = mb_convert_encoding($str, 'UTF-8', 'UTF7-IMAP');
+        $out = mb_convert_encoding($string, 'UTF-8', 'UTF7-IMAP');
 
         $this->assertValueIsString($out, 'out', __METHOD__);
 
@@ -1310,7 +1310,7 @@ class Mailbox
             $parsed = $this->possiblyGetEmailAndNameFromRecipient($recipient);
             if ($parsed !== null) {
                 [$email, $name] = $parsed;
-                $strings[] = $name ? "{$name} <{$email}>" : $email;
+                $strings[] = $name ? "$name <$email>" : $email;
                 $emailMap[$email] = $name;
             }
         }
@@ -1714,12 +1714,12 @@ class Mailbox
         string|array $message,
         string $mailbox = '',
         ?string $options = null,
-        ?string $internal_date = null
+        ?string $internalDate = null
     ): bool {
         if (
-            \is_array($message) &&
-            \count($message) === self::EXPECTED_SIZE_OF_MESSAGE_AS_ARRAY &&
-            isset($message[0], $message[1])
+            \is_array($message)
+            && \count($message) === self::EXPECTED_SIZE_OF_MESSAGE_AS_ARRAY
+            && isset($message[0], $message[1])
         ) {
             $message = Imap::mailCompose($message[0], $message[1]);
         }
@@ -1735,7 +1735,7 @@ class Mailbox
             $this->getCombinedPath($mailbox),
             $message,
             $options,
-            $internal_date
+            $internalDate
         );
     }
 
@@ -1834,7 +1834,7 @@ class Mailbox
     protected function initMailPart(
         IncomingMail $mail,
         object $partStructure,
-        string|int $partNum,
+        string|int $partNumber,
         bool $markAsSeen = true,
         bool $emlParse = false
     ): void {
@@ -1849,7 +1849,7 @@ class Mailbox
         if (!$markAsSeen) {
             $options |= \FT_PEEK;
         }
-        $dataInfo = new DataPartInfo($this, $mail->id, $partNum, $partStructure->encoding, $options);
+        $dataInfo = new DataPartInfo($this, $mail->id, $partNumber, $partStructure->encoding, $options);
 
         /** @var array<string, string> $params */
         $params = [];
@@ -1883,7 +1883,7 @@ class Mailbox
 
         // ignore contentId on body when mail isn't multipart (https://github.com/barbushin/php-imap/issues/71)
         if (
-            !$partNum &&
+            !$partNumber &&
             $partStructure->type === \TYPETEXT &&
             !$dispositionAttachment
         ) {
@@ -1935,20 +1935,20 @@ class Mailbox
                 $notAttachment = (!isset($partStructure->disposition) || $partStructure->disposition !== 'attachment');
 
                 if ($partStructure->type === \TYPEMESSAGE && $partStructure->subtype === 'RFC822' && $notAttachment) {
-                    $this->initMailPart($mail, $subPartStructure, $partNum, $markAsSeen);
+                    $this->initMailPart($mail, $subPartStructure, $partNumber, $markAsSeen);
                 } elseif (
                     $partStructure->type === \TYPEMULTIPART
                     && $partStructure->subtype === 'ALTERNATIVE'
                     && $notAttachment
                 ) {
                     // https://github.com/barbushin/php-imap/issues/198
-                    $this->initMailPart($mail, $subPartStructure, $partNum, $markAsSeen);
+                    $this->initMailPart($mail, $subPartStructure, $partNumber, $markAsSeen);
                 } elseif ($partStructure->subtype === 'RFC822' && $dispositionAttachment) {
                     //If it comes from am EML attachment, download each part separately as a file
                     $this->initMailPart(
                         $mail,
                         $subPartStructure,
-                        $partNum . '.' . ($subPartNum + 1),
+                        $partNumber . '.' . ($subPartNum + 1),
                         $markAsSeen,
                         true
                     );
@@ -1956,7 +1956,7 @@ class Mailbox
                     $this->initMailPart(
                         $mail,
                         $subPartStructure,
-                        $partNum . '.' . ($subPartNum + 1),
+                        $partNumber . '.' . ($subPartNum + 1),
                         $markAsSeen
                     );
                 }
@@ -2066,27 +2066,27 @@ class Mailbox
     }
 
     /**
-     * @phpstan-param array<int, scalar|array|object{name?: string}|resource|null> $t
+     * @phpstan-param array<int, scalar|array|object{name?: string}|resource|null> $mailboxes
      *
      * @return (false|mixed|string)[][]
      *
      * @phpstan-return list<array{fullpath: string, attributes: mixed, delimiter: mixed, shortpath: false|string}>
      */
-    protected function possiblyGetMailboxes(array $t): array
+    protected function possiblyGetMailboxes(array $mailboxes): array
     {
-        $arr = [];
-        if ($t) {
-            foreach ($t as $index => $item) {
-                if (!\is_object($item)) {
+        $array = [];
+        if ($mailboxes) {
+            foreach ($mailboxes as $index => $mailbox) {
+                if (!\is_object($mailbox)) {
                     throw new \UnexpectedValueException(
                         'Index ' . $index . ' of argument 1 passed to '
-                        . __METHOD__ . '() corresponds to a non-object value, ' . \gettype($item) . ' given!'
+                        . __METHOD__ . '() corresponds to a non-object value, ' . \gettype($mailbox) . ' given!'
                     );
                 }
                 /** @var ?string $itemName */
-                $itemName = $item->name ?? null;
+                $itemName = $mailbox->name ?? null;
 
-                if (!isset($item->name, $item->attributes, $item->delimiter)) {
+                if (!isset($mailbox->name, $mailbox->attributes, $mailbox->delimiter)) {
                     throw new \UnexpectedValueException(
                         'The object at index ' . $index . ' of argument 1 passed to '
                         . __METHOD__
@@ -2101,32 +2101,32 @@ class Mailbox
                 if ($namePosition === false) {
                     throw new \UnexpectedValueException('Expected token "}" not found in subscription name!');
                 }
-                $arr[] = [
+                $array[] = [
                     'fullpath' => $name,
-                    'attributes' => $item->attributes,
-                    'delimiter' => $item->delimiter,
+                    'attributes' => $mailbox->attributes,
+                    'delimiter' => $mailbox->delimiter,
                     'shortpath' => \substr($name, $namePosition + 1),
                 ];
             }
         }
 
-        return $arr;
+        return $array;
     }
 
     /**
-     * @phpstan-param HOSTNAMEANDADDRESS $t
+     * @phpstan-param HOSTNAMEANDADDRESS $mailboxes
      *
      * @phpstan-return array{0: string|null, 1: string|null, 2: string}
      * @throws \Exception
      */
-    protected function possiblyGetHostNameAndAddress(array $t): array
+    protected function possiblyGetHostNameAndAddress(array $mailboxes): array
     {
         $out = [
-            $t[0]->host ?? (isset($t[1], $t[1]->host) ? $t[1]->host : null),
+            $mailboxes[0]->host ?? (isset($mailboxes[1], $mailboxes[1]->host) ? $mailboxes[1]->host : null),
             1 => null,
         ];
         foreach ([0, 1] as $index) {
-            $maybe = isset($t[$index], $t[$index]->personal) ? $t[$index]->personal : null;
+            $maybe = isset($mailboxes[$index], $mailboxes[$index]->personal) ? $mailboxes[$index]->personal : null;
             if (\is_string($maybe) && \trim($maybe) !== '') {
                 $out[1] = $this->decodeMimeStr($maybe);
 
@@ -2134,7 +2134,7 @@ class Mailbox
             }
         }
 
-        $out[] = \strtolower($t[0]->mailbox . '@' . $out[0]);
+        $out[] = \strtolower($mailboxes[0]->mailbox . '@' . $out[0]);
 
         /** @var array{0: string|null, 1: string|null, 2: string} */
         return $out;

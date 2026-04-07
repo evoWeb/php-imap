@@ -18,20 +18,12 @@ class ConnectionException extends \Exception
 
     public function getErrors(string $select = 'first')
     {
-        $message = $this->getMessage();
+        $message = json_decode($this->getMessage());
 
-        switch (strtolower($select)) {
-            case 'all':
-                return json_decode($message);
-
-            case 'last':
-                $message = json_decode($message);
-                return $message[\count($message) - 1];
-
-            case 'first':
-            default:
-                $message = json_decode($message);
-                return $message[0];
-        }
+        return match (strtolower($select)) {
+            'all' => $message,
+            'last' => $message[\count($message) - 1],
+            default => $message[0],
+        };
     }
 }
