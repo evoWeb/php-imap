@@ -115,6 +115,7 @@ class MailboxIssue490Test extends AbstractMailboxTest
             self::assertSame('bar', $attachments[$keys[0]]->getContents());
             self::assertSame('baz', $attachments[$keys[1]]->getContents());
         } catch (\Exception $exception) {
+            // delaying throw to clean up and close connections before that
         } finally {
             $mailbox->switchMailbox($imapPath->getString());
             $mailbox->deleteMailbox($removeMailbox);

@@ -110,6 +110,7 @@ class MailboxIssue501Test extends AbstractMailboxTest
 
             self::assertSame('', $mail->textPlain);
         } catch (\Exception $exception) {
+            // delaying throw to clean up and close connections before that
         } finally {
             $mailbox->switchMailbox($imapPath->getString());
             $mailbox->deleteMailbox($removeMailbox);

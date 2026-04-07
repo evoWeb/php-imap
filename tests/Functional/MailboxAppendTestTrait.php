@@ -136,6 +136,7 @@ trait MailboxAppendTestTrait
                 Constants::SUBJECT_INSUFFICIENT_UNIQUE
             );
         } catch (\Exception $exception) {
+            // delaying throw to clean up and close connections before that
         } finally {
             $mailbox->switchMailbox($path->getString());
             if (!$mailboxDeleted) {

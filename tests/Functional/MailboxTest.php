@@ -144,6 +144,7 @@ class MailboxTest extends AbstractMailboxTest
                 );
             }
         } catch (\Exception $exception) {
+            // delaying throw to clean up and close connections before that
         } finally {
             $mailbox->switchMailbox($imapPath->getString());
             $mailbox->deleteMailbox($removeMailbox);

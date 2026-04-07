@@ -136,6 +136,7 @@ class ImapTest extends TestCase
                 )
             );
         } catch (\Exception $exception) {
+            // delaying throw to clean up and close connections before that
         } finally {
             $mailbox->switchMailbox($path->getString());
             $mailbox->deleteMailbox($removeMailbox);
