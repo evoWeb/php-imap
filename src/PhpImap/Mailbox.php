@@ -1151,10 +1151,8 @@ class Mailbox
     {
         $headerFieldValue = '';
 
-        if (\preg_match("/$headerFieldName:(.*)/i", $headersRaw, $matches)) {
-            if (isset($matches[1])) {
-                return \trim($matches[1]);
-            }
+        if (\preg_match("/$headerFieldName:(.*)/i", $headersRaw, $matches) && isset($matches[1])) {
+            return \trim($matches[1]);
         }
 
         return $headerFieldValue;
