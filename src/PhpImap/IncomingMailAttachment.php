@@ -21,7 +21,7 @@ class IncomingMailAttachment
 
     public ?string $contentId;
 
-    public ?int $type;
+    public ?int $type = null;
 
     public ?int $encoding;
 
@@ -55,10 +55,7 @@ class IncomingMailAttachment
 
     private DataPartInfo $dataInfo;
 
-    /**
-     * @return false|string
-     */
-    public function __get(string $name)
+    public function __get(string $name): string
     {
         if ($name !== 'filePath') {
             \trigger_error("Undefined property: IncomingMailAttachment::$name");
