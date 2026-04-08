@@ -7,6 +7,7 @@ namespace PhpImap;
 use IMAP\Connection;
 use PhpImap\Exceptions\ConnectionException;
 use PhpImap\Exceptions\InvalidParameterException;
+use Random\RandomException;
 
 /**
  * @see https://github.com/barbushin/php-imap
@@ -91,7 +92,7 @@ class Mailbox
 
     protected string $serverEncoding = 'UTF-8';
 
-    protected ?string $attachmentsDir;
+    protected ?string $attachmentsDir = null;
 
     protected bool $expungeOnDisconnect = true;
 
@@ -1461,6 +1462,48 @@ class Mailbox
 
         $partStructureId = ($partStructure->ifid && isset($partStructure->id)) ? \trim($partStructure->id) : null;
 
+        /** @var ?string $charset */
+        $charset = $params['charset'] ?? null;
+        if (isset($charset)) {
+            $this->assertValueIsString($charset, 'charset', __METHOD__);
+        }
+
+        return $this->createAndHydrateAttachment(
+            $partStructureId,
+            $partStructure,
+            $encoding,
+            $fileName,
+            $sizeInBytes,
+            $charset,
+            $emlOrigin,
+            $dataInfo
+        );
+    }
+
+    /**
+     * @param string|null $partStructureId
+     * @param object $partStructure
+     * @param int|null $encoding
+     * @param string|null $fileName
+     * @param int|null $sizeInBytes
+     * @param string|null $charset
+     * @param bool $emlOrigin
+     * @param DataPartInfo $dataInfo
+     *
+     * @return IncomingMailAttachment
+     * @throws ConnectionException
+     * @throws RandomException
+     */
+    public function createAndHydrateAttachment(
+        ?string $partStructureId,
+        object $partStructure,
+        ?int $encoding,
+        ?string $fileName,
+        ?int $sizeInBytes,
+        ?string $charset,
+        bool $emlOrigin,
+        DataPartInfo $dataInfo
+    ): IncomingMailAttachment {
         $attachment = new IncomingMailAttachment();
         $attachment->id = \bin2hex(\random_bytes(20));
         $attachment->contentId = isset($partStructureId) ? \trim($partStructureId, ' <>') : null;
@@ -1477,13 +1520,6 @@ class Mailbox
         $attachment->name = $fileName;
         $attachment->sizeInBytes = $sizeInBytes;
         $attachment->disposition = $partStructure->disposition ?? null;
-
-        /** @var ?string $charset */
-        $charset = $params['charset'] ?? null;
-
-        if (isset($charset)) {
-            $this->assertValueIsString($charset, 'charset', __METHOD__);
-        }
 
         $attachment->charset = (isset($charset) && !empty(\trim($charset))) ? $charset : null;
         $attachment->emlOrigin = $emlOrigin;
@@ -1516,7 +1552,6 @@ class Mailbox
             $attachment->setFilePath($filePath);
             $attachment->saveToDisk();
         }
-
         return $attachment;
     }
 
