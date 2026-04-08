@@ -16,22 +16,27 @@ use Random\RandomException;
  *
  * @phpstan-type PARTSTRUCTURE_PARAM = object{attribute: string, value?: string}
  *
+ * https://www.php.net/manual/en/function.imap-fetchstructure.php
  * @phpstan-type PARTSTRUCTURE = object{
+ *      type?: int,
+ *      encoding?: int|mixed,
+ *      ifsubtype?: bool,
+ *      subtype?: string,
+ *      ifdescription?: bool,
+ *      description?: string,
+ *      ifid?: bool,
  *      id?: string,
- *      encoding: int|mixed,
- *      partStructure: object[],
- *      parameters: PARTSTRUCTURE_PARAM[],
- *      dparameters: object{attribute:string, value:string}[],
- *      parts: array<int, \stdClass>,
- *      type: int,
- *      ifid?: string,
- *      ifsubtype?: string,
- *      ifdescription?: string,
- *      ifdisposition?: string,
- *      description: string,
- *      subtype: string,
+ *      lines?: int,
+ *      bytes?: int,
+ *      ifdisposition?: bool,
  *      disposition?: string|null,
- *      bytes?: int
+ *      ifdparameters?: bool,
+ *      dparameters?: object{attribute:string, value:string}[],
+ *      ifparameters?: bool,
+ *      parameters?: PARTSTRUCTURE_PARAM[],
+ *      parts?: array<int, \stdClass>,
+ *
+ *      partStructure?: object[]
  * }
  * @phpstan-type HOSTNAMEANDADDRESS_ENTRY = object{host?: string, personal?: string, mailbox: string}
  * @phpstan-type HOSTNAMEANDADDRESS = array{0: HOSTNAMEANDADDRESS_ENTRY, 1?: HOSTNAMEANDADDRESS_ENTRY}
@@ -1410,11 +1415,11 @@ class Mailbox
     /**
      * Download attachment.
      *
-     * @param array $params Array of params of mail
+     * @param array $parameters Array of params of mail
      * @param object $partStructure Part of mail
      * @param bool $emlOrigin True, if it indicates, that the attachment comes from an EML (mail) file
      *
-     * @phpstan-param array<string, string> $params
+     * @phpstan-param array<string, string|int> $parameters
      * @phpstan-param PARTSTRUCTURE $partStructure
      *
      * @return IncomingMailAttachment $attachment
@@ -1422,10 +1427,47 @@ class Mailbox
      */
     public function downloadAttachment(
         DataPartInfo $dataInfo,
-        array $params,
+        array $parameters,
         object $partStructure,
         bool $emlOrigin = false
     ): IncomingMailAttachment {
+        $fileName = $this->prepareAttachmentFileName($partStructure, $parameters);
+
+        /** @var ?int $sizeInBytes */
+        $sizeInBytes = $partStructure->bytes ?? null;
+
+        /** @var scalar|array|object|null $encoding */
+        $encoding = $partStructure->encoding ?? null;
+
+        $this->assertValueIsIntegerIfNotNull($sizeInBytes, 'sizeInBytes', __METHOD__);
+        $this->assertValueIsIntegerIfNotNull($encoding, 'encoding', __METHOD__);
+
+        if (isset($partStructure->type)) {
+            $this->assertValueIsIntegerIfNotNull($partStructure->type, 'type', __METHOD__);
+        }
+
+        /** @var ?string $charset */
+        $charset = $parameters['charset'] ?? null;
+        if (isset($charset)) {
+            $this->assertValueIsString($charset, 'charset', __METHOD__);
+        }
+
+        return $this->createAndHydrateAttachment(
+            $partStructure,
+            $encoding,
+            $fileName,
+            $sizeInBytes,
+            $charset,
+            $emlOrigin,
+            $dataInfo
+        );
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function prepareAttachmentFileName(object $partStructure, array $params): string
+    {
         $dispositionAttachment = isset($partStructure->disposition)
             && \mb_strtolower($partStructure->disposition) === 'attachment';
 
@@ -1445,57 +1487,14 @@ class Mailbox
             $fileName = $this->decodeMimeStr($fileName);
             $fileName = $this->decodeRFC2231($fileName);
         }
-        $fileName = str_replace('/', '_', $fileName);
-
-        /** @var ?int $sizeInBytes */
-        $sizeInBytes = $partStructure->bytes ?? null;
-
-        /** @var scalar|array|object|null $encoding */
-        $encoding = $partStructure->encoding ?? null;
-
-        $this->assertValueIsIntegerIfNotNull($sizeInBytes, 'sizeInBytes', __METHOD__);
-        $this->assertValueIsIntegerIfNotNull($encoding, 'encoding', __METHOD__);
-
-        if (isset($partStructure->type)) {
-            $this->assertValueIsIntegerIfNotNull($partStructure->type, 'type', __METHOD__);
-        }
-
-        $partStructureId = ($partStructure->ifid && isset($partStructure->id)) ? \trim($partStructure->id) : null;
-
-        /** @var ?string $charset */
-        $charset = $params['charset'] ?? null;
-        if (isset($charset)) {
-            $this->assertValueIsString($charset, 'charset', __METHOD__);
-        }
-
-        return $this->createAndHydrateAttachment(
-            $partStructureId,
-            $partStructure,
-            $encoding,
-            $fileName,
-            $sizeInBytes,
-            $charset,
-            $emlOrigin,
-            $dataInfo
-        );
+        return str_replace('/', '_', $fileName);
     }
 
     /**
-     * @param string|null $partStructureId
-     * @param object $partStructure
-     * @param int|null $encoding
-     * @param string|null $fileName
-     * @param int|null $sizeInBytes
-     * @param string|null $charset
-     * @param bool $emlOrigin
-     * @param DataPartInfo $dataInfo
-     *
-     * @return IncomingMailAttachment
-     * @throws ConnectionException
      * @throws RandomException
+     * @throws ConnectionException
      */
     public function createAndHydrateAttachment(
-        ?string $partStructureId,
         object $partStructure,
         ?int $encoding,
         ?string $fileName,
@@ -1504,12 +1503,12 @@ class Mailbox
         bool $emlOrigin,
         DataPartInfo $dataInfo
     ): IncomingMailAttachment {
+        $partStructureId = ($partStructure->ifid && isset($partStructure->id)) ? \trim($partStructure->id) : null;
+
         $attachment = new IncomingMailAttachment();
         $attachment->id = \bin2hex(\random_bytes(20));
         $attachment->contentId = isset($partStructureId) ? \trim($partStructureId, ' <>') : null;
-        if (isset($partStructure->type)) {
-            $attachment->type = $partStructure->type;
-        }
+        $attachment->type = $partStructure->type ?? null;
         $attachment->encoding = $encoding;
         $attachment->subtype = ($partStructure->ifsubtype && isset($partStructure->subtype))
             ? \trim($partStructure->subtype)
@@ -1533,6 +1532,17 @@ class Mailbox
         $attachment->mimeEncoding = $attachment->getFileInfo(\FILEINFO_MIME_ENCODING);
         $attachment->fileExtension = $attachment->getFileInfo(\FILEINFO_EXTENSION);
 
+        $this->saveAttachmentToDisk($attachment);
+
+        return $attachment;
+    }
+
+    /**
+     * @throws ConnectionException
+     * @throws RandomException
+     */
+    private function saveAttachmentToDisk(IncomingMailAttachment $attachment): void
+    {
         $attachmentsDir = $this->getAttachmentsDir();
 
         if ($attachmentsDir != null) {
@@ -1552,7 +1562,6 @@ class Mailbox
             $attachment->setFilePath($filePath);
             $attachment->saveToDisk();
         }
-        return $attachment;
     }
 
     /**

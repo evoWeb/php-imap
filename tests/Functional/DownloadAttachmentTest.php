@@ -8,7 +8,6 @@ use PhpImap\Mailbox;
 use PhpImap\Tests\Fixtures\DataPartInfo as FixtureDataPartInfo;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use UnexpectedValueException;
 
 final class DownloadAttachmentTest extends TestCase
 {
@@ -219,7 +218,7 @@ final class DownloadAttachmentTest extends TestCase
     {
         $partStructure = $this->buildPartStructure(['bytes' => 'not-an-int']);
 
-        $this->expectException(UnexpectedValueException::class);
+        $this->expectException(\UnexpectedValueException::class);
         $this->expectExceptionMessage('sizeInBytes');
 
         $this->mailbox->downloadAttachment($this->dataPartInfo, [], $partStructure);
@@ -233,7 +232,7 @@ final class DownloadAttachmentTest extends TestCase
     {
         $partStructure = $this->buildPartStructure(['encoding' => 'bad-encoding']);
 
-        $this->expectException(UnexpectedValueException::class);
+        $this->expectException(\UnexpectedValueException::class);
         $this->expectExceptionMessage('encoding');
 
         $this->mailbox->downloadAttachment($this->dataPartInfo, [], $partStructure);
@@ -247,7 +246,7 @@ final class DownloadAttachmentTest extends TestCase
     {
         $partStructure = $this->buildPartStructure(['type' => 'not-an-int']);
 
-        $this->expectException(UnexpectedValueException::class);
+        $this->expectException(\UnexpectedValueException::class);
         $this->expectExceptionMessage('type');
 
         $this->mailbox->downloadAttachment($this->dataPartInfo, [], $partStructure);
@@ -261,7 +260,7 @@ final class DownloadAttachmentTest extends TestCase
     {
         $partStructure = $this->buildPartStructure();
 
-        $this->expectException(UnexpectedValueException::class);
+        $this->expectException(\UnexpectedValueException::class);
         $this->expectExceptionMessage('charset');
 
         $this->mailbox->downloadAttachment($this->dataPartInfo, ['charset' => 42], $partStructure);
