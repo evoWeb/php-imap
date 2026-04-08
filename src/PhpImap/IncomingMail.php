@@ -265,6 +265,9 @@ class IncomingMail extends IncomingMailHeader
         return $matched;
     }
 
+    /**
+     * @throws ConnectionException
+     */
     private function replaceCidWithImageInHtml(string $match, IncomingMailAttachment $matched): void
     {
         $contents = $matched->getContents();

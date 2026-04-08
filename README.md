@@ -200,6 +200,8 @@ Functions are convertest to camel case:
 
 - Mailbox::lowercase_mb_list_encodings -> Mailbox::lowercaseMbListEncodings (protected)
 
+Private property IncomingMailAttachment::file_path replaced with IncomingMailAttachment::filePath.
+
 ### Upgrading from 3.x
 
 Prior to 3.1, `Mailbox` used a "magic" method (`Mailbox::imap()`), with the

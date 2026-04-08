@@ -1476,9 +1476,7 @@ class Mailbox
             : null;
         $attachment->name = $fileName;
         $attachment->sizeInBytes = $sizeInBytes;
-        $attachment->disposition = (isset($partStructure->disposition) && \is_string($partStructure->disposition))
-            ? $partStructure->disposition
-            : null;
+        $attachment->disposition = $partStructure->disposition ?? null;
 
         /** @var ?string $charset */
         $charset = $params['charset'] ?? null;

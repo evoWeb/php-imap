@@ -51,8 +51,6 @@ class IncomingMailAttachment
 
     public ?string $mimeType;
 
-    private string $file_path;
-
     private string $filePath;
 
     private DataPartInfo $dataInfo;
@@ -65,12 +63,6 @@ class IncomingMailAttachment
         if ($name !== 'filePath') {
             \trigger_error("Undefined property: IncomingMailAttachment::$name");
         }
-
-        if (!isset($this->file_path)) {
-            return false;
-        }
-
-        $this->filePath = $this->file_path;
         return $this->filePath;
     }
 
@@ -81,7 +73,7 @@ class IncomingMailAttachment
      */
     public function setFilePath(string $filePath): void
     {
-        $this->file_path = $filePath;
+        $this->filePath = $filePath;
     }
 
     /**
@@ -131,7 +123,7 @@ class IncomingMailAttachment
     public function saveToDisk(): bool
     {
         if (\file_put_contents($this->__get('filePath'), $this->dataInfo->fetch()) === false) {
-            unset($this->filePath, $this->file_path);
+            unset($this->filePath);
 
             return false;
         }
