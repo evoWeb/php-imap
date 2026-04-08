@@ -27,6 +27,45 @@ use Random\RandomException;
  */
 class MailboxIssue514Test extends AbstractMailboxTest
 {
+    private const BODY = [
+        [
+            'type' => \TYPEMULTIPART,
+        ],
+        [
+            'type' => \TYPETEXT,
+            'subtype' => 'plain',
+            'contents.data' => 'foo',
+        ],
+        [
+            'type' => \TYPETEXT,
+            'subtype' => 'html',
+            'contents.data' => '<img alt="png" width="5" height="1" src="cid:foo.png">'
+                . '<img alt="webp" width="5" height="1" src="cid:foo.webp">',
+        ],
+        [
+            'type' => \TYPEIMAGE,
+            'subtype' => 'png',
+            'encoding' => \ENCBASE64,
+            'id' => 'foo.png',
+            'description' => 'foo.png',
+            'disposition' => ['filename' => 'foo.png'],
+            'disposition.type' => 'inline',
+            'type.parameters' => ['name' => 'foo.png'],
+            'contents.data' => '',
+        ],
+        [
+            'type' => \TYPEIMAGE,
+            'subtype' => 'webp',
+            'encoding' => \ENCBASE64,
+            'id' => 'foo.webp',
+            'description' => 'foo.webp',
+            'disposition' => ['filename' => 'foo.webp'],
+            'disposition.type' => 'inline',
+            'type.parameters' => ['name' => 'foo.webp'],
+            'contents.data' => '',
+        ],
+    ];
+
     /**
      * @throws ConnectionException
      * @throws \Exception
@@ -48,56 +87,13 @@ class MailboxIssue514Test extends AbstractMailboxTest
         $exception = null;
 
         /** @phpstan-var COMPOSE_ENVELOPE $envelope */
-        $envelope = [
-            'subject' => 'barbushin/php-imap#514--' . \bin2hex(\random_bytes(16)),
-        ];
+        $envelope = ['subject' => 'barbushin/php-imap#514--' . \bin2hex(\random_bytes(16))];
 
         [$searchCriteria] = $this->subjectSearchCriteriaAndSubject($envelope);
 
-        $body = [
-            [
-                'type' => \TYPEMULTIPART,
-            ],
-            [
-                'type' => \TYPETEXT,
-                'subtype' => 'plain',
-                'contents.data' => 'foo',
-            ],
-            [
-                'type' => \TYPETEXT,
-                'subtype' => 'html',
-                'contents.data' => \implode('', [
-                    '<img alt="png" width="5" height="1" src="cid:foo.png">',
-                    '<img alt="webp" width="5" height="1" src="cid:foo.webp">',
-                ]),
-            ],
-            [
-                'type' => \TYPEIMAGE,
-                'subtype' => 'png',
-                'encoding' => \ENCBASE64,
-                'id' => 'foo.png',
-                'description' => 'foo.png',
-                'disposition' => ['filename' => 'foo.png'],
-                'disposition.type' => 'inline',
-                'type.parameters' => ['name' => 'foo.png'],
-                'contents.data' => \base64_encode(
-                    \file_get_contents(__DIR__ . '/../Fixtures/rgbkw5x1.png')
-                ),
-            ],
-            [
-                'type' => \TYPEIMAGE,
-                'subtype' => 'webp',
-                'encoding' => \ENCBASE64,
-                'id' => 'foo.webp',
-                'description' => 'foo.webp',
-                'disposition' => ['filename' => 'foo.webp'],
-                'disposition.type' => 'inline',
-                'type.parameters' => ['name' => 'foo.webp'],
-                'contents.data' => \base64_encode(
-                    \file_get_contents(__DIR__ . '/../Fixtures/rgbkw5x1.webp')
-                ),
-            ],
-        ];
+        $body = self::BODY;
+        $body[3]['contents.data'] = \base64_encode(\file_get_contents(__DIR__ . '/../Fixtures/rgbkw5x1.png'));
+        $body[4]['contents.data'] = \base64_encode(\file_get_contents(__DIR__ . '/../Fixtures/rgbkw5x1.webp'));
 
         $message = Imap::mailCompose($envelope, $body);
 
@@ -111,50 +107,35 @@ class MailboxIssue514Test extends AbstractMailboxTest
 
         try {
             $search = $mailbox->searchMailbox($searchCriteria);
-
             self::assertCount(0, $search, Constants::SUBJECT_INSUFFICIENT_UNIQUE);
 
             $mailbox->appendMessageToMailbox($message);
 
             $search = $mailbox->searchMailbox($searchCriteria);
-
             self::assertCount(1, $search, Constants::SUBJECT_NOT_FOUND);
 
             $result = $mailbox->getMail($search[0], false);
 
             /** @var array<string, int> $counts */
             $counts = [];
-
             foreach ($result->getAttachments() as $attachment) {
                 if (!isset($counts[(string)$attachment->contentId])) {
                     $counts[(string)$attachment->contentId] = 0;
                 }
-
                 ++$counts[(string)$attachment->contentId];
             }
 
             self::assertCount(
                 2,
                 $counts,
-                (
-                    'counts should only contain foo.png and foo.webp, found: ' .
-                    \implode(', ', \array_keys($counts))
-                )
+                'counts should only contain foo.png and foo.webp, found: ' . \implode(', ', \array_keys($counts))
             );
 
             foreach ($counts as $cid => $count) {
-                self::assertSame(
-                    1,
-                    $count,
-                    $cid . ' had ' . $count . ', expected 1.'
-                );
+                self::assertSame(1, $count, $cid . ' had ' . $count . ', expected 1.');
             }
 
-            self::assertSame(
-                'foo',
-                $result->textPlain,
-                'plain text body did not match expected result!'
-            );
+            self::assertSame('foo', $result->textPlain, 'plain text body did not match expected result!');
 
             $embedded = \implode('', [
                 '<img alt="png" width="5" height="1" src="',
@@ -187,17 +168,9 @@ class MailboxIssue514Test extends AbstractMailboxTest
 
             foreach ($result->getAttachments() as $attachment) {
                 if ($attachment->contentId === 'foo.png') {
-                    $replaced = \str_replace(
-                        'foo.png',
-                        '/' . \basename($attachment->filePath),
-                        $replaced
-                    );
+                    $replaced = \str_replace('foo.png', '/' . \basename($attachment->filePath), $replaced);
                 } elseif ($attachment->contentId === 'foo.webp') {
-                    $replaced = \str_replace(
-                        'foo.webp',
-                        '/' . \basename($attachment->filePath),
-                        $replaced
-                    );
+                    $replaced = \str_replace('foo.webp', '/' . \basename($attachment->filePath), $replaced);
                 }
             }
 
