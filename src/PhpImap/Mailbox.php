@@ -261,9 +261,9 @@ class Mailbox
      */
     public function setImapSearchOption(int $imapSearchOption): void
     {
-        $supported_options = [\SE_FREE, \SE_UID];
+        $supportedOptions = [\SE_FREE, \SE_UID];
 
-        if (!\in_array($imapSearchOption, $supported_options, true)) {
+        if (!\in_array($imapSearchOption, $supportedOptions, true)) {
             throw new InvalidParameterException(
                 '"' . $imapSearchOption
                 . '" is not supported by setImapSearchOption(). Supported options are \SE_FREE and \SE_UID.'
@@ -1123,20 +1123,20 @@ class Mailbox
     /**
      * Get raw mail data.
      *
-     * @param int $msgId ID of the message
+     * @param int $messageId ID of the message
      * @param bool $markAsSeen Mark the email as seen, when set to true
      *
      * @return string Message of the fetched body
      * @throws ConnectionException
      */
-    public function getRawMail(int $msgId, bool $markAsSeen = true): string
+    public function getRawMail(int $messageId, bool $markAsSeen = true): string
     {
         $options = ($this->imapSearchOption == \SE_UID) ? \FT_UID : 0;
         if (!$markAsSeen) {
             $options |= \FT_PEEK;
         }
 
-        return Imap::fetchBody($this->getImapStream(), $msgId, '', $options);
+        return Imap::fetchBody($this->getImapStream(), $messageId, '', $options);
     }
 
     /**
@@ -1268,6 +1268,9 @@ class Mailbox
         return self::parseDateTime((new \DateTime())->format('Y-m-d H:i:s'));
     }
 
+    /**
+     * @throws \Exception
+     */
     private function populateSenderFields(IncomingMailHeader $header, \stdClass $head, string $headersRaw): void
     {
         if (!empty($head->from)) {
@@ -1422,11 +1425,8 @@ class Mailbox
         object $partStructure,
         bool $emlOrigin = false
     ): IncomingMailAttachment {
-        $dispositionAttachment = (
-            isset($partStructure->disposition)
-            && \is_string($partStructure->disposition)
-            && \mb_strtolower($partStructure->disposition) === 'attachment'
-        );
+        $dispositionAttachment = isset($partStructure->disposition)
+            && \mb_strtolower($partStructure->disposition) === 'attachment';
 
         if ($partStructure->subtype == 'RFC822' && $dispositionAttachment) {
             $fileName = \strtolower($partStructure->subtype) . '.eml';
@@ -1459,11 +1459,11 @@ class Mailbox
             $this->assertValueIsIntegerIfNotNull($partStructure->type, 'type', __METHOD__);
         }
 
-        $partStructure_id = ($partStructure->ifid && isset($partStructure->id)) ? \trim($partStructure->id) : null;
+        $partStructureId = ($partStructure->ifid && isset($partStructure->id)) ? \trim($partStructure->id) : null;
 
         $attachment = new IncomingMailAttachment();
         $attachment->id = \bin2hex(\random_bytes(20));
-        $attachment->contentId = isset($partStructure_id) ? \trim($partStructure_id, ' <>') : null;
+        $attachment->contentId = isset($partStructureId) ? \trim($partStructureId, ' <>') : null;
         if (isset($partStructure->type)) {
             $attachment->type = $partStructure->type;
         }
@@ -1548,13 +1548,13 @@ class Mailbox
                     $newString .= \mb_convert_encoding($string, 'UTF-8', $fromCharset);
                 } else {
                     // Fallback: Try to convert with iconv()
-                    $iconv_converted_string = @\iconv($fromCharset, 'UTF-8', $string);
-                    if (!$iconv_converted_string) {
+                    $iconvConvertedString = @\iconv($fromCharset, 'UTF-8', $string);
+                    if (!$iconvConvertedString) {
                         // If iconv() could also not convert, return string as it is
                         // (unknown charset)
                         $newString .= $string;
                     } else {
-                        $newString .= $iconv_converted_string;
+                        $newString .= $iconvConvertedString;
                     }
                 }
                 break;
@@ -1703,7 +1703,7 @@ class Mailbox
     /**
      * Appends $message to $mailbox.
      *
-     * @phpstan-param string|array{0: COMPOSE_ENVELOPE, 1: COMPOSE_BODY} $message
+     * @phpstan-param string|array{0?: ?COMPOSE_ENVELOPE, 1?: ?COMPOSE_BODY} $message
      *
      * @throws ConnectionException
      * @see Imap::append()
@@ -1875,9 +1875,8 @@ class Mailbox
 
         $isAttachment = isset($params['filename']) || isset($params['name']) || isset($partStructure->id);
 
-        $dispositionAttachment = (isset($partStructure->disposition) &&
-            \is_string($partStructure->disposition) &&
-            \mb_strtolower($partStructure->disposition) === 'attachment');
+        $dispositionAttachment = (isset($partStructure->disposition)
+            && \mb_strtolower($partStructure->disposition) === 'attachment');
 
         // ignore contentId on body when mail isn't multipart (https://github.com/barbushin/php-imap/issues/71)
         if (
@@ -1930,7 +1929,7 @@ class Mailbox
 
         if (!empty($partStructure->parts)) {
             foreach ($partStructure->parts as $subPartNum => $subPartStructure) {
-                $notAttachment = (!isset($partStructure->disposition) || $partStructure->disposition !== 'attachment');
+                $notAttachment = !(isset($partStructure->disposition) && $partStructure->disposition === 'attachment');
 
                 if ($partStructure->type === \TYPEMESSAGE && $partStructure->subtype === 'RFC822' && $notAttachment) {
                     $this->initMailPart($mail, $subPartStructure, $partNumber, $markAsSeen);
