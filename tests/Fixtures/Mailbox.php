@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpImap\Tests\Fixtures;
 
+use PhpImap\IncomingMail;
 use PhpImap\Mailbox as BaseMailbox;
 
 class Mailbox extends BaseMailbox
@@ -29,6 +30,19 @@ class Mailbox extends BaseMailbox
     public function exposedDecodeRFC2231(string $string): string
     {
         return $this->decodeRFC2231($string);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function exposeInitMailPart(
+        IncomingMail $mail,
+        object $partStructure,
+        string|int $partNumber,
+        bool $markAsSeen = true,
+        bool $emlParse = false
+    ): void {
+        $this->initMailPart($mail, $partStructure, $partNumber, $markAsSeen, $emlParse);
     }
 
     public function exposedLowercaseMbListEncodings(): array
