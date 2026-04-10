@@ -23,7 +23,7 @@ use Random\RandomException;
  */
 class ImapTest extends TestCase
 {
-    use LiveMailboxTestingTrait;
+    use MailboxTestingTrait;
 
     /**
      * @phpstan-return \Generator<

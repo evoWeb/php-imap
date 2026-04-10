@@ -48,8 +48,8 @@ class MailboxIssue250Test extends AbstractMailboxTest
                     'contents.data' => 'test',
                 ],
             ],
-            implode(LF, [
-                Constants::SUBJECT . $randomSubject,
+            implode(Constants::LF, [
+                sprintf(Constants::SUBJECT, $randomSubject),
                 Constants::MIME1,
                 Constants::CONTENT_PLAIN,
                 '',

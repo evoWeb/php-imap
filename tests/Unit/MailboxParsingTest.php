@@ -29,7 +29,7 @@ final class MailboxParsingTest extends TestCase
     {
         $headers = 'From: sender@example.com
         To: recipient@example.com
-        ' . Constants::SUBJECT . 'Test Mail
+        ' . sprintf(Constants::SUBJECT, 'Test Mail') . '
         Content-Type: text/plain; charset=UTF-8
         X-Mailer: PHPUnit
         MIME-Version: 1.0';
@@ -101,7 +101,9 @@ final class MailboxParsingTest extends TestCase
     {
         $mailbox = $this->getMailbox();
 
-        $headers = "From: sender@example.com\r\nSubject: My Subject\r\nTo: to@example.com";
+        $headers = 'From: sender@example.com
+        ' . sprintf(Constants::SUBJECT, 'My Subject') . '
+        To: to@example.com';
 
         self::assertSame('sender@example.com', $mailbox->getMailHeaderFieldValue($headers, 'From'));
         self::assertSame('My Subject', $mailbox->getMailHeaderFieldValue($headers, 'Subject'));
@@ -115,7 +117,8 @@ final class MailboxParsingTest extends TestCase
     {
         $mailbox = $this->getMailbox();
 
-        $headers = "From: sender@example.com\r\nSubject: Test";
+        $headers = 'From: sender@example.com
+        ' . sprintf(Constants::SUBJECT, 'Test');
 
         self::assertSame('', $mailbox->getMailHeaderFieldValue($headers, 'X-NonExistent'));
     }

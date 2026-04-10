@@ -21,7 +21,7 @@ use Random\RandomException;
 /**
  * @phpstan-import-type MAILBOX_ARGS from AbstractMailboxTest
  */
-trait LiveMailboxTestingTrait
+trait MailboxTestingTrait
 {
     /**
      * Provides constructor arguments for a live mailbox.

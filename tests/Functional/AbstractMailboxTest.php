@@ -25,7 +25,7 @@ use PHPUnit\Framework\TestCase;
  *      5?: array,
  * }
  * @phpstan-type COMPOSE_ENVELOPE = array{
- *      subject: string
+ *      subject?: string
  * }
  * @phpstan-type COMPOSE_BODY = list<array{
  *      id?: string,
@@ -50,7 +50,7 @@ use PHPUnit\Framework\TestCase;
  */
 abstract class AbstractMailboxTest extends TestCase
 {
-    use LiveMailboxTestingTrait;
+    use MailboxTestingTrait;
 
     /**
      * @phpstan-return \Generator<int, array{
@@ -67,7 +67,7 @@ abstract class AbstractMailboxTest extends TestCase
     /**
      * Get subject search criteria and subject.
      *
-     * @phpstan-param array{subject: string} $envelope
+     * @phpstan-param array{subject?: string} $envelope
      *
      * @phpstan-return array{0: string, 1: string}
      */

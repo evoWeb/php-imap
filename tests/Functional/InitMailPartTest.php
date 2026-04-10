@@ -19,7 +19,7 @@ use Random\RandomException;
  *
  * @phpstan-import-type MAILBOX_ARGS from AbstractMailboxTest
  */
-class InitMailPartLiveTest extends AbstractMailboxTest
+class InitMailPartTest extends AbstractMailboxTest
 {
     // -------------------------------------------------------------------------
     // Helpers
@@ -66,7 +66,7 @@ class InitMailPartLiveTest extends AbstractMailboxTest
 
         $message = self::rfc822([
             'MIME-Version: 1.0',
-            'Subject: ' . $subject,
+            sprintf(Constants::SUBJECT, $subject),
             'Content-Type: multipart/alternative; boundary="' . $boundary . '"',
             '',
             '--' . $boundary,
@@ -149,7 +149,7 @@ class InitMailPartLiveTest extends AbstractMailboxTest
 
         $message = self::rfc822([
             'MIME-Version: 1.0',
-            'Subject: ' . $subject,
+            sprintf(Constants::SUBJECT, $subject),
             'Content-Type: multipart/mixed; boundary="' . $boundary . '"',
             '',
             '--' . $boundary,
@@ -242,7 +242,7 @@ class InitMailPartLiveTest extends AbstractMailboxTest
 
         $message = self::rfc822([
             'MIME-Version: 1.0',
-            'Subject: ' . $subject,
+            sprintf(Constants::SUBJECT, $subject),
             'Content-Type: multipart/mixed; boundary="' . $boundary . '"',
             '',
             '--' . $boundary,
@@ -253,7 +253,7 @@ class InitMailPartLiveTest extends AbstractMailboxTest
             'Content-Type: message/rfc822',
             'Content-Disposition: attachment',
             '',
-            'Subject: Inner subject',
+            sprintf(Constants::SUBJECT, 'Inner subject'),
             'MIME-Version: 1.0',
             'Content-Type: text/plain; charset=UTF-8',
             '',
@@ -339,7 +339,7 @@ class InitMailPartLiveTest extends AbstractMailboxTest
 
         $message = self::rfc822([
             'MIME-Version: 1.0',
-            'Subject: ' . $subject,
+            sprintf(Constants::SUBJECT, $subject),
             'Content-Type: multipart/mixed; boundary="' . $boundary . '"',
             '',
             '--' . $boundary,
@@ -349,7 +349,7 @@ class InitMailPartLiveTest extends AbstractMailboxTest
             '--' . $boundary,
             'Content-Type: message/rfc822',
             '',
-            'Subject: Forwarded message',
+            sprintf(Constants::SUBJECT, 'Forwarded message'),
             'MIME-Version: 1.0',
             'Content-Type: text/plain; charset=UTF-8',
             '',
@@ -427,7 +427,7 @@ class InitMailPartLiveTest extends AbstractMailboxTest
         // Content-Type has no 'name' parameter — filename only in Content-Disposition
         $message = self::rfc822([
             'MIME-Version: 1.0',
-            'Subject: ' . $subject,
+            sprintf(Constants::SUBJECT, $subject),
             'Content-Type: multipart/mixed; boundary="' . $boundary . '"',
             '',
             '--' . $boundary,
@@ -511,7 +511,7 @@ class InitMailPartLiveTest extends AbstractMailboxTest
 
         $message = self::rfc822([
             'MIME-Version: 1.0',
-            'Subject: ' . $subject,
+            sprintf(Constants::SUBJECT, $subject),
             'Content-Type: multipart/mixed; boundary="' . $boundary . '"',
             '',
             '--' . $boundary,

@@ -47,5 +47,6 @@ class Constants
 
     public const ENVOYES = 'Éléments envoyés';
     public const GITIGNORE = '.gitignore';
-    public const SUBJECT = 'Subject: ';
+    public const SUBJECT = 'Subject: %s';
+    public const LF = "\r\n";
 }
