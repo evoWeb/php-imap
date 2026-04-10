@@ -1971,58 +1971,25 @@ class Mailbox
             }
         }
 
-        if (!empty($partStructure->parts)) {
-            foreach ($partStructure->parts as $subPartNum => $subPartStructure) {
-                $notAttachment = !(isset($partStructure->disposition) && $partStructure->disposition === 'attachment');
-
-                if ($partStructure->type === \TYPEMESSAGE && $partStructure->subtype === 'RFC822' && $notAttachment) {
-                    $this->initMailPart($mail, $subPartStructure, $partNumber, $markAsSeen);
-                } elseif (
-                    $partStructure->type === \TYPEMULTIPART
-                    && $partStructure->subtype === 'ALTERNATIVE'
-                    && $notAttachment
-                ) {
-                    // https://github.com/barbushin/php-imap/issues/198
-                    $this->initMailPart($mail, $subPartStructure, $partNumber, $markAsSeen);
-                } elseif ($partStructure->subtype === 'RFC822' && $dispositionAttachment) {
-                    //If it comes from am EML attachment, download each part separately as a file
-                    $this->initMailPart(
-                        $mail,
-                        $subPartStructure,
-                        $partNumber . '.' . ($subPartNum + 1),
-                        $markAsSeen,
-                        true
-                    );
-                } else {
-                    $this->initMailPart(
-                        $mail,
-                        $subPartStructure,
-                        $partNumber . '.' . ($subPartNum + 1),
-                        $markAsSeen
-                    );
+        if ($partStructure->type === \TYPETEXT) {
+            if (\mb_strtolower($partStructure->subtype) === 'plain') {
+                if ($dispositionAttachment) {
+                    return;
                 }
-            }
-        } else {
-            if ($partStructure->type === \TYPETEXT) {
-                if (\mb_strtolower($partStructure->subtype) === 'plain') {
-                    if ($dispositionAttachment) {
-                        return;
-                    }
 
-                    $mail->addDataPartInfo($dataInfo, DataPartInfo::TEXT_PLAIN);
-                } elseif (!$partStructure->ifdisposition) {
-                    $mail->addDataPartInfo($dataInfo, DataPartInfo::TEXT_HTML);
-                } elseif (!\is_string($partStructure->disposition)) {
-                    throw new \InvalidArgumentException(
-                        'disposition property of object passed as argument 2 to '
-                        . __METHOD__ . '() was present but not a string!'
-                    );
-                } elseif (!$dispositionAttachment) {
-                    $mail->addDataPartInfo($dataInfo, DataPartInfo::TEXT_HTML);
-                }
-            } elseif ($partStructure->type === \TYPEMESSAGE) {
                 $mail->addDataPartInfo($dataInfo, DataPartInfo::TEXT_PLAIN);
+            } elseif (!$partStructure->ifdisposition) {
+                $mail->addDataPartInfo($dataInfo, DataPartInfo::TEXT_HTML);
+            } elseif (!\is_string($partStructure->disposition)) {
+                throw new \InvalidArgumentException(
+                    'disposition property of object passed as argument 2 to '
+                    . __METHOD__ . '() was present but not a string!'
+                );
+            } elseif (!$dispositionAttachment) {
+                $mail->addDataPartInfo($dataInfo, DataPartInfo::TEXT_HTML);
             }
+        } elseif ($partStructure->type === \TYPEMESSAGE) {
+            $mail->addDataPartInfo($dataInfo, DataPartInfo::TEXT_PLAIN);
         }
     }
 
