@@ -53,7 +53,7 @@
 		"phpmd": "phpmnd ./ --exclude=./.ddev/ --exclude=./.github/ --exclude=./examples/ --exclude=./vendor/ --hint",
 		"composer-require-checker": "composer-require-checker check --config-file=Build/composer-require-checker/config.json composer.json",
 		"phpcs": "phpcs --standard=Build/phpcs/phpcs.xml examples src tests",
-		"phpstan": "phpstan analyse --configuration Build/phpstan/phpstan.neon",
+		"phpstan": "phpstan analyse --configuration Build/phpstan/phpstan.local.neon",
 		"phpunit": "phpunit --no-coverage --configuration Build/phpunit/UnitTests.xml",
 		"phpunit-coverage": "XDEBUG_MODE=coverage phpunit --coverage-clover .cache/clover.xml --configuration Build/phpunit/UnitTests.xml",
 		"static-analysis": [

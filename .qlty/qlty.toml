@@ -29,6 +29,7 @@ name = "php-codesniffer"
 
 [[plugin]]
 name = "phpstan"
+extra_packages = ["phpstan/phpstan@^2.1.43", "phpstan/phpstan-phpunit@^2.0"]
 
 [[plugin]]
 name = "radarlint-php"

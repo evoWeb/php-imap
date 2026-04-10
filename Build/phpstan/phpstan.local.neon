@@ -1,2 +1,2 @@
 includes:
-  - phpstan.neon
+  - phpstan-local.neon
