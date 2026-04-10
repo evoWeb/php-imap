@@ -39,10 +39,9 @@ class Mailbox extends BaseMailbox
         IncomingMail $mail,
         object $partStructure,
         string|int $partNumber,
-        bool $markAsSeen = true,
-        bool $emlParse = false
+        bool $markAsSeen = true
     ): void {
-        $this->initMailPart($mail, $partStructure, $partNumber, $markAsSeen, $emlParse);
+        $this->initMailPart($mail, $partStructure, $partNumber, $markAsSeen);
     }
 
     public function exposedLowercaseMbListEncodings(): array

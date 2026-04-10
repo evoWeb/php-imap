@@ -1871,14 +1871,14 @@ class Mailbox
 
     /**
      * @phpstan-param PARTSTRUCTURE $partStructure
+     *
      * @throws \Exception
      */
     protected function initMailPart(
         IncomingMail $mail,
         object $partStructure,
         string|int $partNumber,
-        bool $markAsSeen = true,
-        bool $emlParse = false
+        bool $markAsSeen = true
     ): void {
         if (!isset($mail->id)) {
             throw new \InvalidArgumentException(
@@ -1943,11 +1943,6 @@ class Mailbox
             $mail->addAttachment($attachment);
         }
 
-        // If it comes from an EML file it is an attachment
-        if ($emlParse) {
-            $isAttachment = true;
-        }
-
         // Do NOT parse attachments, when getAttachmentsIgnore() is true
         if (
             $this->getAttachmentsIgnore()
@@ -1963,7 +1958,7 @@ class Mailbox
         }
 
         if ($isAttachment) {
-            $attachment = self::downloadAttachment($dataInfo, $params, $partStructure, $emlParse);
+            $attachment = self::downloadAttachment($dataInfo, $params, $partStructure);
             $mail->addAttachment($attachment);
         } else {
             if (isset($params['charset']) && !empty(\trim($params['charset']))) {
