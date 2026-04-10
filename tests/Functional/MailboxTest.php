@@ -280,7 +280,7 @@ class MailboxTest extends AbstractMailboxTest
             implode(Constants::LF, [
                 sprintf(Constants::SUBJECT, $randomSubject),
                 Constants::MIME1,
-                'Content-Type: MULTIPART/MIXED; BOUNDARY="{{REPLACE_BOUNDARY_HERE}}"',
+                sprintf(Constants::CONTENT_MIXED_UPPER, '{{REPLACE_BOUNDARY_HERE}}'),
                 '',
                 Constants::BOUNDARY,
                 'Content-Type: TEXT/PLAIN; CHARSET=US-ASCII',

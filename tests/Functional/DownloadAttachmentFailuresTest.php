@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpImap\Tests\Functional;
 
 use PhpImap\Mailbox;
+use PhpImap\Tests\Fixtures\Constants;
 use PhpImap\Tests\Fixtures\DataPartInfo as FixtureDataPartInfo;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -125,11 +126,11 @@ final class DownloadAttachmentFailuresTest extends TestCase
     #[Test]
     public function testContentIdIsSetWhenIfIdIsTrue(): void
     {
-        $partStructure = $this->buildPartStructure(['ifid' => true, 'id' => 'foo@bar']);
+        $partStructure = $this->buildPartStructure(['ifid' => true, 'id' => Constants::FOOBAR]);
 
         $attachment = $this->mailbox->downloadAttachment($this->dataPartInfo, [], $partStructure);
 
-        self::assertSame('foo@bar', $attachment->contentId);
+        self::assertSame(Constants::FOOBAR, $attachment->contentId);
     }
 
     /**
@@ -138,11 +139,11 @@ final class DownloadAttachmentFailuresTest extends TestCase
     #[Test]
     public function testContentIdHasAngleBracketsStripped(): void
     {
-        $partStructure = $this->buildPartStructure(['ifid' => true, 'id' => '<foo@bar>']);
+        $partStructure = $this->buildPartStructure(['ifid' => true, 'id' => '<' . Constants::FOOBAR . '>']);
 
         $attachment = $this->mailbox->downloadAttachment($this->dataPartInfo, [], $partStructure);
 
-        self::assertSame('foo@bar', $attachment->contentId);
+        self::assertSame(Constants::FOOBAR, $attachment->contentId);
     }
 
     /**
@@ -151,10 +152,10 @@ final class DownloadAttachmentFailuresTest extends TestCase
     #[Test]
     public function testContentIdIsTrimmed(): void
     {
-        $partStructure = $this->buildPartStructure(['ifid' => true, 'id' => '  < foo@bar >  ']);
+        $partStructure = $this->buildPartStructure(['ifid' => true, 'id' => '  < ' . Constants::FOOBAR . ' >  ']);
 
         $attachment = $this->mailbox->downloadAttachment($this->dataPartInfo, [], $partStructure);
 
-        self::assertSame('foo@bar', $attachment->contentId);
+        self::assertSame(Constants::FOOBAR, $attachment->contentId);
     }
 }

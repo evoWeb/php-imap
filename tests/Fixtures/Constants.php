@@ -17,6 +17,9 @@ class Constants
 
     public const MIME1 = 'MIME-Version: 1.0';
     public const CONTENT_PLAIN = 'Content-Type: TEXT/PLAIN; CHARSET=US-ASCII';
+    public const CONTENT_PLAIN_UTF8 = 'Content-Type: text/plain; charset=UTF-8';
+    public const CONTENT_MIXED = 'Content-Type: multipart/mixed; boundary="%s"';
+    public const CONTENT_MIXED_UPPER = 'Content-Type: MULTIPART/MIXED; BOUNDARY="%s"';
     public const HELLO_WORLD = 'Hello World';
     public const TRANSFER_BASE64 = 'Content-Transfer-Encoding: BASE64';
     public const BOUNDARY = '--{{REPLACE_BOUNDARY_HERE}}';
@@ -48,5 +51,7 @@ class Constants
     public const ENVOYES = 'Éléments envoyés';
     public const GITIGNORE = '.gitignore';
     public const SUBJECT = 'Subject: %s';
+    public const SUBJECT2 = 'SUBJECT "%s"';
     public const LF = "\r\n";
+    public const FOOBAR = 'foo@bar';
 }

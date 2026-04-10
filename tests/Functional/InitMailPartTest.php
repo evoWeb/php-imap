@@ -65,12 +65,12 @@ class InitMailPartTest extends AbstractMailboxTest
         $boundary = 'alt_' . \bin2hex(\random_bytes(6));
 
         $message = self::rfc822([
-            'MIME-Version: 1.0',
+            Constants::MIME1,
             sprintf(Constants::SUBJECT, $subject),
             'Content-Type: multipart/alternative; boundary="' . $boundary . '"',
             '',
             '--' . $boundary,
-            'Content-Type: text/plain; charset=UTF-8',
+            Constants::CONTENT_PLAIN_UTF8,
             '',
             'Plain text body',
             '--' . $boundary,
@@ -93,12 +93,12 @@ class InitMailPartTest extends AbstractMailboxTest
         $exception = null;
 
         try {
-            $search = $mailbox->searchMailbox('SUBJECT "' . $subject . '"');
+            $search = $mailbox->searchMailbox(sprintf(Constants::SUBJECT2, $subject));
             self::assertCount(0, $search, Constants::SUBJECT_INSUFFICIENT_UNIQUE);
 
             $mailbox->appendMessageToMailbox($message);
 
-            $search = $mailbox->searchMailbox('SUBJECT "' . $subject . '"');
+            $search = $mailbox->searchMailbox(sprintf(Constants::SUBJECT2, $subject));
             self::assertCount(1, $search, Constants::SUBJECT_NOT_FOUND);
 
             $mail = $mailbox->getMail($search[0], false);
@@ -148,12 +148,12 @@ class InitMailPartTest extends AbstractMailboxTest
         $boundary = 'mix_' . \bin2hex(\random_bytes(6));
 
         $message = self::rfc822([
-            'MIME-Version: 1.0',
+            Constants::MIME1,
             sprintf(Constants::SUBJECT, $subject),
-            'Content-Type: multipart/mixed; boundary="' . $boundary . '"',
+            sprintf(Constants::CONTENT_MIXED, $boundary),
             '',
             '--' . $boundary,
-            'Content-Type: text/plain; charset=UTF-8',
+            Constants::CONTENT_PLAIN_UTF8,
             '',
             'Body of the message',
             '--' . $boundary,
@@ -177,12 +177,12 @@ class InitMailPartTest extends AbstractMailboxTest
         $exception = null;
 
         try {
-            $search = $mailbox->searchMailbox('SUBJECT "' . $subject . '"');
+            $search = $mailbox->searchMailbox(sprintf(Constants::SUBJECT2, $subject));
             self::assertCount(0, $search, Constants::SUBJECT_INSUFFICIENT_UNIQUE);
 
             $mailbox->appendMessageToMailbox($message);
 
-            $search = $mailbox->searchMailbox('SUBJECT "' . $subject . '"');
+            $search = $mailbox->searchMailbox(sprintf(Constants::SUBJECT2, $subject));
             self::assertCount(1, $search, Constants::SUBJECT_NOT_FOUND);
 
             $mail = $mailbox->getMail($search[0], false);
@@ -241,12 +241,12 @@ class InitMailPartTest extends AbstractMailboxTest
         $boundary = 'mix_' . \bin2hex(\random_bytes(6));
 
         $message = self::rfc822([
-            'MIME-Version: 1.0',
+            Constants::MIME1,
             sprintf(Constants::SUBJECT, $subject),
-            'Content-Type: multipart/mixed; boundary="' . $boundary . '"',
+            sprintf(Constants::CONTENT_MIXED, $boundary),
             '',
             '--' . $boundary,
-            'Content-Type: text/plain; charset=UTF-8',
+            Constants::CONTENT_PLAIN_UTF8,
             '',
             'Outer message body',
             '--' . $boundary,
@@ -254,8 +254,8 @@ class InitMailPartTest extends AbstractMailboxTest
             'Content-Disposition: attachment',
             '',
             sprintf(Constants::SUBJECT, 'Inner subject'),
-            'MIME-Version: 1.0',
-            'Content-Type: text/plain; charset=UTF-8',
+            Constants::MIME1,
+            Constants::CONTENT_PLAIN_UTF8,
             '',
             'Inner message body',
             '--' . $boundary . '--',
@@ -274,12 +274,12 @@ class InitMailPartTest extends AbstractMailboxTest
         $exception = null;
 
         try {
-            $search = $mailbox->searchMailbox('SUBJECT "' . $subject . '"');
+            $search = $mailbox->searchMailbox(sprintf(Constants::SUBJECT2, $subject));
             self::assertCount(0, $search, Constants::SUBJECT_INSUFFICIENT_UNIQUE);
 
             $mailbox->appendMessageToMailbox($message);
 
-            $search = $mailbox->searchMailbox('SUBJECT "' . $subject . '"');
+            $search = $mailbox->searchMailbox(sprintf(Constants::SUBJECT2, $subject));
             self::assertCount(1, $search, Constants::SUBJECT_NOT_FOUND);
 
             $mail = $mailbox->getMail($search[0], false);
@@ -338,20 +338,20 @@ class InitMailPartTest extends AbstractMailboxTest
         $boundary = 'mix_' . \bin2hex(\random_bytes(6));
 
         $message = self::rfc822([
-            'MIME-Version: 1.0',
+            Constants::MIME1,
             sprintf(Constants::SUBJECT, $subject),
-            'Content-Type: multipart/mixed; boundary="' . $boundary . '"',
+            sprintf(Constants::CONTENT_MIXED, $boundary),
             '',
             '--' . $boundary,
-            'Content-Type: text/plain; charset=UTF-8',
+            Constants::CONTENT_PLAIN_UTF8,
             '',
             'Outer text',
             '--' . $boundary,
             'Content-Type: message/rfc822',
             '',
             sprintf(Constants::SUBJECT, 'Forwarded message'),
-            'MIME-Version: 1.0',
-            'Content-Type: text/plain; charset=UTF-8',
+            Constants::MIME1,
+            Constants::CONTENT_PLAIN_UTF8,
             '',
             'Forwarded body text',
             '--' . $boundary . '--',
@@ -370,12 +370,12 @@ class InitMailPartTest extends AbstractMailboxTest
         $exception = null;
 
         try {
-            $search = $mailbox->searchMailbox('SUBJECT "' . $subject . '"');
+            $search = $mailbox->searchMailbox(sprintf(Constants::SUBJECT2, $subject));
             self::assertCount(0, $search, Constants::SUBJECT_INSUFFICIENT_UNIQUE);
 
             $mailbox->appendMessageToMailbox($message);
 
-            $search = $mailbox->searchMailbox('SUBJECT "' . $subject . '"');
+            $search = $mailbox->searchMailbox(sprintf(Constants::SUBJECT2, $subject));
             self::assertCount(1, $search, Constants::SUBJECT_NOT_FOUND);
 
             $mail = $mailbox->getMail($search[0], false);
@@ -426,12 +426,12 @@ class InitMailPartTest extends AbstractMailboxTest
 
         // Content-Type has no 'name' parameter — filename only in Content-Disposition
         $message = self::rfc822([
-            'MIME-Version: 1.0',
+            Constants::MIME1,
             sprintf(Constants::SUBJECT, $subject),
-            'Content-Type: multipart/mixed; boundary="' . $boundary . '"',
+            sprintf(Constants::CONTENT_MIXED, $boundary),
             '',
             '--' . $boundary,
-            'Content-Type: text/plain; charset=UTF-8',
+            Constants::CONTENT_PLAIN_UTF8,
             '',
             'Body',
             '--' . $boundary,
@@ -455,12 +455,12 @@ class InitMailPartTest extends AbstractMailboxTest
         $exception = null;
 
         try {
-            $search = $mailbox->searchMailbox('SUBJECT "' . $subject . '"');
+            $search = $mailbox->searchMailbox(sprintf(Constants::SUBJECT2, $subject));
             self::assertCount(0, $search, Constants::SUBJECT_INSUFFICIENT_UNIQUE);
 
             $mailbox->appendMessageToMailbox($message);
 
-            $search = $mailbox->searchMailbox('SUBJECT "' . $subject . '"');
+            $search = $mailbox->searchMailbox(sprintf(Constants::SUBJECT2, $subject));
             self::assertCount(1, $search, Constants::SUBJECT_NOT_FOUND);
 
             $mail = $mailbox->getMail($search[0], false);
@@ -510,12 +510,12 @@ class InitMailPartTest extends AbstractMailboxTest
         $boundary = 'mix_' . \bin2hex(\random_bytes(6));
 
         $message = self::rfc822([
-            'MIME-Version: 1.0',
+            Constants::MIME1,
             sprintf(Constants::SUBJECT, $subject),
-            'Content-Type: multipart/mixed; boundary="' . $boundary . '"',
+            sprintf(Constants::CONTENT_MIXED, $boundary),
             '',
             '--' . $boundary,
-            'Content-Type: text/plain; charset=UTF-8',
+            Constants::CONTENT_PLAIN_UTF8,
             '',
             'Plain text part',
             '--' . $boundary,
@@ -539,12 +539,12 @@ class InitMailPartTest extends AbstractMailboxTest
         $exception = null;
 
         try {
-            $search = $mailbox->searchMailbox('SUBJECT "' . $subject . '"');
+            $search = $mailbox->searchMailbox(sprintf(Constants::SUBJECT2, $subject));
             self::assertCount(0, $search, Constants::SUBJECT_INSUFFICIENT_UNIQUE);
 
             $mailbox->appendMessageToMailbox($message);
 
-            $search = $mailbox->searchMailbox('SUBJECT "' . $subject . '"');
+            $search = $mailbox->searchMailbox(sprintf(Constants::SUBJECT2, $subject));
             self::assertCount(1, $search, Constants::SUBJECT_NOT_FOUND);
 
             $mail = $mailbox->getMail($search[0], false);

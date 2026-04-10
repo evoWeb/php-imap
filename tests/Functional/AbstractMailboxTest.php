@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace PhpImap\Tests\Functional;
 
 use ParagonIE\HiddenString\HiddenString;
+use PhpImap\Tests\Fixtures\Constants;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -78,7 +79,7 @@ abstract class AbstractMailboxTest extends TestCase
 
         self::assertIsString($subject);
 
-        $searchCriteria = \sprintf('SUBJECT "%s"', $subject);
+        $searchCriteria = sprintf(Constants::SUBJECT2, $subject);
 
         /** @phpstan-var array{0: string, 1: string} */
         return [$searchCriteria, $subject];
