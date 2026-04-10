@@ -1886,51 +1886,11 @@ class Mailbox
             );
         }
 
-        $options = ($this->imapSearchOption === \SE_UID) ? \FT_UID : 0;
+        $dataInfo = $this->createPartDataInfo($mail, $partStructure, $partNumber, $markAsSeen);
+        $params = $this->processPartParameters($partStructure);
+        $params = $this->processPartDParameters($partStructure, $params);
 
-        if (!$markAsSeen) {
-            $options |= \FT_PEEK;
-        }
-        $dataInfo = new DataPartInfo($this, $mail->id, $partNumber, $partStructure->encoding, $options);
-
-        /** @var array<string, string> $params */
-        $params = [];
-        if (!empty($partStructure->parameters)) {
-            foreach ($partStructure->parameters as $param) {
-                $params[\strtolower($param->attribute)] = '';
-                $value = $param->value ?? null;
-                if (isset($value) && \trim($value) !== '') {
-                    $params[\strtolower($param->attribute)] = $this->decodeMimeStr($value);
-                }
-            }
-        }
-        if (!empty($partStructure->dparameters)) {
-            foreach ($partStructure->dparameters as $param) {
-                $paramName = \strtolower(\preg_match('~^(.*?)\*~', $param->attribute, $matches)
-                    ? $matches[1]
-                    : $param->attribute);
-                if (isset($params[$paramName])) {
-                    $params[$paramName] .= $param->value;
-                } else {
-                    $params[$paramName] = $param->value;
-                }
-            }
-        }
-
-        $isAttachment = isset($params['filename']) || isset($params['name']) || isset($partStructure->id);
-
-        $dispositionAttachment = (isset($partStructure->disposition)
-            && \mb_strtolower($partStructure->disposition) === 'attachment');
-
-        // ignore contentId on body when mail isn't multipart (https://github.com/barbushin/php-imap/issues/71)
-        if (
-            !$partNumber &&
-            $partStructure->type === \TYPETEXT &&
-            !$dispositionAttachment
-        ) {
-            $isAttachment = false;
-        }
-
+        [$isAttachment, $dispositionAttachment] = $this->prepareIsAttachment($partStructure, $partNumber, $params);
         if ($isAttachment) {
             $mail->setHasAttachments(true);
         }
@@ -1944,16 +1904,7 @@ class Mailbox
         }
 
         // Do NOT parse attachments, when getAttachmentsIgnore() is true
-        if (
-            $this->getAttachmentsIgnore()
-            && (
-                $partStructure->type !== \TYPEMULTIPART
-                && (
-                    $partStructure->type !== \TYPETEXT
-                    || !\in_array(\mb_strtolower($partStructure->subtype), ['plain', 'html'], true)
-                )
-            )
-        ) {
+        if ($this->ignorePartAttachments($partStructure)) {
             return;
         }
 
@@ -1966,12 +1917,104 @@ class Mailbox
             }
         }
 
+        $this->partMailDataInfo($mail, $partStructure, $dispositionAttachment, $dataInfo);
+    }
+
+    protected function createPartDataInfo(
+        IncomingMail $mail,
+        object $partStructure,
+        string|int $partNumber,
+        bool $markAsSeen
+    ): DataPartInfo {
+        $options = ($this->imapSearchOption === \SE_UID) ? \FT_UID : 0;
+
+        if (!$markAsSeen) {
+            $options |= \FT_PEEK;
+        }
+        return new DataPartInfo($this, $mail->id, $partNumber, $partStructure->encoding, $options);
+    }
+
+    /**
+     * @return array<string, string> $params
+     */
+    protected function processPartParameters(object $partStructure): array
+    {
+        /** @var array<string, string> $params */
+        $params = [];
+        if (!empty($partStructure->parameters)) {
+            foreach ($partStructure->parameters as $param) {
+                $params[\strtolower($param->attribute)] = '';
+                $value = $param->value ?? null;
+                if (isset($value) && \trim($value) !== '') {
+                    $params[\strtolower($param->attribute)] = $this->decodeMimeStr($value);
+                }
+            }
+        }
+        return $params;
+    }
+
+    /**
+     * @return array<string, string> $params
+     */
+    protected function processPartDParameters(object $partStructure, array $params): array
+    {
+        if (!empty($partStructure->dparameters)) {
+            foreach ($partStructure->dparameters as $param) {
+                $paramName = \strtolower(\preg_match('~^(.*?)\*~', $param->attribute, $matches)
+                    ? $matches[1]
+                    : $param->attribute);
+                if (isset($params[$paramName])) {
+                    $params[$paramName] .= $param->value;
+                } else {
+                    $params[$paramName] = $param->value;
+                }
+            }
+        }
+        return $params;
+    }
+
+    protected function prepareIsAttachment(object $partStructure, string|int $partNumber, array $params): array
+    {
+        $isAttachment = isset($params['filename']) || isset($params['name']) || isset($partStructure->id);
+
+        $dispositionAttachment = (isset($partStructure->disposition)
+            && \mb_strtolower($partStructure->disposition) === 'attachment');
+
+        // ignore contentId on body when mail isn't multipart (https://github.com/barbushin/php-imap/issues/71)
+        if (
+            !$partNumber &&
+            $partStructure->type === \TYPETEXT &&
+            !$dispositionAttachment
+        ) {
+            $isAttachment = false;
+        }
+        return [$isAttachment, $dispositionAttachment];
+    }
+
+    protected function ignorePartAttachments(object $partStructure): bool
+    {
+        return
+            $this->getAttachmentsIgnore()
+            && (
+                $partStructure->type !== \TYPEMULTIPART
+                && (
+                    $partStructure->type !== \TYPETEXT
+                    || !\in_array(\mb_strtolower($partStructure->subtype), ['plain', 'html'], true)
+                )
+            );
+    }
+
+    protected function partMailDataInfo(
+        IncomingMail $mail,
+        object $partStructure,
+        bool $dispositionAttachment,
+        DataPartInfo $dataInfo
+    ): void {
         if ($partStructure->type === \TYPETEXT) {
             if (\mb_strtolower($partStructure->subtype) === 'plain') {
                 if ($dispositionAttachment) {
                     return;
                 }
-
                 $mail->addDataPartInfo($dataInfo, DataPartInfo::TEXT_PLAIN);
             } elseif (!$partStructure->ifdisposition) {
                 $mail->addDataPartInfo($dataInfo, DataPartInfo::TEXT_HTML);
