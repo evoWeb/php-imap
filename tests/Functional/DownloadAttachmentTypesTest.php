@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace PhpImap\Tests\Functional;
 
+use PhpImap\Entities\PartStructure;
 use PhpImap\Mailbox;
 use PhpImap\Tests\Fixtures\DataPartInfo as FixtureDataPartInfo;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @phpstan-import-type PARTSTRUCTURE from Mailbox
- */
 final class DownloadAttachmentTypesTest extends TestCase
 {
     private Mailbox $mailbox;
@@ -30,24 +28,25 @@ final class DownloadAttachmentTypesTest extends TestCase
     }
 
     /**
-     * Creates a minimal valid partStructure object with sensible defaults.
+     * Creates a minimal valid PartStructure with sensible defaults.
      *
      * @param array<string, mixed> $props
-     *
-     * @phpstan-return PARTSTRUCTURE
      */
-    private function buildPartStructure(array $props = []): \stdClass
+    private function buildPartStructure(array $props = []): PartStructure
     {
-        /** @phpstan-var PARTSTRUCTURE $result */
-        $result = (object)\array_merge([
-            'subtype' => 'PLAIN',
-            'encoding' => \ENCBASE64,
-            'ifid' => false,
-            'ifsubtype' => true,
-            'ifdescription' => false,
-        ], $props);
-
-        return $result;
+        return new PartStructure(
+            subtype: \is_string($props['subtype'] ?? null) ? $props['subtype'] : 'PLAIN',
+            encoding: \is_int($props['encoding'] ?? null) ? $props['encoding'] : \ENCBASE64,
+            ifid: (bool)($props['ifid'] ?? false),
+            id: \is_string($props['id'] ?? null) ? $props['id'] : null,
+            ifsubtype: (bool)($props['ifsubtype'] ?? true),
+            ifdescription: (bool)($props['ifdescription'] ?? false),
+            description: \is_string($props['description'] ?? null) ? $props['description'] : null,
+            disposition: \is_string($props['disposition'] ?? null) ? $props['disposition'] : null,
+            ifdisposition: (bool)($props['ifdisposition'] ?? false),
+            bytes: \is_int($props['bytes'] ?? null) ? $props['bytes'] : null,
+            type: \is_int($props['type'] ?? null) ? $props['type'] : null,
+        );
     }
 
     // -------------------------------------------------------------------------

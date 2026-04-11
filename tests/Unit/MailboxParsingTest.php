@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpImap\Tests\Unit;
 
+use PhpImap\Entities\PartStructure;
 use PhpImap\Exceptions\InvalidParameterException;
 use PhpImap\Mailbox;
 use PhpImap\Tests\Fixtures\Constants;
@@ -131,13 +132,8 @@ final class MailboxParsingTest extends TestCase
     {
         $mailbox = $this->getMailbox();
 
-        $part1 = new \stdClass();
-        $part1->type = 0;
-        $part1->subtype = 'PLAIN';
-
-        $part2 = new \stdClass();
-        $part2->type = 0;
-        $part2->subtype = 'HTML';
+        $part1 = new PartStructure(type: 0, subtype: 'PLAIN');
+        $part2 = new PartStructure(type: 0, subtype: 'HTML');
 
         $result = $mailbox->flattenParts([$part1, $part2]);
 
@@ -154,14 +150,8 @@ final class MailboxParsingTest extends TestCase
     {
         $mailbox = $this->getMailbox();
 
-        $subPart = new \stdClass();
-        $subPart->type = 0;
-        $subPart->subtype = 'PLAIN';
-
-        $parent = new \stdClass();
-        $parent->type = 1; // TYPEMULTIPART
-        $parent->subtype = 'MIXED';
-        $parent->parts = [$subPart];
+        $subPart = new PartStructure(type: 0, subtype: 'PLAIN');
+        $parent = new PartStructure(type: 1, subtype: 'MIXED', parts: [$subPart]);
 
         $result = $mailbox->flattenParts([$parent]);
 
@@ -177,14 +167,8 @@ final class MailboxParsingTest extends TestCase
     {
         $mailbox = $this->getMailbox();
 
-        $subPart = new \stdClass();
-        $subPart->type = 0;
-        $subPart->subtype = 'PLAIN';
-
-        $parent = new \stdClass();
-        $parent->type = Mailbox::PART_TYPE_TWO;
-        $parent->subtype = 'RFC822';
-        $parent->parts = [$subPart];
+        $subPart = new PartStructure(type: 0, subtype: 'PLAIN');
+        $parent = new PartStructure(type: Mailbox::PART_TYPE_TWO, subtype: 'RFC822', parts: [$subPart]);
 
         $result = $mailbox->flattenParts([$parent]);
 

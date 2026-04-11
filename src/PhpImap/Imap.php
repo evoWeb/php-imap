@@ -11,6 +11,9 @@ namespace PhpImap;
 
 use IMAP\Connection;
 use ParagonIE\HiddenString\HiddenString;
+use PhpImap\Entities\Constants;
+use PhpImap\Entities\MailOverview;
+use PhpImap\Entities\PartStructure;
 use PhpImap\Exceptions\ConnectionException;
 
 /**
@@ -37,21 +40,10 @@ use PhpImap\Exceptions\ConnectionException;
  * @phpstan-type COMPOSE_ENVELOPE = array{
  *      subject?: string
  * }
- * @phpstan-type PARTSTRUCTURE_PARAM = object{attribute: string, value?: string}
- * @phpstan-type PARTSTRUCTURE = object{
- *      id?: string,
- *      encoding: int|mixed,
- *      partStructure: object[],
- *      parameters: PARTSTRUCTURE_PARAM[],
- *      dparameters: object{attribute:string, value:string}[],
- *      parts: array<int, object{disposition?:string}>,
- *      type: int,
- *      subtype: string
- * }
  */
 final class Imap
 {
-    /** @phpstan-var list<int> */
+    /** @phpstan-var int[] */
     public const SORT_CRITERIA = [
         \SORTARRIVAL,
         \SORTCC,
@@ -62,7 +54,7 @@ final class Imap
         \SORTTO,
     ];
 
-    /** @phpstan-var list<int> */
+    /** @phpstan-var int[] */
     public const TIMEOUT_TYPES = [
         \IMAP_CLOSETIMEOUT,
         \IMAP_OPENTIMEOUT,
@@ -70,7 +62,7 @@ final class Imap
         \IMAP_WRITETIMEOUT,
     ];
 
-    /** @phpstan-var list<int> */
+    /** @phpstan-var int[] */
     public const CLOSE_FLAGS = [
         0,
         \CL_EXPUNGE,
@@ -264,27 +256,9 @@ final class Imap
     }
 
     /**
-     * @return object[]
+     * @see https://www.php.net/manual/en/function.imap-fetch-overview.php
      *
-     * @phpstan-return list<object{
-     *     subject: ?string,
-     *     from: ?string,
-     *     to: ?string,
-     *     date: string,
-     *     message_id: string,
-     *     references: ?string,
-     *     in_reply_to: ?string,
-     *     size: int,
-     *     uid: int,
-     *     msgno: int,
-     *     recent: int,
-     *     flagged: int,
-     *     answered: int,
-     *     deleted: int,
-     *     seen: int,
-     *     draft: int,
-     *     udate: int
-     * }>
+     * @return MailOverview[]
      */
     public static function fetchOverview(Connection $imapStream, int|string $sequence, int $options = 0): array
     {
@@ -292,12 +266,7 @@ final class Imap
 
         $result = \imap_fetch_overview(
             $imapStream,
-            self::encodeStringToUtf7Imap(self::ensureRange(
-                $sequence,
-                __METHOD__,
-                1,
-                true
-            )),
+            self::encodeStringToUtf7Imap(self::ensureRange($sequence, __METHOD__, 1, true)),
             $options
         );
 
@@ -307,15 +276,15 @@ final class Imap
             0,
             'imap_fetch_overview'
         );
+        \assert(\is_array($result));
 
-        /** @phpstan-var list<object{subject: ?string, from: ?string, to: ?string, date: string, message_id: string, references: ?string, in_reply_to: ?string, size: int, uid: int, msgno: int, recent: int, flagged: int, answered: int, deleted: int, seen: int, draft: int, udate: int}> $result */
-        return $result;
+        return \array_values(\array_map(MailOverview::fromStdClass(...), $result));
     }
 
     /**
      * @deprecated since 5.x
      *
-     * @return object[]
+     * @return MailOverview[]
      */
     public static function fetch_overview(Connection $imapStream, int|string $sequence, int $options = 0): array
     {
@@ -342,6 +311,9 @@ final class Imap
         return $result;
     }
 
+    /**
+     * @see https://www.php.net/manual/en/function.imap-fetchheader.php
+     */
     public static function fetchHeader(Connection $imapStream, int $messageNumber, int $options = 0): string
     {
         self::flushImapErrors();
@@ -353,21 +325,19 @@ final class Imap
         return $result;
     }
 
-    public static function fetchStructure(Connection $imapStream, int $messageNumber, int $options = 0): \stdClass
+    /**
+     * @see https://www.php.net/manual/en/function.imap-fetchstructure.php
+     */
+    public static function fetchStructure(Connection $imapStream, int $messageNumber, int $options = 0): PartStructure
     {
         self::flushImapErrors();
 
         $result = \imap_fetchstructure($imapStream, $messageNumber, $options);
 
-        self::assertResultNotFalse(
-            $result,
-            'Could not fetch message structure from mailbox!',
-            0,
-            'fetchStructure'
-        );
+        self::assertResultNotFalse($result, 'Could not fetch message structure from mailbox!', 0, 'fetchStructure');
+        \assert($result instanceof \stdClass);
 
-        /** @phpstan-var \stdClass $result */
-        return $result;
+        return PartStructure::fromStdClass($result);
     }
 
     /**
@@ -423,7 +393,7 @@ final class Imap
             $errors
         );
 
-        /** @phpstan-var list<object> */
+        /** @phpstan-var object[] */
         return $result;
     }
 
@@ -443,7 +413,7 @@ final class Imap
             'getSubscribed'
         );
 
-        /** @phpstan-var list<object> */
+        /** @phpstan-var object[] */
         return $result;
     }
 
@@ -736,7 +706,7 @@ final class Imap
         }
         self::assertResultNotFalse($result, 'Could not search mailbox!', 0, 'imap_search', $errors);
 
-        /** @phpstan-var list<int> */
+        /** @phpstan-var int[] */
         return $result;
     }
 
@@ -812,7 +782,7 @@ final class Imap
 
         self::assertResultNotFalse($result, 'Could not sort messages!', 0, 'imap_sort');
 
-        /** @phpstan-var list<int> */
+        /** @phpstan-var int[] */
         return $result;
     }
 
@@ -874,9 +844,9 @@ final class Imap
 
         self::assertResultNotFalse(
             \is_string($out),
-            'mb_convert_encoding($str, \'UTF-8\', {detected}) could not convert $str',
+            'mb_convert_encoding($str, \'UTF7-IMAP\', \'UTF-8\') could not convert $str',
             0,
-            'mb_convert_encoding'
+            'encodeStringToUtf7Imap'
         );
 
         return $out;
@@ -895,7 +865,7 @@ final class Imap
             \is_string($out),
             'mb_convert_encoding($str, \'UTF-8\', \'UTF7-IMAP\') could not convert $str',
             0,
-            'mb_convert_encoding'
+            'decodeStringFromUtf7ImapToUtf8'
         );
 
         return $out;

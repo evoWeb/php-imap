@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace PhpImap\Tests\Unit;
 
+use PhpImap\Entities\PartStructure;
 use PhpImap\IncomingMail;
-use PhpImap\Mailbox;
 use PhpImap\Tests\Fixtures\Mailbox as FixtureMailbox;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @phpstan-import-type PARTSTRUCTURE from Mailbox
- */
 #[Group('offline')]
 final class InitMailPartTest extends TestCase
 {
@@ -25,26 +22,25 @@ final class InitMailPartTest extends TestCase
     }
 
     /**
-     * Builds a minimal stdClass partStructure with sensible defaults.
+     * Builds a minimal PartStructure with sensible defaults.
      *
      * @param array<string, mixed> $props
-     *
-     * @phpstan-return PARTSTRUCTURE
      */
-    private function buildPartStructure(array $props = []): object
+    private function buildPartStructure(array $props = []): PartStructure
     {
-        /** @phpstan-var PARTSTRUCTURE $result */
-        $result = (object)\array_merge([
-            'type' => \TYPETEXT,
-            'subtype' => 'PLAIN',
-            'encoding' => \ENCQUOTEDPRINTABLE,
-            'ifdisposition' => 0,
-            'parameters' => [],
-            'dparameters' => [],
-            'parts' => [],
-        ], $props);
-
-        return $result;
+        return new PartStructure(
+            type: \is_int($props['type'] ?? null) ? $props['type'] : \TYPETEXT,
+            subtype: \is_string($props['subtype'] ?? null) ? $props['subtype'] : 'PLAIN',
+            encoding: \is_int($props['encoding'] ?? null) ? $props['encoding'] : \ENCQUOTEDPRINTABLE,
+            ifdisposition: (bool)($props['ifdisposition'] ?? false),
+            disposition: \array_key_exists('disposition', $props) ? (
+                \is_string($props['disposition']) ? $props['disposition'] : null
+            ) : null,
+            ifid: (bool)($props['ifid'] ?? false),
+            id: \is_string($props['id'] ?? null) ? $props['id'] : null,
+            ifsubtype: (bool)($props['ifsubtype'] ?? true),
+            ifdescription: (bool)($props['ifdescription'] ?? false),
+        );
     }
 
     /**
@@ -66,16 +62,13 @@ final class InitMailPartTest extends TestCase
     }
 
     /**
-     * When a TYPETEXT leaf has ifdisposition=1 (truthy) but the disposition
-     * property is absent on the structure, initMailPart must throw instead of
+     * When a TYPETEXT leaf has ifdisposition=true but the disposition
+     * property is null on the structure, initMailPart must throw instead of
      * silently mishandling a non-string disposition.
      *
-     * Reproduces lines 2015-2019 in Mailbox.php:
+     * Reproduces lines in Mailbox.php:
      *   } elseif (!\is_string($partStructure->disposition)) {
      *       throw new \InvalidArgumentException(...)
-     *
-     * The property is intentionally omitted, so stdClass returns null when
-     * accessed — which satisfies `!\is_string(null)`.
      *
      * @throws \Exception
      */
@@ -103,7 +96,7 @@ final class InitMailPartTest extends TestCase
      * initMailPart must return early (before calling downloadAttachment / fetch),
      * but it must still have called setHasAttachments(true) beforehand.
      *
-     * Covers the early-return block at lines 1951-1963 in Mailbox.php.
+     * Covers the early-return block in Mailbox.php.
      * Because the return happens before any DataPartInfo::fetch() call, this
      * test does not require a live IMAP connection.
      *

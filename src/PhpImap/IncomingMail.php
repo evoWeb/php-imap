@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpImap;
 
+use PhpImap\Entities\Constants;
 use PhpImap\Exceptions\ConnectionException;
 
 /**

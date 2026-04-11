@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace PhpImap;
 
 use IMAP\Connection;
+use PhpImap\Entities\Constants;
+use PhpImap\Entities\HostnameAndAddress;
+use PhpImap\Entities\MailOverview;
+use PhpImap\Entities\PartStructure;
 use PhpImap\Exceptions\ConnectionException;
 use PhpImap\Exceptions\InvalidParameterException;
 use Random\RandomException;
@@ -14,32 +18,6 @@ use Random\RandomException;
  *
  * @author Barbushin Sergey http://linkedin.com/in/barbushin
  *
- * @phpstan-type PARTSTRUCTURE_PARAM = object{attribute: string, value?: string}
- *
- * https://www.php.net/manual/en/function.imap-fetchstructure.php
- * @phpstan-type PARTSTRUCTURE = object{
- *      type?: int,
- *      encoding?: int|mixed,
- *      ifsubtype?: bool,
- *      subtype?: string,
- *      ifdescription?: bool,
- *      description?: string,
- *      ifid?: bool,
- *      id?: string,
- *      lines?: int,
- *      bytes?: int,
- *      ifdisposition?: bool,
- *      disposition?: string|null,
- *      ifdparameters?: bool,
- *      dparameters?: object{attribute:string, value:string}[],
- *      ifparameters?: bool,
- *      parameters?: PARTSTRUCTURE_PARAM[],
- *      parts?: array<int, \stdClass>,
- *
- *      partStructure?: object[]
- * }&\stdClass
- * @phpstan-type HOSTNAMEANDADDRESS_ENTRY = object{host?: string, personal?: string, mailbox: string}&\stdClass
- * @phpstan-type HOSTNAMEANDADDRESS = array{0: HOSTNAMEANDADDRESS_ENTRY, 1?: HOSTNAMEANDADDRESS_ENTRY}
  * @phpstan-type COMPOSE_ENVELOPE = array{
  *      subject?: string
  * }
@@ -890,9 +868,9 @@ class Mailbox
     {
         $flag = str_replace('\\', '', strtolower($flag));
 
-        $overview = Imap::fetchOverview($this->getImapStream(), $mailId, \ST_UID);
+        [$overview] = Imap::fetchOverview($this->getImapStream(), $mailId, \ST_UID);
 
-        if ($overview[0]->$flag == 1) {
+        if ($overview->$flag == 1) {
             return true;
         }
 
@@ -934,50 +912,9 @@ class Mailbox
     /**
      * Fetch mail headers for listed mails ids.
      *
-     * Returns an array of objects describing one mail header each. The object will only
-     * define a property if it exists. The possible properties are:
-     *  subject - the mails subject
-     *  from - who sent it
-     *  sender - who sent it
-     *  to - recipient
-     *  date - when was it sent
-     *  message_id - Mail-ID
-     *  references - is a reference to this mail id
-     *  in_reply_to - is a reply to this mail id
-     *  size - size in bytes
-     *  uid - UID the mail has in the mailbox
-     *  msgno - mail sequence number in the mailbox
-     *  recent - this mail is flagged as recent
-     *  flagged - this mail is flagged
-     *  answered - this mail is flagged as answered
-     *  deleted - this mail is flagged for deletion
-     *  seen - this mail is flagged as already read
-     *  draft - this mail is flagged as being a draft
-     * @see https://www.php.net/manual/en/function.imap-fetch-overview.php
+     * @param int[] $mailsIds
      *
-     * @return array $mailsIds Array of mail IDs
-     *
-     * @phpstan-return list<object{
-     *     subject: ?string,
-     *     from: ?string,
-     *     to: ?string,
-     *     date: string,
-     *     message_id: string,
-     *     references: ?string,
-     *     in_reply_to: ?string,
-     *     size: int,
-     *     uid: int,
-     *     msgno: int,
-     *     recent: int,
-     *     flagged: int,
-     *     answered: int,
-     *     deleted: int,
-     *     seen: int,
-     *     draft: int,
-     *     udate: int
-     * }>
-     *
-     * @phpstan-param int[] $mailsIds
+     * @return MailOverview[]
      *
      * @throws \Exception
      */
@@ -992,40 +929,8 @@ class Mailbox
             return [];
         }
 
-        foreach ($mails as $index => $mail) {
-            $this->assertPropertyIsStringIfNotNull($mail, 'subject', $index, __METHOD__);
-            $this->assertPropertyIsStringIfNotNull($mail, 'from', $index, __METHOD__);
-            $this->assertPropertyIsStringIfNotNull($mail, 'to', $index, __METHOD__);
-            $this->assertPropertyIsStringIfNotNull($mail, 'sender', $index, __METHOD__);
-
-            $this->decodePropertyToString($mail, 'subject');
-            $this->decodePropertyToString($mail, 'from');
-            $this->decodePropertyToString($mail, 'to');
-            $this->decodePropertyToString($mail, 'sender');
-        }
-
-        /**
-         * @var list<object{
-         *  subject: ?string,
-         *  from: ?string,
-         *  to: ?string,
-         *  date: string,
-         *  message_id: string,
-         *  references: ?string,
-         *  in_reply_to: ?string,
-         *  size: int,
-         *  uid: int,
-         *  msgno: int,
-         *  recent: int,
-         *  flagged: int,
-         *  answered: int,
-         *  deleted: int,
-         *  seen: int,
-         *  draft: int,
-         *  udate: int
-         * }>
-         */
-        return $mails;
+        $decoder = fn(string $string): string => $this->decodeMimeStr($string);
+        return \array_map(fn(MailOverview $entry) => $entry->withDecodedStrings($decoder), $mails);
     }
 
     private function assertPropertyIsStringIfNotNull(object $object, string $name, int $index, string $method): void
@@ -1045,24 +950,9 @@ class Mailbox
         }
     }
 
-    private function assertValueIsIntegerIfNotNull(mixed $value, string $name, string $method): void
-    {
-        $message = '%s was present in %s() but was not an integer!';
-        if (!\is_int($value ?? 0)) {
-            throw new \UnexpectedValueException(sprintf($message, $name, $method));
-        }
-    }
-
     /**
      * @throws \Exception
      */
-    private function decodePropertyToString(object $mail, string $property): void
-    {
-        if (isset($mail->{$property}) && !empty(\trim($mail->{$property}))) {
-            $mail->{$property} = $this->decodeMimeStr($mail->{$property});
-        }
-    }
-
     /**
      * Get headers for all messages in the defined mailbox,
      * returns an array of string formatted with header info,
@@ -1235,12 +1125,12 @@ class Mailbox
          *      date?: scalar,
          *      Date?: scalar,
          *      subject?: scalar,
-         *      from?: HOSTNAMEANDADDRESS,
-         *      to?: HOSTNAMEANDADDRESS,
-         *      cc?: HOSTNAMEANDADDRESS,
-         *      bcc?: HOSTNAMEANDADDRESS,
-         *      reply_to?: HOSTNAMEANDADDRESS,
-         *      sender?: HOSTNAMEANDADDRESS,
+         *      from?: array<int, \stdClass>,
+         *      to?: array<int, \stdClass>,
+         *      cc?: array<int, \stdClass>,
+         *      bcc?: array<int, \stdClass>,
+         *      reply_to?: array<int, \stdClass>,
+         *      sender?: array<int, \stdClass>,
          *      message_id?: scalar,
          * } $head
          */
@@ -1249,12 +1139,6 @@ class Mailbox
         $this->assertPropertyIsStringIfNotNull($head, 'date', $mailId, __METHOD__);
         $this->assertPropertyIsStringIfNotNull($head, 'Date', $mailId, __METHOD__);
         $this->assertPropertyIsStringIfNotNull($head, 'subject', $mailId, __METHOD__);
-        $this->assertPropertyIsStringIfNotNull($head, 'from', $mailId, __METHOD__);
-        $this->assertPropertyIsStringIfNotNull($head, 'sender', $mailId, __METHOD__);
-        $this->assertPropertyIsStringIfNotNull($head, 'to', $mailId, __METHOD__);
-        $this->assertPropertyIsStringIfNotNull($head, 'cc', $mailId, __METHOD__);
-        $this->assertPropertyIsStringIfNotNull($head, 'bcc', $mailId, __METHOD__);
-        $this->assertPropertyIsStringIfNotNull($head, 'reply_to', $mailId, __METHOD__);
 
         $header = new IncomingMailHeader();
         $header->headersRaw = $headersRaw;
@@ -1289,19 +1173,28 @@ class Mailbox
             ? $this->decodeMimeStr($head->subject)
             : null;
 
-        $this->populateSenderFields($header, $head, $headersRaw);
+        $from = $this->convertAddressArray($head->from ?? null);
+        $sender = $this->convertAddressArray($head->sender ?? null);
+        $this->populateSenderFields($header, $from, $sender, $headersRaw);
 
-        if (isset($head->to)) {
-            [$header->to, $header->toString] = $this->parseRecipientList($head->to);
+        $to = $this->convertAddressArray($head->to ?? null);
+        if ($to !== []) {
+            [$header->to, $header->toString] = $this->parseRecipientList($to);
         }
-        if (isset($head->cc)) {
-            [$header->cc, $header->ccString] = $this->parseRecipientList($head->cc);
+
+        $cc = $this->convertAddressArray($head->cc ?? null);
+        if ($cc !== []) {
+            [$header->cc, $header->ccString] = $this->parseRecipientList($cc);
         }
-        if (isset($head->bcc)) {
-            [$header->bcc] = $this->parseRecipientList($head->bcc);
+
+        $bcc = $this->convertAddressArray($head->bcc ?? null);
+        if ($bcc !== []) {
+            [$header->bcc] = $this->parseRecipientList($bcc);
         }
-        if (isset($head->reply_to)) {
-            [$header->replyTo] = $this->parseRecipientList($head->reply_to);
+
+        $replyTo = $this->convertAddressArray($head->reply_to ?? null);
+        if ($replyTo !== []) {
+            [$header->replyTo] = $this->parseRecipientList($replyTo);
         }
 
         if (isset($head->message_id)) {
@@ -1310,6 +1203,27 @@ class Mailbox
         }
 
         return $header;
+    }
+
+    /**
+     * Converts an array of raw stdClass address objects (from imap_rfc822_parse_headers)
+     * to a typed list of HostnameAndAddress DTOs.
+     *
+     * @param mixed $addresses
+     * @return list<HostnameAndAddress>
+     */
+    private function convertAddressArray(mixed $addresses): array
+    {
+        if (!\is_array($addresses)) {
+            return [];
+        }
+        $result = [];
+        foreach ($addresses as $obj) {
+            if ($obj instanceof \stdClass) {
+                $result[] = HostnameAndAddress::fromStdClass($obj);
+            }
+        }
+        return $result;
     }
 
     /**
@@ -1327,16 +1241,23 @@ class Mailbox
     }
 
     /**
+     * @param HostnameAndAddress[] $from
+     * @param HostnameAndAddress[] $sender
+     *
      * @throws \Exception
      */
-    private function populateSenderFields(IncomingMailHeader $header, \stdClass $head, string $headersRaw): void
-    {
-        if (!empty($head->from)) {
+    private function populateSenderFields(
+        IncomingMailHeader $header,
+        array $from,
+        array $sender,
+        string $headersRaw
+    ): void {
+        if ($from !== []) {
             [
                 $header->fromHost,
                 $header->fromName,
                 $header->fromAddress
-            ] = $this->possiblyGetHostNameAndAddress($head->from);
+            ] = $this->possiblyGetHostNameAndAddress($from);
         } elseif (
             \preg_match(
                 '/smtp.mailfrom=[-0-9a-zA-Z.+_]+@[-0-9a-zA-Z.+_]+.[a-zA-Z]{2,4}/',
@@ -1347,17 +1268,17 @@ class Mailbox
             $header->fromAddress = \substr($matches[0], 14);
         }
 
-        if (!empty($head->sender)) {
+        if ($sender !== []) {
             [
                 $header->senderHost,
                 $header->senderName,
                 $header->senderAddress
-            ] = $this->possiblyGetHostNameAndAddress($head->sender);
+            ] = $this->possiblyGetHostNameAndAddress($sender);
         }
     }
 
     /**
-     * @param object[] $recipients
+     * @param HostnameAndAddress[] $recipients
      *
      * @return array{0: array<string, string|null>, 1: string}
      *
@@ -1379,10 +1300,10 @@ class Mailbox
     }
 
     /**
-     * @phpstan-param array<int, \stdClass> $messageParts
-     * @phpstan-param array<string, \stdClass> $flattenedParts
+     * @param PartStructure[] $messageParts
+     * @param array<string, PartStructure> $flattenedParts
      *
-     * @phpstan-return array<string, \stdClass>
+     * @return array<string, PartStructure>
      */
     public function flattenParts(
         array $messageParts,
@@ -1393,13 +1314,10 @@ class Mailbox
     ): array {
         foreach ($messageParts as $part) {
             $flattenedParts[$prefix . $index] = $part;
-            if (isset($part->parts)) {
-                /** @var \stdClass[] $partParts */
-                $partParts = $part->parts;
-
+            if ($part->parts !== []) {
                 if ($part->type == self::PART_TYPE_TWO) {
                     $flattenedParts = $this->flattenParts(
-                        $partParts,
+                        $part->parts,
                         $flattenedParts,
                         $prefix . $index . '.',
                         1,
@@ -1407,18 +1325,18 @@ class Mailbox
                     );
                 } elseif ($fullPrefix) {
                     $flattenedParts = $this->flattenParts(
-                        $partParts,
+                        $part->parts,
                         $flattenedParts,
                         $prefix . $index . '.'
                     );
                 } else {
                     $flattenedParts = $this->flattenParts(
-                        $partParts,
+                        $part->parts,
                         $flattenedParts,
                         $prefix
                     );
                 }
-                unset($flattenedParts[$prefix . $index]->parts);
+                $flattenedParts[$prefix . $index] = $flattenedParts[$prefix . $index]->withEmptyParts();
             }
             ++$index;
         }
@@ -1445,11 +1363,9 @@ class Mailbox
         );
 
         if (empty($mailStructure->parts)) {
-            /** @phpstan-var PARTSTRUCTURE $mailStructure */
             $this->initMailPart($mail, $mailStructure, 0, $markAsSeen);
         } else {
             foreach ($this->flattenParts($mailStructure->parts) as $partNum => $partStructure) {
-                /** @phpstan-var PARTSTRUCTURE $partStructure */
                 $this->initMailPart($mail, $partStructure, $partNum, $markAsSeen);
             }
         }
@@ -1460,12 +1376,8 @@ class Mailbox
     /**
      * Download attachment.
      *
-     * @param array $parameters Array of params of mail
-     * @param object $partStructure Part of mail
+     * @param array<string, string|int> $parameters Array of params of mail
      * @param bool $emlOrigin True, if it indicates, that the attachment comes from an EML (mail) file
-     *
-     * @phpstan-param array<string, string|int> $parameters
-     * @phpstan-param PARTSTRUCTURE $partStructure
      *
      * @return IncomingMailAttachment $attachment
      * @throws \Exception
@@ -1473,31 +1385,20 @@ class Mailbox
     public function downloadAttachment(
         DataPartInfo $dataInfo,
         array $parameters,
-        object $partStructure,
+        PartStructure $partStructure,
         bool $emlOrigin = false
     ): IncomingMailAttachment {
         $fileName = $this->prepareAttachmentFileName($partStructure, $parameters);
 
-        /** @var ?int $sizeInBytes */
-        $sizeInBytes = $partStructure->bytes ?? null;
+        $sizeInBytes = $partStructure->bytes;
+        $encoding = $partStructure->encoding;
 
-        /** @var mixed $encoding */
-        $encoding = $partStructure->encoding ?? null;
-
-        $this->assertValueIsIntegerIfNotNull($sizeInBytes, 'sizeInBytes', __METHOD__);
-        $this->assertValueIsIntegerIfNotNull($encoding, 'encoding', __METHOD__);
-
-        /** @var int|null $encoding */
-        if (isset($partStructure->type)) {
-            $this->assertValueIsIntegerIfNotNull($partStructure->type, 'type', __METHOD__);
-        }
-
-        /** @var ?string $charset */
         $charset = $parameters['charset'] ?? null;
         if (isset($charset)) {
             $this->assertValueIsString($charset, 'charset', __METHOD__);
         }
 
+        /** @var ?string $charset */
         return $this->createAndHydrateAttachment(
             $partStructure,
             $encoding,
@@ -1510,25 +1411,24 @@ class Mailbox
     }
 
     /**
-     * @phpstan-param PARTSTRUCTURE $partStructure
-     * @phpstan-param array<string, string|int> $params
+     * @param array<string, string|int> $params
      *
      * @throws \Exception
      */
-    public function prepareAttachmentFileName(object $partStructure, array $params): string
+    public function prepareAttachmentFileName(PartStructure $partStructure, array $params): string
     {
         $dispositionAttachment = isset($partStructure->disposition)
             && \mb_strtolower($partStructure->disposition) === 'attachment';
 
         if ($partStructure->subtype == 'RFC822' && $dispositionAttachment) {
-            $fileName = \strtolower($partStructure->subtype) . '.eml';
+            $fileName = \strtolower($partStructure->subtype ?? '') . '.eml';
         } elseif ($partStructure->subtype == 'ALTERNATIVE') {
-            $fileName = \strtolower($partStructure->subtype) . '.eml';
+            $fileName = \strtolower($partStructure->subtype ?? '') . '.eml';
         } elseif (
             (!isset($params['filename']) || empty(\trim((string)$params['filename'])))
             && (!isset($params['name']) || empty(\trim((string)$params['name'])))
         ) {
-            $fileName = \strtolower($partStructure->subtype);
+            $fileName = \strtolower($partStructure->subtype ?? '');
         } else {
             $fileName = (isset($params['filename']) && !empty(\trim((string)$params['filename'])))
                 ? (string)$params['filename']
@@ -1540,13 +1440,11 @@ class Mailbox
     }
 
     /**
-     * @phpstan-param PARTSTRUCTURE $partStructure
-     *
      * @throws RandomException
      * @throws ConnectionException
      */
     public function createAndHydrateAttachment(
-        object $partStructure,
+        PartStructure $partStructure,
         ?int $encoding,
         ?string $fileName,
         ?int $sizeInBytes,
@@ -1923,13 +1821,11 @@ class Mailbox
     }
 
     /**
-     * @phpstan-param PARTSTRUCTURE $partStructure
-     *
      * @throws \Exception
      */
     protected function initMailPart(
         IncomingMail $mail,
-        object $partStructure,
+        PartStructure $partStructure,
         string|int $partNumber,
         bool $markAsSeen = true
     ): void {
@@ -1973,12 +1869,9 @@ class Mailbox
         $this->partMailDataInfo($mail, $partStructure, $dispositionAttachment, $dataInfo);
     }
 
-    /**
-     * @phpstan-param PARTSTRUCTURE $partStructure
-     */
     protected function createPartDataInfo(
         IncomingMail $mail,
-        object $partStructure,
+        PartStructure $partStructure,
         string|int $partNumber,
         bool $markAsSeen
     ): DataPartInfo {
@@ -1994,52 +1887,46 @@ class Mailbox
     /**
      * @return array<string, string> $params
      */
-    protected function processPartParameters(object $partStructure): array
+    protected function processPartParameters(PartStructure $partStructure): array
     {
-        /** @var array<string, string> $params */
-        $params = [];
-        if (!empty($partStructure->parameters)) {
-            foreach ($partStructure->parameters as $param) {
-                $params[\strtolower($param->attribute)] = '';
-                $value = $param->value ?? null;
-                if (isset($value) && \trim($value) !== '') {
-                    $params[\strtolower($param->attribute)] = $this->decodeMimeStr($value);
-                }
+        $result = [];
+        foreach ($partStructure->parameters as $param) {
+            $result[\strtolower($param->attribute)] = '';
+            if ($param->value !== null && \trim($param->value) !== '') {
+                $result[\strtolower($param->attribute)] = $this->decodeMimeStr($param->value);
             }
         }
-        return $params;
+        return $result;
     }
 
     /**
-     * @phpstan-param PARTSTRUCTURE $partStructure
-     * @phpstan-param array<string, string> $params
+     * @param array<string, string> $result
      *
-     * @return array<string, string> $params
+     * @return array<string, string>
      */
-    protected function processPartDParameters(object $partStructure, array $params): array
+    protected function processPartDParameters(PartStructure $partStructure, array $result): array
     {
         if (!empty($partStructure->dparameters)) {
             foreach ($partStructure->dparameters as $param) {
                 $paramName = \strtolower(\preg_match('~^(.*?)\*~', $param->attribute, $matches)
                     ? $matches[1]
                     : $param->attribute);
-                if (isset($params[$paramName])) {
-                    $params[$paramName] .= $param->value;
+                if (isset($result[$paramName])) {
+                    $result[$paramName] .= $param->value;
                 } else {
-                    $params[$paramName] = $param->value;
+                    $result[$paramName] = $param->value;
                 }
             }
         }
-        return $params;
+        return $result;
     }
 
     /**
-     * @phpstan-param PARTSTRUCTURE $partStructure
-     * @phpstan-param array<string, string> $params
+     * @param array<string, string> $params
      *
-     * @phpstan-return array{0: bool, 1: bool}
+     * @return array{0: bool, 1: bool}
      */
-    protected function prepareIsAttachment(object $partStructure, string|int $partNumber, array $params): array
+    protected function prepareIsAttachment(PartStructure $partStructure, string|int $partNumber, array $params): array
     {
         $isAttachment = isset($params['filename']) || isset($params['name']) || isset($partStructure->id);
 
@@ -2057,10 +1944,7 @@ class Mailbox
         return [$isAttachment, $dispositionAttachment];
     }
 
-    /**
-     * @phpstan-param PARTSTRUCTURE $partStructure
-     */
-    protected function ignorePartAttachments(object $partStructure): bool
+    protected function ignorePartAttachments(PartStructure $partStructure): bool
     {
         return
             $this->getAttachmentsIgnore()
@@ -2068,22 +1952,19 @@ class Mailbox
                 $partStructure->type !== \TYPEMULTIPART
                 && (
                     $partStructure->type !== \TYPETEXT
-                    || !\in_array(\mb_strtolower($partStructure->subtype), ['plain', 'html'], true)
+                    || !\in_array(\mb_strtolower($partStructure->subtype ?? ''), ['plain', 'html'], true)
                 )
             );
     }
 
-    /**
-     * @phpstan-param PARTSTRUCTURE $partStructure
-     */
     protected function partMailDataInfo(
         IncomingMail $mail,
-        object $partStructure,
+        PartStructure $partStructure,
         bool $dispositionAttachment,
         DataPartInfo $dataInfo
     ): void {
         if ($partStructure->type === \TYPETEXT) {
-            if (\mb_strtolower($partStructure->subtype) === 'plain') {
+            if (\mb_strtolower($partStructure->subtype ?? '') === 'plain') {
                 if ($dispositionAttachment) {
                     return;
                 }
@@ -2156,20 +2037,16 @@ class Mailbox
      * @return (string|null)[]|null
      * @throws \Exception
      */
-    protected function possiblyGetEmailAndNameFromRecipient(object $recipient): ?array
+    protected function possiblyGetEmailAndNameFromRecipient(HostnameAndAddress $recipient): ?array
     {
-        if (isset($recipient->mailbox, $recipient->host)) {
-            $this->assertValueIsString($recipient->mailbox, 'recipientMailbox', __METHOD__);
-            $this->assertValueIsString($recipient->host, 'recipientHost', __METHOD__);
-            $this->assertPropertyIsStringIfNotNull($recipient, 'recipientPersonal', 1, __METHOD__);
-
+        if ($recipient->host !== null) {
             $recipientMailbox = $recipient->mailbox;
             $recipientHost = $recipient->host;
-            $recipientPersonal = $recipient->personal ?? null;
+            $recipientPersonal = $recipient->personal;
 
             if (\trim($recipientMailbox) !== '' && \trim($recipientHost) !== '') {
                 $recipientEmail = \strtolower($recipientMailbox . '@' . $recipientHost);
-                $recipientName = (\is_string($recipientPersonal) && \trim($recipientPersonal) !== '')
+                $recipientName = ($recipientPersonal !== null && \trim($recipientPersonal) !== '')
                     ? $this->decodeMimeStr($recipientPersonal)
                     : null;
 
@@ -2237,30 +2114,28 @@ class Mailbox
     }
 
     /**
-     * @phpstan-param HOSTNAMEANDADDRESS $mailboxes
+     * @phpstan-param HostnameAndAddress[] $mailboxes
      *
      * @phpstan-return array{0: string|null, 1: string|null, 2: string}
+     *
      * @throws \Exception
      */
     protected function possiblyGetHostNameAndAddress(array $mailboxes): array
     {
-        $out = [
-            $mailboxes[0]->host ?? (isset($mailboxes[1], $mailboxes[1]->host) ? $mailboxes[1]->host : null),
-            1 => null,
-        ];
+        $host = $mailboxes[0]->host ?? $mailboxes[1]->host ?? null;
+        $personal = null;
         foreach ([0, 1] as $index) {
-            $maybe = isset($mailboxes[$index], $mailboxes[$index]->personal) ? $mailboxes[$index]->personal : null;
-            if (\is_string($maybe) && \trim($maybe) !== '') {
-                $out[1] = $this->decodeMimeStr($maybe);
+            $maybe = isset($mailboxes[$index]) ? $mailboxes[$index]->personal : null;
+            if ($maybe !== null && \trim($maybe) !== '') {
+                $personal = $this->decodeMimeStr($maybe);
 
                 break;
             }
         }
 
-        $out[] = \strtolower($mailboxes[0]->mailbox . '@' . $out[0]);
+        $address = \strtolower($mailboxes[0]->mailbox . '@' . $host);
 
-        /** @var array{0: string|null, 1: string|null, 2: string} */
-        return $out;
+        return [$host, $personal, $address];
     }
 
     /**

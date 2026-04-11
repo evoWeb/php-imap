@@ -4,17 +4,13 @@ declare(strict_types=1);
 
 namespace PhpImap\Tests\Unit;
 
+use PhpImap\Entities\HostnameAndAddress;
 use PhpImap\Exceptions\InvalidParameterException;
-use PhpImap\Mailbox as BaseMailbox;
 use PhpImap\Tests\Fixtures\Constants;
 use PhpImap\Tests\Fixtures\Mailbox as FixtureMailbox;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @phpstan-import-type HOSTNAMEANDADDRESS_ENTRY from BaseMailbox
- * @phpstan-import-type HOSTNAMEANDADDRESS from BaseMailbox
- */
 final class MailboxRecipientTest extends TestCase
 {
     private string $imapPath = Constants::IMAP_PATH_INBOX_NO_VALID_SSL;
@@ -33,10 +29,7 @@ final class MailboxRecipientTest extends TestCase
     {
         $mailbox = $this->getMailbox();
 
-        $recipient = new \stdClass();
-        $recipient->mailbox = 'john';
-        $recipient->host = 'example.com';
-        $recipient->personal = Constants::JOHN_DOE;
+        $recipient = new HostnameAndAddress('john', 'example.com', Constants::JOHN_DOE);
 
         $result = $mailbox->exposedPossiblyGetEmailAndNameFromRecipient($recipient);
 
@@ -53,9 +46,7 @@ final class MailboxRecipientTest extends TestCase
     {
         $mailbox = $this->getMailbox();
 
-        $recipient = new \stdClass();
-        $recipient->mailbox = 'jane';
-        $recipient->host = 'example.com';
+        $recipient = new HostnameAndAddress('jane', 'example.com');
 
         $result = $mailbox->exposedPossiblyGetEmailAndNameFromRecipient($recipient);
 
@@ -72,9 +63,7 @@ final class MailboxRecipientTest extends TestCase
     {
         $mailbox = $this->getMailbox();
 
-        $recipient = new \stdClass();
-        $recipient->mailbox = '';
-        $recipient->host = 'example.com';
+        $recipient = new HostnameAndAddress('', 'example.com');
 
         $result = $mailbox->exposedPossiblyGetEmailAndNameFromRecipient($recipient);
 
@@ -89,9 +78,7 @@ final class MailboxRecipientTest extends TestCase
     {
         $mailbox = $this->getMailbox();
 
-        $recipient = new \stdClass();
-        $recipient->mailbox = 'john';
-        $recipient->host = '';
+        $recipient = new HostnameAndAddress('john', '');
 
         $result = $mailbox->exposedPossiblyGetEmailAndNameFromRecipient($recipient);
 
@@ -106,7 +93,7 @@ final class MailboxRecipientTest extends TestCase
     {
         $mailbox = $this->getMailbox();
 
-        $recipient = new \stdClass();
+        $recipient = new HostnameAndAddress('');
 
         $result = $mailbox->exposedPossiblyGetEmailAndNameFromRecipient($recipient);
 
@@ -121,10 +108,7 @@ final class MailboxRecipientTest extends TestCase
     {
         $mailbox = $this->getMailbox();
 
-        $recipient = new \stdClass();
-        $recipient->mailbox = 'john';
-        $recipient->host = 'example.com';
-        $recipient->personal = '   ';
+        $recipient = new HostnameAndAddress('john', 'example.com', '   ');
 
         $result = $mailbox->exposedPossiblyGetEmailAndNameFromRecipient($recipient);
 
@@ -141,15 +125,8 @@ final class MailboxRecipientTest extends TestCase
     {
         $mailbox = $this->getMailbox();
 
-        /** @phpstan-var HOSTNAMEANDADDRESS_ENTRY $entry */
-        $entry = new \stdClass();
-        $entry->mailbox = 'john';
-        $entry->host = 'example.com';
-        $entry->personal = Constants::JOHN_DOE;
-
-        /** @phpstan-var HOSTNAMEANDADDRESS $entries */
-        $entries = [$entry];
-        $result = $mailbox->exposedPossiblyGetHostNameAndAddress($entries);
+        $entry = new HostnameAndAddress('john', 'example.com', Constants::JOHN_DOE);
+        $result = $mailbox->exposedPossiblyGetHostNameAndAddress([$entry]);
 
         self::assertSame('example.com', $result[0]);
         self::assertSame(Constants::JOHN_DOE, $result[1]);
@@ -164,19 +141,9 @@ final class MailboxRecipientTest extends TestCase
     {
         $mailbox = $this->getMailbox();
 
-        /** @phpstan-var HOSTNAMEANDADDRESS_ENTRY $entry0 */
-        $entry0 = new \stdClass();
-        $entry0->mailbox = 'john';
-        $entry0->host = 'example.com';
-
-        /** @phpstan-var HOSTNAMEANDADDRESS_ENTRY $entry1 */
-        $entry1 = new \stdClass();
-        $entry1->host = 'fallback.com';
-        $entry1->personal = 'Fallback Name';
-
-        /** @phpstan-var HOSTNAMEANDADDRESS $entries */
-        $entries = [$entry0, $entry1];
-        $result = $mailbox->exposedPossiblyGetHostNameAndAddress($entries);
+        $entry0 = new HostnameAndAddress('john', 'example.com');
+        $entry1 = new HostnameAndAddress('', 'fallback.com', 'Fallback Name');
+        $result = $mailbox->exposedPossiblyGetHostNameAndAddress([$entry0, $entry1]);
 
         self::assertSame('example.com', $result[0]);
         self::assertSame('Fallback Name', $result[1]);
@@ -191,18 +158,9 @@ final class MailboxRecipientTest extends TestCase
     {
         $mailbox = $this->getMailbox();
 
-        /** @phpstan-var HOSTNAMEANDADDRESS_ENTRY $entry0 */
-        $entry0 = new \stdClass();
-        $entry0->mailbox = 'john';
-
-        /** @phpstan-var HOSTNAMEANDADDRESS_ENTRY $entry1 */
-        $entry1 = new \stdClass();
-        $entry1->host = 'fallback.com';
-        $entry1->personal = 'Name';
-
-        /** @phpstan-var HOSTNAMEANDADDRESS $entries */
-        $entries = [$entry0, $entry1];
-        $result = $mailbox->exposedPossiblyGetHostNameAndAddress($entries);
+        $entry0 = new HostnameAndAddress('john');
+        $entry1 = new HostnameAndAddress('', 'fallback.com', 'Name');
+        $result = $mailbox->exposedPossiblyGetHostNameAndAddress([$entry0, $entry1]);
 
         self::assertSame('fallback.com', $result[0]);
     }
@@ -225,10 +183,7 @@ final class MailboxRecipientTest extends TestCase
     #[Test]
     public function testParseRecipientListSingleWithName(): void
     {
-        $recipient = new \stdClass();
-        $recipient->mailbox = 'john';
-        $recipient->host = 'example.com';
-        $recipient->personal = Constants::JOHN_DOE;
+        $recipient = new HostnameAndAddress('john', 'example.com', Constants::JOHN_DOE);
 
         $result = $this->getMailbox()->exposeParseRecipientList([$recipient]);
 
@@ -242,9 +197,7 @@ final class MailboxRecipientTest extends TestCase
     #[Test]
     public function testParseRecipientListSingleWithoutName(): void
     {
-        $recipient = new \stdClass();
-        $recipient->mailbox = 'jane';
-        $recipient->host = 'example.com';
+        $recipient = new HostnameAndAddress('jane', 'example.com');
 
         $result = $this->getMailbox()->exposeParseRecipientList([$recipient]);
 
@@ -258,14 +211,8 @@ final class MailboxRecipientTest extends TestCase
     #[Test]
     public function testParseRecipientListMultiple(): void
     {
-        $r1 = new \stdClass();
-        $r1->mailbox = 'alice';
-        $r1->host = 'example.com';
-        $r1->personal = 'Alice';
-
-        $r2 = new \stdClass();
-        $r2->mailbox = 'bob';
-        $r2->host = 'example.com';
+        $r1 = new HostnameAndAddress('alice', 'example.com', 'Alice');
+        $r2 = new HostnameAndAddress('bob', 'example.com');
 
         $result = $this->getMailbox()->exposeParseRecipientList([$r1, $r2]);
 
@@ -274,18 +221,15 @@ final class MailboxRecipientTest extends TestCase
     }
 
     /**
-     * Invalid recipients (missing mailbox/host) are silently skipped.
+     * Invalid recipients (missing host) are silently skipped.
      *
      * @throws \Exception
      */
     #[Test]
     public function testParseRecipientListSkipsInvalidRecipients(): void
     {
-        $invalid = new \stdClass();
-
-        $valid = new \stdClass();
-        $valid->mailbox = 'valid';
-        $valid->host = 'example.com';
+        $invalid = new HostnameAndAddress('');
+        $valid = new HostnameAndAddress('valid', 'example.com');
 
         $result = $this->getMailbox()->exposeParseRecipientList([$invalid, $valid]);
 

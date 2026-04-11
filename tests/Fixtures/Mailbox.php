@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace PhpImap\Tests\Fixtures;
 
+use PhpImap\Entities\HostnameAndAddress;
+use PhpImap\Entities\PartStructure;
 use PhpImap\IncomingMail;
 use PhpImap\Mailbox as BaseMailbox;
 
-/**
- * @phpstan-import-type HOSTNAMEANDADDRESS from BaseMailbox
- * @phpstan-import-type PARTSTRUCTURE from BaseMailbox
- */
 class Mailbox extends BaseMailbox
 {
     public function getImapPassword(): string
@@ -37,13 +35,11 @@ class Mailbox extends BaseMailbox
     }
 
     /**
-     * @phpstan-param PARTSTRUCTURE $partStructure
-     *
      * @throws \Exception
      */
     public function exposeInitMailPart(
         IncomingMail $mail,
-        object $partStructure,
+        PartStructure $partStructure,
         string|int $partNumber,
         bool $markAsSeen = true
     ): void {
@@ -63,13 +59,14 @@ class Mailbox extends BaseMailbox
      *
      * @throws \Exception
      */
-    public function exposedPossiblyGetEmailAndNameFromRecipient(object $recipient): ?array
+    public function exposedPossiblyGetEmailAndNameFromRecipient(HostnameAndAddress $recipient): ?array
     {
         return $this->possiblyGetEmailAndNameFromRecipient($recipient);
     }
 
     /**
-     * @phpstan-param HOSTNAMEANDADDRESS $mailboxes
+     * @phpstan-param array{0: HostnameAndAddress, 1?: HostnameAndAddress} $mailboxes
+     *
      * @phpstan-return array{0: string|null, 1: string|null, 2: string}
      *
      * @throws \Exception
@@ -80,7 +77,7 @@ class Mailbox extends BaseMailbox
     }
 
     /**
-     * @param object[] $recipients
+     * @param HostnameAndAddress[] $recipients
      *
      * @return array{0: array<string, string|null>, 1: string}
      *

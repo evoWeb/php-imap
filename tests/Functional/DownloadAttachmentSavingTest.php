@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace PhpImap\Tests\Functional;
 
+use PhpImap\Entities\PartStructure;
 use PhpImap\Mailbox;
 use PhpImap\Tests\Fixtures\DataPartInfo as FixtureDataPartInfo;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @phpstan-import-type PARTSTRUCTURE from Mailbox
- */
 final class DownloadAttachmentSavingTest extends TestCase
 {
     private FixtureDataPartInfo $dataPartInfo;
@@ -26,21 +24,17 @@ final class DownloadAttachmentSavingTest extends TestCase
     }
 
     /**
-     * Creates a minimal valid partStructure object with sensible defaults.
-     *
-     * @phpstan-return PARTSTRUCTURE
+     * Creates a minimal valid PartStructure with sensible defaults.
      */
-    private function buildPartStructure(): \stdClass
+    private function buildPartStructure(): PartStructure
     {
-        /** @phpstan-var PARTSTRUCTURE $result */
-        $result = new \stdClass();
-        $result->subtype = 'PLAIN';
-        $result->encoding = \ENCBASE64;
-        $result->ifid = false;
-        $result->ifsubtype = true;
-        $result->ifdescription = false;
-
-        return $result;
+        return new PartStructure(
+            subtype: 'PLAIN',
+            encoding: \ENCBASE64,
+            ifid: false,
+            ifsubtype: true,
+            ifdescription: false,
+        );
     }
 
     // -------------------------------------------------------------------------

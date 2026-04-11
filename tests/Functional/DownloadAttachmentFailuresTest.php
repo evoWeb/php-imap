@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace PhpImap\Tests\Functional;
 
+use PhpImap\Entities\PartStructure;
 use PhpImap\Mailbox;
 use PhpImap\Tests\Fixtures\Constants;
 use PhpImap\Tests\Fixtures\DataPartInfo as FixtureDataPartInfo;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @phpstan-import-type PARTSTRUCTURE from Mailbox
- */
 final class DownloadAttachmentFailuresTest extends TestCase
 {
     private Mailbox $mailbox;
@@ -31,71 +29,28 @@ final class DownloadAttachmentFailuresTest extends TestCase
     }
 
     /**
-     * Creates a minimal valid partStructure object with sensible defaults.
+     * Creates a minimal valid PartStructure with sensible defaults.
      *
      * @param array<string, mixed> $props
-     *
-     * @phpstan-return PARTSTRUCTURE
      */
-    private function buildPartStructure(array $props = []): \stdClass
+    private function buildPartStructure(array $props = []): PartStructure
     {
-        /** @phpstan-var PARTSTRUCTURE $result */
-        $result = (object)\array_merge([
-            'subtype' => 'PLAIN',
-            'encoding' => \ENCBASE64,
-            'ifid' => false,
-            'ifsubtype' => true,
-            'ifdescription' => false,
-        ], $props);
-
-        return $result;
+        return new PartStructure(
+            subtype: \is_string($props['subtype'] ?? null) ? $props['subtype'] : 'PLAIN',
+            encoding: \is_int($props['encoding'] ?? null) ? $props['encoding'] : \ENCBASE64,
+            ifid: (bool)($props['ifid'] ?? false),
+            ifsubtype: (bool)($props['ifsubtype'] ?? true),
+            ifdescription: (bool)($props['ifdescription'] ?? false),
+            disposition: \is_string($props['disposition'] ?? null) ? $props['disposition'] : null,
+            bytes: \is_int($props['bytes'] ?? null) ? $props['bytes'] : null,
+            type: \is_int($props['type'] ?? null) ? $props['type'] : null,
+            id: \is_string($props['id'] ?? null) ? $props['id'] : null,
+        );
     }
 
     // -------------------------------------------------------------------------
-    // Assertion failures (invalid partStructure values)
+    // Assertion failures (invalid parameter values)
     // -------------------------------------------------------------------------
-
-    /**
-     * @throws \Exception
-     */
-    #[Test]
-    public function testThrowsWhenBytesIsNotInteger(): void
-    {
-        $partStructure = $this->buildPartStructure(['bytes' => 'not-an-int']);
-
-        $this->expectException(\UnexpectedValueException::class);
-        $this->expectExceptionMessage('sizeInBytes');
-
-        $this->mailbox->downloadAttachment($this->dataPartInfo, [], $partStructure);
-    }
-
-    /**
-     * @throws \Exception
-     */
-    #[Test]
-    public function testThrowsWhenEncodingIsNotInteger(): void
-    {
-        $partStructure = $this->buildPartStructure(['encoding' => 'bad-encoding']);
-
-        $this->expectException(\UnexpectedValueException::class);
-        $this->expectExceptionMessage('encoding');
-
-        $this->mailbox->downloadAttachment($this->dataPartInfo, [], $partStructure);
-    }
-
-    /**
-     * @throws \Exception
-     */
-    #[Test]
-    public function testThrowsWhenTypeIsNotInteger(): void
-    {
-        $partStructure = $this->buildPartStructure(['type' => 'not-an-int']);
-
-        $this->expectException(\UnexpectedValueException::class);
-        $this->expectExceptionMessage('type');
-
-        $this->mailbox->downloadAttachment($this->dataPartInfo, [], $partStructure);
-    }
 
     /**
      * @throws \Exception
