@@ -24,7 +24,7 @@ $mailbox = new Mailbox(
 try {
     $mailIds = $mailbox->searchMailbox('UNSEEN');
 } catch (ConnectionException $ex) {
-    exit('IMAP connection failed: ' . $ex->getErrors());
+    exit('IMAP connection failed: ' . json_encode($ex->getErrors()));
 }
 
 try {

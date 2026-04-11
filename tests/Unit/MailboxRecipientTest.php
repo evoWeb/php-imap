@@ -5,11 +5,16 @@ declare(strict_types=1);
 namespace PhpImap\Tests\Unit;
 
 use PhpImap\Exceptions\InvalidParameterException;
+use PhpImap\Mailbox as BaseMailbox;
 use PhpImap\Tests\Fixtures\Constants;
 use PhpImap\Tests\Fixtures\Mailbox as FixtureMailbox;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @phpstan-import-type HOSTNAMEANDADDRESS_ENTRY from BaseMailbox
+ * @phpstan-import-type HOSTNAMEANDADDRESS from BaseMailbox
+ */
 final class MailboxRecipientTest extends TestCase
 {
     private string $imapPath = Constants::IMAP_PATH_INBOX_NO_VALID_SSL;
@@ -136,12 +141,15 @@ final class MailboxRecipientTest extends TestCase
     {
         $mailbox = $this->getMailbox();
 
+        /** @phpstan-var HOSTNAMEANDADDRESS_ENTRY $entry */
         $entry = new \stdClass();
         $entry->mailbox = 'john';
         $entry->host = 'example.com';
         $entry->personal = Constants::JOHN_DOE;
 
-        $result = $mailbox->exposedPossiblyGetHostNameAndAddress([$entry]);
+        /** @phpstan-var HOSTNAMEANDADDRESS $entries */
+        $entries = [$entry];
+        $result = $mailbox->exposedPossiblyGetHostNameAndAddress($entries);
 
         self::assertSame('example.com', $result[0]);
         self::assertSame(Constants::JOHN_DOE, $result[1]);
@@ -156,15 +164,19 @@ final class MailboxRecipientTest extends TestCase
     {
         $mailbox = $this->getMailbox();
 
+        /** @phpstan-var HOSTNAMEANDADDRESS_ENTRY $entry0 */
         $entry0 = new \stdClass();
         $entry0->mailbox = 'john';
         $entry0->host = 'example.com';
 
+        /** @phpstan-var HOSTNAMEANDADDRESS_ENTRY $entry1 */
         $entry1 = new \stdClass();
         $entry1->host = 'fallback.com';
         $entry1->personal = 'Fallback Name';
 
-        $result = $mailbox->exposedPossiblyGetHostNameAndAddress([$entry0, $entry1]);
+        /** @phpstan-var HOSTNAMEANDADDRESS $entries */
+        $entries = [$entry0, $entry1];
+        $result = $mailbox->exposedPossiblyGetHostNameAndAddress($entries);
 
         self::assertSame('example.com', $result[0]);
         self::assertSame('Fallback Name', $result[1]);
@@ -179,14 +191,18 @@ final class MailboxRecipientTest extends TestCase
     {
         $mailbox = $this->getMailbox();
 
+        /** @phpstan-var HOSTNAMEANDADDRESS_ENTRY $entry0 */
         $entry0 = new \stdClass();
         $entry0->mailbox = 'john';
 
+        /** @phpstan-var HOSTNAMEANDADDRESS_ENTRY $entry1 */
         $entry1 = new \stdClass();
         $entry1->host = 'fallback.com';
         $entry1->personal = 'Name';
 
-        $result = $mailbox->exposedPossiblyGetHostNameAndAddress([$entry0, $entry1]);
+        /** @phpstan-var HOSTNAMEANDADDRESS $entries */
+        $entries = [$entry0, $entry1];
+        $result = $mailbox->exposedPossiblyGetHostNameAndAddress($entries);
 
         self::assertSame('fallback.com', $result[0]);
     }

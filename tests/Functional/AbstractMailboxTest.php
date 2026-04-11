@@ -23,7 +23,7 @@ use PHPUnit\Framework\TestCase;
  *      2: HiddenString,
  *      3: string,
  *      4?: string,
- *      5?: array,
+ *      5?: array<string, mixed>,
  * }
  * @phpstan-type COMPOSE_ENVELOPE = array{
  *      subject?: string
@@ -85,6 +85,9 @@ abstract class AbstractMailboxTest extends TestCase
         return [$searchCriteria, $subject];
     }
 
+    /**
+     * @phpstan-param array{subject?: string} $envelope
+     */
     protected function maybeSkipAppendTest(array $envelope): bool
     {
         if (!isset($envelope['subject'])) {

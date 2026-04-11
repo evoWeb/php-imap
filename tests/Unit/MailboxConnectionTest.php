@@ -64,8 +64,8 @@ final class MailboxConnectionTest extends TestCase
      * @phpstan-return \Generator<string, array{
      *     0: 'assertNull'|'expectException',
      *     1: int,
-     *     2: 0,
-     *     3: array<empty, empty>
+     *     2: int,
+     *     3: array<array-key, string|null>
      * }, mixed, void>
      */
     public static function connectionArgsProvider(): \Generator

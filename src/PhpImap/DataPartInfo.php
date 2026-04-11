@@ -19,7 +19,7 @@ class DataPartInfo
 
     public ?string $charset;
 
-    protected ?string $data = null;
+    protected bool|string|null $data = null;
 
     public function __construct(
         public readonly Mailbox $mail,
@@ -38,7 +38,7 @@ class DataPartInfo
             $this->data = Imap::body($this->mail->getImapStream(), $this->id, $this->options);
         } else {
             if ($this->data !== null) {
-                return $this->data;
+                return is_string($this->data) ? $this->data : '';
             }
             $this->data = Imap::fetchBody($this->mail->getImapStream(), $this->id, $this->part, $this->options);
         }
@@ -69,6 +69,6 @@ class DataPartInfo
             $this->data = $this->mail->convertToUtf8($this->data, $this->charset);
         }
 
-        return ($this->data === null) ? '' : $this->data;
+        return is_string($this->data) ? $this->data : '';
     }
 }

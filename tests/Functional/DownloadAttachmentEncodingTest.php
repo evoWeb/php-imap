@@ -9,6 +9,9 @@ use PhpImap\Tests\Fixtures\DataPartInfo as FixtureDataPartInfo;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @phpstan-import-type PARTSTRUCTURE from Mailbox
+ */
 final class DownloadAttachmentEncodingTest extends TestCase
 {
     private Mailbox $mailbox;
@@ -30,16 +33,21 @@ final class DownloadAttachmentEncodingTest extends TestCase
      * Creates a minimal valid partStructure object with sensible defaults.
      *
      * @param array<string, mixed> $props
+     *
+     * @phpstan-return PARTSTRUCTURE
      */
-    private function buildPartStructure(array $props = []): object
+    private function buildPartStructure(array $props = []): \stdClass
     {
-        return (object)\array_merge([
+        /** @phpstan-var PARTSTRUCTURE $result */
+        $result = (object)\array_merge([
             'subtype' => 'PLAIN',
             'encoding' => \ENCBASE64,
             'ifid' => false,
             'ifsubtype' => true,
             'ifdescription' => false,
         ], $props);
+
+        return $result;
     }
 
     // -------------------------------------------------------------------------

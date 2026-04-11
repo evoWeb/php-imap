@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace PhpImap\Tests\Unit;
 
 use PhpImap\IncomingMail;
+use PhpImap\Mailbox;
 use PhpImap\Tests\Fixtures\Mailbox as FixtureMailbox;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @phpstan-import-type PARTSTRUCTURE from Mailbox
+ */
 #[Group('offline')]
 final class InitMailPartTest extends TestCase
 {
@@ -24,10 +28,13 @@ final class InitMailPartTest extends TestCase
      * Builds a minimal stdClass partStructure with sensible defaults.
      *
      * @param array<string, mixed> $props
+     *
+     * @phpstan-return PARTSTRUCTURE
      */
     private function buildPartStructure(array $props = []): object
     {
-        return (object)\array_merge([
+        /** @phpstan-var PARTSTRUCTURE $result */
+        $result = (object)\array_merge([
             'type' => \TYPETEXT,
             'subtype' => 'PLAIN',
             'encoding' => \ENCQUOTEDPRINTABLE,
@@ -36,6 +43,8 @@ final class InitMailPartTest extends TestCase
             'dparameters' => [],
             'parts' => [],
         ], $props);
+
+        return $result;
     }
 
     /**

@@ -92,8 +92,12 @@ class MailboxIssue514Test extends AbstractMailboxTest
         [$searchCriteria] = $this->subjectSearchCriteriaAndSubject($envelope);
 
         $body = self::BODY;
-        $body[3]['contents.data'] = \base64_encode(\file_get_contents(__DIR__ . '/../Fixtures/rgbkw5x1.png'));
-        $body[4]['contents.data'] = \base64_encode(\file_get_contents(__DIR__ . '/../Fixtures/rgbkw5x1.webp'));
+        $pngFileContent = \file_get_contents(__DIR__ . '/../Fixtures/rgbkw5x1.png');
+        self::assertIsString($pngFileContent);
+        $body[3]['contents.data'] = \base64_encode($pngFileContent);
+        $webpFileContent = \file_get_contents(__DIR__ . '/../Fixtures/rgbkw5x1.webp');
+        self::assertIsString($webpFileContent);
+        $body[4]['contents.data'] = \base64_encode($webpFileContent);
 
         $message = Imap::mailCompose($envelope, $body);
 

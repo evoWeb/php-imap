@@ -37,8 +37,8 @@ use Random\RandomException;
  *      parts?: array<int, \stdClass>,
  *
  *      partStructure?: object[]
- * }
- * @phpstan-type HOSTNAMEANDADDRESS_ENTRY = object{host?: string, personal?: string, mailbox: string}
+ * }&\stdClass
+ * @phpstan-type HOSTNAMEANDADDRESS_ENTRY = object{host?: string, personal?: string, mailbox: string}&\stdClass
  * @phpstan-type HOSTNAMEANDADDRESS = array{0: HOSTNAMEANDADDRESS_ENTRY, 1?: HOSTNAMEANDADDRESS_ENTRY}
  * @phpstan-type COMPOSE_ENVELOPE = array{
  *      subject?: string
@@ -101,6 +101,9 @@ class Mailbox
 
     protected bool $expungeOnDisconnect = true;
 
+    /**
+     * @var int[]
+     */
     protected array $timeouts = [];
 
     protected bool $attachmentsIgnore = false;
@@ -380,6 +383,7 @@ class Mailbox
                 }
             }
 
+            /** @phpstan-var array{DISABLE_AUTHENTICATOR?: string} $parameters */
             $this->imapParams = $parameters;
         }
     }
@@ -400,7 +404,9 @@ class Mailbox
         if (!\is_dir($attachmentsDirectory)) {
             throw new InvalidParameterException('Directory "' . $attachmentsDirectory . '" not found');
         }
-        $this->attachmentsDir = \rtrim(\realpath($attachmentsDirectory), '\\/');
+        /** @phpstan-var non-empty-string $resolvedPath */
+        $resolvedPath = \realpath($attachmentsDirectory);
+        $this->attachmentsDir = \rtrim($resolvedPath, '\\/');
     }
 
     /**
@@ -444,6 +450,10 @@ class Mailbox
             if (!$this->imapStream) {
                 $this->imapStream = $this->initImapStreamWithRetry();
             }
+        }
+
+        if ($this->imapStream === null) {
+            throw new ConnectionException(['Imap Stream not created'], 1775899686);
         }
 
         return $this->imapStream;
@@ -545,6 +555,8 @@ class Mailbox
      *  Nmsgs - number of mails in the mailbox
      *  Recent - number of recent mails in the mailbox
      *
+     * @phpstan-return object{Date: string, Driver: string, Mailbox: string, Nmsgs: int, Recent: int}&\stdClass
+     *
      * @throws ConnectionException
      * @see imap_check
      */
@@ -615,7 +627,6 @@ class Mailbox
      *
      * @return string[] listing the folders
      *
-     * @phpstan-return list<string>
      * @throws ConnectionException
      */
     public function getListingFolders(string $pattern = '*'): array
@@ -946,7 +957,27 @@ class Mailbox
      *
      * @return array $mailsIds Array of mail IDs
      *
-     * @phpstan-return list<object>
+     * @phpstan-return list<object{
+     *     subject: ?string,
+     *     from: ?string,
+     *     to: ?string,
+     *     date: string,
+     *     message_id: string,
+     *     references: ?string,
+     *     in_reply_to: ?string,
+     *     size: int,
+     *     uid: int,
+     *     msgno: int,
+     *     recent: int,
+     *     flagged: int,
+     *     answered: int,
+     *     deleted: int,
+     *     seen: int,
+     *     draft: int,
+     *     udate: int
+     * }>
+     *
+     * @phpstan-param int[] $mailsIds
      *
      * @throws \Exception
      */
@@ -973,7 +1004,27 @@ class Mailbox
             $this->decodePropertyToString($mail, 'sender');
         }
 
-        /** @var list<object> */
+        /**
+         * @var list<object{
+         *  subject: ?string,
+         *  from: ?string,
+         *  to: ?string,
+         *  date: string,
+         *  message_id: string,
+         *  references: ?string,
+         *  in_reply_to: ?string,
+         *  size: int,
+         *  uid: int,
+         *  msgno: int,
+         *  recent: int,
+         *  flagged: int,
+         *  answered: int,
+         *  deleted: int,
+         *  seen: int,
+         *  draft: int,
+         *  udate: int
+         * }>
+         */
         return $mails;
     }
 
@@ -1016,6 +1067,8 @@ class Mailbox
      * Get headers for all messages in the defined mailbox,
      * returns an array of string formatted with header info,
      * one element per mail message.
+     *
+     * @return string[]
      *
      * @throws ConnectionException
      * @see imap_headers()
@@ -1068,7 +1121,6 @@ class Mailbox
      *
      * @return int[] Mails ids
      *
-     * @phpstan-return list<int>
      * @throws ConnectionException
      */
     public function sortMails(
@@ -1233,7 +1285,7 @@ class Mailbox
 
         $header->date = $this->parseDateFromHead($head);
 
-        $header->subject = isset($head->subject) && !empty(\trim($head->subject))
+        $header->subject = isset($head->subject) && is_string($head->subject) && !empty(\trim($head->subject))
             ? $this->decodeMimeStr($head->subject)
             : null;
 
@@ -1254,7 +1306,7 @@ class Mailbox
 
         if (isset($head->message_id)) {
             $this->assertValueIsString($head->message_id, 'Message ID', __METHOD__);
-            $header->messageId = $head->message_id;
+            $header->messageId = is_string($head->message_id) ? $head->message_id : '';
         }
 
         return $header;
@@ -1327,14 +1379,8 @@ class Mailbox
     }
 
     /**
-     * taken from https://www.electrictoolbox.com/php-imap-message-parts/.
-     *
-     * @param \stdClass[] $messageParts
-     * @param \stdClass[] $flattenedParts
-     *
-     * @phpstan-param array<string, PARTSTRUCTURE> $flattenedParts
-     *
-     * @return \stdClass[]
+     * @phpstan-param array<int, \stdClass> $messageParts
+     * @phpstan-param array<string, \stdClass> $flattenedParts
      *
      * @phpstan-return array<string, \stdClass>
      */
@@ -1377,7 +1423,6 @@ class Mailbox
             ++$index;
         }
 
-        /** @var array<string, \stdClass> */
         return $flattenedParts;
     }
 
@@ -1400,11 +1445,11 @@ class Mailbox
         );
 
         if (empty($mailStructure->parts)) {
+            /** @phpstan-var PARTSTRUCTURE $mailStructure */
             $this->initMailPart($mail, $mailStructure, 0, $markAsSeen);
         } else {
-            /** @var array<string, \stdClass> $parts */
-            $parts = $mailStructure->parts;
-            foreach ($this->flattenParts($parts) as $partNum => $partStructure) {
+            foreach ($this->flattenParts($mailStructure->parts) as $partNum => $partStructure) {
+                /** @phpstan-var PARTSTRUCTURE $partStructure */
                 $this->initMailPart($mail, $partStructure, $partNum, $markAsSeen);
             }
         }
@@ -1436,12 +1481,13 @@ class Mailbox
         /** @var ?int $sizeInBytes */
         $sizeInBytes = $partStructure->bytes ?? null;
 
-        /** @var scalar|array|object|null $encoding */
+        /** @var mixed $encoding */
         $encoding = $partStructure->encoding ?? null;
 
         $this->assertValueIsIntegerIfNotNull($sizeInBytes, 'sizeInBytes', __METHOD__);
         $this->assertValueIsIntegerIfNotNull($encoding, 'encoding', __METHOD__);
 
+        /** @var int|null $encoding */
         if (isset($partStructure->type)) {
             $this->assertValueIsIntegerIfNotNull($partStructure->type, 'type', __METHOD__);
         }
@@ -1464,6 +1510,9 @@ class Mailbox
     }
 
     /**
+     * @phpstan-param PARTSTRUCTURE $partStructure
+     * @phpstan-param array<string, string|int> $params
+     *
      * @throws \Exception
      */
     public function prepareAttachmentFileName(object $partStructure, array $params): string
@@ -1476,14 +1525,14 @@ class Mailbox
         } elseif ($partStructure->subtype == 'ALTERNATIVE') {
             $fileName = \strtolower($partStructure->subtype) . '.eml';
         } elseif (
-            (!isset($params['filename']) || empty(\trim($params['filename'])))
-            && (!isset($params['name']) || empty(\trim($params['name'])))
+            (!isset($params['filename']) || empty(\trim((string)$params['filename'])))
+            && (!isset($params['name']) || empty(\trim((string)$params['name'])))
         ) {
             $fileName = \strtolower($partStructure->subtype);
         } else {
-            $fileName = (isset($params['filename']) && !empty(\trim($params['filename'])))
-                ? $params['filename']
-                : $params['name'];
+            $fileName = (isset($params['filename']) && !empty(\trim((string)$params['filename'])))
+                ? (string)$params['filename']
+                : (string)$params['name'];
             $fileName = $this->decodeMimeStr($fileName);
             $fileName = $this->decodeRFC2231($fileName);
         }
@@ -1491,6 +1540,8 @@ class Mailbox
     }
 
     /**
+     * @phpstan-param PARTSTRUCTURE $partStructure
+     *
      * @throws RandomException
      * @throws ConnectionException
      */
@@ -1617,7 +1668,7 @@ class Mailbox
     public function decodeMimeStr(string $string): string
     {
         $newString = '';
-        /** @var list<object{charset?: string, text?: string}>|false $elements */
+        /** @var list<object{charset: string, text: string}>|false $elements */
         $elements = \imap_mime_header_decode($string);
 
         if ($elements === false) {
@@ -1696,7 +1747,7 @@ class Mailbox
      */
     public function getMailboxes(string $search = '*'): array
     {
-        /** @phpstan-var array<int, scalar|array|object{name?: string}|resource|null> $mailboxes */
+        /** @phpstan-var array<int, scalar|array<mixed>|object{name?: string, attributes?: mixed, delimiter?: mixed}|resource|null> $mailboxes */
         $mailboxes = Imap::getMailboxes($this->getImapStream(), $this->imapPath, $search);
 
         return $this->possiblyGetMailboxes($mailboxes);
@@ -1712,7 +1763,7 @@ class Mailbox
      */
     public function getSubscribedMailboxes(string $search = '*'): array
     {
-        /** @phpstan-var array<int, scalar|array|object{name?: string}|resource|null> $mailboxes */
+        /** @phpstan-var array<int, scalar|array<mixed>|object{name?: string, attributes?: mixed, delimiter?: mixed}|resource|null> $mailboxes */
         $mailboxes = Imap::getSubscribed($this->getImapStream(), $this->imapPath, $search);
 
         return $this->possiblyGetMailboxes($mailboxes);
@@ -1838,6 +1889,8 @@ class Mailbox
      *
      * @param string $quotaRoot Should normally be in the form of which mailbox (i.e. INBOX)
      *
+     * @phpstan-return int[]
+     *
      * @throws ConnectionException
      * @see imap_get_quotaroot()
      */
@@ -1920,12 +1973,16 @@ class Mailbox
         $this->partMailDataInfo($mail, $partStructure, $dispositionAttachment, $dataInfo);
     }
 
+    /**
+     * @phpstan-param PARTSTRUCTURE $partStructure
+     */
     protected function createPartDataInfo(
         IncomingMail $mail,
         object $partStructure,
         string|int $partNumber,
         bool $markAsSeen
     ): DataPartInfo {
+        assert($mail->id !== null);
         $options = ($this->imapSearchOption === \SE_UID) ? \FT_UID : 0;
 
         if (!$markAsSeen) {
@@ -1954,6 +2011,9 @@ class Mailbox
     }
 
     /**
+     * @phpstan-param PARTSTRUCTURE $partStructure
+     * @phpstan-param array<string, string> $params
+     *
      * @return array<string, string> $params
      */
     protected function processPartDParameters(object $partStructure, array $params): array
@@ -1973,6 +2033,12 @@ class Mailbox
         return $params;
     }
 
+    /**
+     * @phpstan-param PARTSTRUCTURE $partStructure
+     * @phpstan-param array<string, string> $params
+     *
+     * @phpstan-return array{0: bool, 1: bool}
+     */
     protected function prepareIsAttachment(object $partStructure, string|int $partNumber, array $params): array
     {
         $isAttachment = isset($params['filename']) || isset($params['name']) || isset($partStructure->id);
@@ -1991,6 +2057,9 @@ class Mailbox
         return [$isAttachment, $dispositionAttachment];
     }
 
+    /**
+     * @phpstan-param PARTSTRUCTURE $partStructure
+     */
     protected function ignorePartAttachments(object $partStructure): bool
     {
         return
@@ -2004,6 +2073,9 @@ class Mailbox
             );
     }
 
+    /**
+     * @phpstan-param PARTSTRUCTURE $partStructure
+     */
     protected function partMailDataInfo(
         IncomingMail $mail,
         object $partStructure,
@@ -2112,7 +2184,11 @@ class Mailbox
     }
 
     /**
-     * @phpstan-param array<int, scalar|array|object{name?: string}|resource|null> $mailboxes
+     * @phpstan-param array<int, scalar|array<mixed>|object{
+     *     name?: string,
+     *     attributes?: mixed,
+     *     delimiter?: mixed
+     * }|resource|null> $mailboxes
      *
      * @return (false|mixed|string)[][]
      *
@@ -2140,6 +2216,7 @@ class Mailbox
                     );
                 }
                 $this->assertValueIsString($itemName, 'itemName', __METHOD__);
+                \assert(\is_string($itemName));
 
                 // https://github.com/barbushin/php-imap/issues/339
                 $name = $this->decodeStringFromUtf7ImapToUtf8($itemName);

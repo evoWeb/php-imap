@@ -20,7 +20,7 @@ use PhpImap\Exceptions\ConnectionException;
  *      2: HiddenString,
  *      3: string,
  *      4?: string,
- *      5?: array,
+ *      5?: array<string, mixed>,
  * }
  * @phpstan-type COMPOSE_BODY = list<array{
  *      id?: string,
@@ -30,12 +30,12 @@ use PhpImap\Exceptions\ConnectionException;
  *      subtype?: string,
  *      description?: string,
  *      disposition?: array{filename: string, type?: string},
- *      'disposition.type'?: string,
- *      'type.parameters'?: array{name: string},
- *      'contents.data'?: string,
+ *      'disposition\.type'?: string,
+ *      'type\.parameters'?: array{name: string},
+ *      'contents\.data'?: string,
  * }>
  * @phpstan-type COMPOSE_ENVELOPE = array{
- *      subject: string
+ *      subject?: string
  * }
  * @phpstan-type PARTSTRUCTURE_PARAM = object{attribute: string, value?: string}
  * @phpstan-type PARTSTRUCTURE = object{
@@ -81,6 +81,9 @@ final class Imap
         \imap_errors();
     }
 
+    /**
+     * @param string[]|null $errors
+     */
     private static function assertResultNotFalse(
         mixed $result,
         string $message,
@@ -92,7 +95,7 @@ final class Imap
             throw new \UnexpectedValueException(
                 $message,
                 $code,
-                self::handleErrors($errors ?? \imap_errors(), $functionName)
+                self::handleErrors($errors ?? \imap_errors() ?: [], $functionName)
             );
         }
     }
@@ -134,17 +137,25 @@ final class Imap
     {
         self::flushImapErrors();
 
-        $result = \imap_body($imapStream, $messageNumber, $options);
+        $result = \imap_body($imapStream, $messageNumber, $options) ?: '';
 
         self::assertResultNotFalse($result, 'Could not fetch message body from mailbox!', 0, 'imap_body');
 
         return $result;
     }
 
+    /**
+     * @phpstan-return object{Date: string, Driver: string, Mailbox: string, Nmsgs: int, Recent: int}&\stdClass
+     *
+     * @param Connection $imapStream
+     *
+     * @return \stdClass
+     */
     public static function check(Connection $imapStream): \stdClass
     {
         self::flushImapErrors();
 
+        /** @var object{Date: string, Driver: string, Mailbox: string, Nmsgs: int, Recent: int}&\stdClass $result */
         $result = \imap_check($imapStream);
 
         self::assertResultNotFalse($result, 'Could not check imap mailbox!', 0, 'imap_check');
@@ -255,7 +266,25 @@ final class Imap
     /**
      * @return object[]
      *
-     * @phpstan-return list<object>
+     * @phpstan-return list<object{
+     *     subject: ?string,
+     *     from: ?string,
+     *     to: ?string,
+     *     date: string,
+     *     message_id: string,
+     *     references: ?string,
+     *     in_reply_to: ?string,
+     *     size: int,
+     *     uid: int,
+     *     msgno: int,
+     *     recent: int,
+     *     flagged: int,
+     *     answered: int,
+     *     deleted: int,
+     *     seen: int,
+     *     draft: int,
+     *     udate: int
+     * }>
      */
     public static function fetchOverview(Connection $imapStream, int|string $sequence, int $options = 0): array
     {
@@ -279,12 +308,14 @@ final class Imap
             'imap_fetch_overview'
         );
 
-        /** @phpstan-var list<object> $result */
+        /** @phpstan-var list<object{subject: ?string, from: ?string, to: ?string, date: string, message_id: string, references: ?string, in_reply_to: ?string, size: int, uid: int, msgno: int, recent: int, flagged: int, answered: int, deleted: int, seen: int, draft: int, udate: int}> $result */
         return $result;
     }
 
     /**
      * @deprecated since 5.x
+     *
+     * @return object[]
      */
     public static function fetch_overview(Connection $imapStream, int|string $sequence, int $options = 0): array
     {
@@ -304,7 +335,7 @@ final class Imap
             $messageNumber,
             self::encodeStringToUtf7Imap((string)$section),
             $options
-        );
+        ) ?: '';
 
         self::assertResultNotFalse($result, 'Could not fetch message body from mailbox!', 0, 'fetchBody');
 
@@ -315,7 +346,7 @@ final class Imap
     {
         self::flushImapErrors();
 
-        $result = \imap_fetchheader($imapStream, $messageNumber, $options);
+        $result = \imap_fetchheader($imapStream, $messageNumber, $options) ?: '';
 
         self::assertResultNotFalse($result, 'Could not fetch message header from mailbox!', 0, 'fetchHeader');
 
@@ -335,14 +366,18 @@ final class Imap
             'fetchStructure'
         );
 
+        /** @phpstan-var \stdClass $result */
         return $result;
     }
 
+    /**
+     * @return int[]
+     */
     public static function getQuotaRoot(Connection $imapStream, string $quotaRoot): array
     {
         self::flushImapErrors();
 
-        $result = \imap_get_quotaroot($imapStream, self::encodeStringToUtf7Imap($quotaRoot));
+        $result = \imap_get_quotaroot($imapStream, self::encodeStringToUtf7Imap($quotaRoot)) ?: [];
 
         self::assertResultNotFalse($result, 'Could not quota for mailbox!', 0, 'imap_get_quotaroot');
 
@@ -351,6 +386,8 @@ final class Imap
 
     /**
      * @deprecated since 5.x
+     *
+     * @return int[]
      */
     public static function get_quotaroot(Connection $imapStream, string $quotaRoot): array
     {
@@ -410,11 +447,14 @@ final class Imap
         return $result;
     }
 
+    /**
+     * @return string[]
+     */
     public static function headers(Connection $imapStream): array
     {
         self::flushImapErrors();
 
-        $result = \imap_headers($imapStream);
+        $result = \imap_headers($imapStream) ?: [];
 
         self::assertResultNotFalse($result, 'Could not fetch headers from mailbox!', 0, 'imap_headers');
 
@@ -423,6 +463,8 @@ final class Imap
 
     /**
      * @return string[]
+     *
+     * @phpstan-return string[]
      */
     public static function listOfMailboxes(Connection $imapStream, string $reference, string $pattern): array
     {
@@ -432,7 +474,7 @@ final class Imap
             $imapStream,
             self::encodeStringToUtf7Imap($reference),
             self::encodeStringToUtf7Imap($pattern)
-        );
+        ) ?: [];
 
         self::assertResultNotFalse($result, 'Could not list folders mailbox!', 0, 'imap_list');
 
@@ -450,11 +492,14 @@ final class Imap
      */
     public static function mailCompose(array $envelope, array $body): string
     {
-        return \imap_mail_compose($envelope, $body);
+        return \imap_mail_compose($envelope, $body) ?: '';
     }
 
     /**
      * @deprecated since 5.x
+     *
+     * @phpstan-param COMPOSE_ENVELOPE $envelope An associative array of headers fields (docblock is not complete)
+     * @phpstan-param COMPOSE_BODY $body An indexed array of bodies (docblock is not complete)
      */
     public static function mail_compose(array $envelope, array $body): string
     {
@@ -539,7 +584,7 @@ final class Imap
     {
         self::flushImapErrors();
 
-        $result = \imap_num_msg($imapStream);
+        $result = \imap_num_msg($imapStream) ?: 0;
 
         self::assertResultNotFalse(
             $result,
@@ -584,7 +629,9 @@ final class Imap
         $result = @\imap_open($mailbox, $username, $password, $options, $retries, $parameters);
 
         if (!$result) {
-            throw new ConnectionException(\imap_errors() ?: []);
+            /** @var string[] $errors */
+            $errors = \imap_errors() ?: [];
+            throw new ConnectionException($errors);
         }
 
         return $result;
@@ -779,6 +826,7 @@ final class Imap
 
         self::assertResultNotFalse($result, 'Could not get status of mailbox!', 0, 'imap_status');
 
+        /** @phpstan-var \stdClass $result */
         return $result;
     }
 
@@ -868,6 +916,7 @@ final class Imap
             0,
             'is_resource'
         );
+        /** @phpstan-var resource $maybe */
         return $maybe;
     }
 
@@ -882,7 +931,10 @@ final class Imap
         return $maybe;
     }
 
-    private static function handleErrors(array|false $errors, string $method): \UnexpectedValueException
+    /**
+     * @param string[] $errors
+     */
+    private static function handleErrors(array $errors, string $method): \UnexpectedValueException
     {
         if ($errors) {
             return new \UnexpectedValueException(

@@ -284,7 +284,6 @@ final class MailboxEncodingTest extends TestCase
 
         $result = $mailbox->exposedLowercaseMbListEncodings();
 
-        self::assertIsArray($result);
         self::assertNotEmpty($result);
 
         foreach ($result as $encoding) {

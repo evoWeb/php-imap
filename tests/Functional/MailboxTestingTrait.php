@@ -51,7 +51,7 @@ trait MailboxTestingTrait
     /**
      * Get instance of Mailbox, pre-set to a random mailbox.
      *
-     * @return (Mailbox|HiddenString|string)[]
+     * @phpstan-return array{0: Mailbox, 1: string, 2: HiddenString}
      *
      * @throws InvalidParameterException
      * @throws RandomException
@@ -84,7 +84,7 @@ trait MailboxTestingTrait
     /**
      * @phpstan-param MAILBOX_ARGS $mailboxArguments
      *
-     * @return (Mailbox|HiddenString|string)[]
+     * @phpstan-return array{0: Mailbox, 1: string, 2: HiddenString}
      *
      * @throws ConnectionException
      * @throws InvalidParameterException

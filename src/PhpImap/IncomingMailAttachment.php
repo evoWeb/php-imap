@@ -11,9 +11,9 @@ use PhpImap\Exceptions\ConnectionException;
  *
  * @author Barbushin Sergey http://linkedin.com/in/barbushin
  *
- * @property string|false|null $filePath lazy attachment data file
- *
  * @phpstan-type fileinfoconst = 0|2|16|1024|1040|8|32|128|256|16777216
+ *
+ * @property-read string $filePath
  */
 class IncomingMailAttachment
 {
@@ -97,7 +97,7 @@ class IncomingMailAttachment
     {
         $fileInformation = new \finfo($fileInformationConstant);
 
-        return $fileInformation->buffer($this->getContents());
+        return $fileInformation->buffer($this->getContents()) ?: '';
     }
 
     /**

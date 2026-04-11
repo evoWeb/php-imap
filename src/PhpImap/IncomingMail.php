@@ -94,7 +94,7 @@ class IncomingMail extends IncomingMailHeader
 
     public function setHeader(IncomingMailHeader $header): void
     {
-        /** @phpstan-var array<string, scalar|array|object|null> $array */
+        /** @phpstan-var array<string, scalar|object|null|string[]> $array */
         $array = \get_object_vars($header);
         foreach ($array as $property => $value) {
             $this->$property = $value;
@@ -188,7 +188,7 @@ class IncomingMail extends IncomingMailHeader
     public function replaceInternalLinks(string $baseUri): string
     {
         $baseUri = \rtrim($baseUri, '\\/') . '/';
-        $fetchedHtml = $this->textHtml;
+        $fetchedHtml = $this->textHtml ?? '';
         $search = [];
         $replace = [];
         foreach ($this->getInternalLinksPlaceholders() as $attachmentId => $placeholder) {
@@ -281,7 +281,7 @@ class IncomingMail extends IncomingMailHeader
             $base64encoded = \base64_encode($contents);
             $replacement = 'data:' . $contentType . ';base64, ' . $base64encoded;
 
-            $this->textHtml = \str_replace($match, $replacement, $this->textHtml);
+            $this->textHtml = \str_replace($match, $replacement, $this->textHtml ?? '');
 
             $this->removeAttachment($matched->id);
         }

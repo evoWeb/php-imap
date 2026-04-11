@@ -75,7 +75,6 @@ class MailboxTest extends AbstractMailboxTest
             $limit = \min(\count($mailboxes), self::RANDOM_MAILBOX_SAMPLE_SIZE);
 
             for ($i = 0; $i < $limit; ++$i) {
-                self::assertIsArray($mailboxes[$i]);
                 self::assertTrue(isset($mailboxes[$i]['shortpath']));
                 self::assertIsString($mailboxes[$i]['shortpath']);
                 $mailbox->switchMailbox($mailboxes[$i]['shortpath']);
@@ -187,7 +186,9 @@ class MailboxTest extends AbstractMailboxTest
         ];
 
         $randomSubject = 'barbushin/php-imap#448: dot first:' . \bin2hex(\random_bytes(16));
-        $contentsData = \base64_encode(\file_get_contents(__DIR__ . '/../../' . Constants::GITIGNORE));
+        $gitignoreContents = \file_get_contents(__DIR__ . '/../../' . Constants::GITIGNORE);
+        self::assertIsString($gitignoreContents, Constants::GITIGNORE . ' could not be read');
+        $contentsData = \base64_encode($gitignoreContents);
         yield [
             ['subject' => $randomSubject],
             [

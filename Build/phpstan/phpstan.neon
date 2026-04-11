@@ -3,7 +3,7 @@ includes:
   - %rootDir%/../../phpstan/phpstan-phpunit/rules.neon
 
 parameters:
-  level: 5
+  level: 9
 
   bootstrapFiles:
     - %currentWorkingDirectory%/Build/phpstan/phpstan-constants.php

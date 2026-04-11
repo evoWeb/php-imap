@@ -293,7 +293,9 @@ final class MailboxDecodingTest extends TestCase
     #[DataProvider('base64DecodeProvider')]
     public function testBase64Decode(string $input, string $expected): void
     {
-        self::assertSame($expected, \imap_base64(\preg_replace('~[^a-zA-Z0-9+=/]+~', '', $input)));
+        $actual = \preg_replace('~[^a-zA-Z0-9+=/]+~', '', $input);
+        self::assertIsString($actual);
+        self::assertSame($expected, \imap_base64($actual));
         self::assertSame($expected, \base64_decode($input));
     }
 

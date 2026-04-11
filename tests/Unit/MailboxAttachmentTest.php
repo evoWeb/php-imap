@@ -140,7 +140,8 @@ final class MailboxAttachmentTest extends TestCase
 
         $mailbox->setAttachmentsDir(\sys_get_temp_dir());
 
-        self::assertSame(\rtrim(\realpath(\sys_get_temp_dir()), '\\/'), $mailbox->getAttachmentsDir());
+        $actual = \realpath(\sys_get_temp_dir()) ?: '';
+        self::assertSame(\rtrim($actual, '\\/'), $mailbox->getAttachmentsDir());
     }
 
     /**
