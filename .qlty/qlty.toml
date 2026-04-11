@@ -20,7 +20,6 @@ threshold = 8
 name = "default"
 default = true
 
-
 [[plugin]]
 name = "actionlint"
 
