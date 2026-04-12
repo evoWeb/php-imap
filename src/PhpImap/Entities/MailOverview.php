@@ -6,6 +6,8 @@ namespace PhpImap\Entities;
 
 final readonly class MailOverview
 {
+    use StdClassPropertyTrait;
+
     public function __construct(
         public ?string $subject,
         public ?string $from,
@@ -29,23 +31,23 @@ final readonly class MailOverview
     public static function fromStdClass(\stdClass $obj): self
     {
         return new self(
-            subject: isset($obj->subject) && \is_string($obj->subject) ? $obj->subject : null,
-            from: isset($obj->from) && \is_string($obj->from) ? $obj->from : null,
-            to: isset($obj->to) && \is_string($obj->to) ? $obj->to : null,
-            date: isset($obj->date) && \is_string($obj->date) ? $obj->date : '',
-            message_id: isset($obj->message_id) && \is_string($obj->message_id) ? $obj->message_id : '',
-            references: isset($obj->references) && \is_string($obj->references) ? $obj->references : null,
-            in_reply_to: isset($obj->in_reply_to) && \is_string($obj->in_reply_to) ? $obj->in_reply_to : null,
-            size: isset($obj->size) && \is_int($obj->size) ? $obj->size : 0,
-            uid: isset($obj->uid) && \is_int($obj->uid) ? $obj->uid : 0,
-            msgno: isset($obj->msgno) && \is_int($obj->msgno) ? $obj->msgno : 0,
-            recent: isset($obj->recent) && \is_int($obj->recent) ? $obj->recent : 0,
-            flagged: isset($obj->flagged) && \is_int($obj->flagged) ? $obj->flagged : 0,
-            answered: isset($obj->answered) && \is_int($obj->answered) ? $obj->answered : 0,
-            deleted: isset($obj->deleted) && \is_int($obj->deleted) ? $obj->deleted : 0,
-            seen: isset($obj->seen) && \is_int($obj->seen) ? $obj->seen : 0,
-            draft: isset($obj->draft) && \is_int($obj->draft) ? $obj->draft : 0,
-            udate: isset($obj->udate) && \is_int($obj->udate) ? $obj->udate : 0,
+            subject: self::nullableStringProperty($obj, 'subject'),
+            from: self::nullableStringProperty($obj, 'from'),
+            to: self::nullableStringProperty($obj, 'to'),
+            date: self::stringProperty($obj, 'date'),
+            message_id: self::stringProperty($obj, 'message_id'),
+            references: self::nullableStringProperty($obj, 'references'),
+            in_reply_to: self::nullableStringProperty($obj, 'in_reply_to'),
+            size: self::intProperty($obj, 'size'),
+            uid: self::intProperty($obj, 'uid'),
+            msgno: self::intProperty($obj, 'msgno'),
+            recent: self::intProperty($obj, 'recent'),
+            flagged: self::intProperty($obj, 'flagged'),
+            answered: self::intProperty($obj, 'answered'),
+            deleted: self::intProperty($obj, 'deleted'),
+            seen: self::intProperty($obj, 'seen'),
+            draft: self::intProperty($obj, 'draft'),
+            udate: self::intProperty($obj, 'udate'),
         );
     }
 

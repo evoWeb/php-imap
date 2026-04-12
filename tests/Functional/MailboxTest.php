@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace PhpImap\Tests\Functional;
 
 use ParagonIE\HiddenString\HiddenString;
+use PhpImap\Entities\ComposeBody;
+use PhpImap\Entities\ComposeEnvelope;
 use PhpImap\Exceptions\ConnectionException;
 use PhpImap\Exceptions\InvalidParameterException;
 use PhpImap\Imap;
@@ -24,8 +26,6 @@ use Random\RandomException;
 
 /**
  * @phpstan-import-type MAILBOX_ARGS from AbstractMailboxTest
- * @phpstan-import-type COMPOSE_ENVELOPE from AbstractMailboxTest
- * @phpstan-import-type COMPOSE_BODY from AbstractMailboxTest
  */
 class MailboxTest extends AbstractMailboxTest
 {
@@ -157,8 +157,8 @@ class MailboxTest extends AbstractMailboxTest
 
     /**
      * @phpstan-return \Generator<int, array{
-     *      0: COMPOSE_ENVELOPE,
-     *      1: COMPOSE_BODY,
+     *      0: ComposeEnvelope,
+     *      1: ComposeBody[],
      *      2: string
      * }, mixed, void>
      *
@@ -168,12 +168,12 @@ class MailboxTest extends AbstractMailboxTest
     {
         $randomSubject = 'test: ' . \bin2hex(\random_bytes(16));
         yield [
-            ['subject' => $randomSubject],
+            new ComposeEnvelope($randomSubject),
             [
-                [
+                ComposeBody::fromArray([
                     'type' => \TYPETEXT,
                     'contents.data' => 'test',
-                ],
+                ]),
             ],
             implode(Constants::LF, [
                 sprintf(Constants::SUBJECT, $randomSubject),
@@ -190,9 +190,9 @@ class MailboxTest extends AbstractMailboxTest
         self::assertIsString($gitignoreContents, Constants::GITIGNORE . ' could not be read');
         $contentsData = \base64_encode($gitignoreContents);
         yield [
-            ['subject' => $randomSubject],
+            new ComposeEnvelope($randomSubject),
             [
-                [
+                ComposeBody::fromArray([
                     'type' => \TYPEAPPLICATION,
                     'encoding' => \ENCBASE64,
                     'subtype' => 'octet-stream',
@@ -201,7 +201,7 @@ class MailboxTest extends AbstractMailboxTest
                     'disposition' => ['filename' => Constants::GITIGNORE],
                     'type.parameters' => ['name' => Constants::GITIGNORE],
                     'contents.data' => $contentsData,
-                ],
+                ]),
             ],
             implode(Constants::LF, [
                 sprintf(Constants::SUBJECT, $randomSubject),
@@ -218,9 +218,9 @@ class MailboxTest extends AbstractMailboxTest
 
         $randomSubject = 'barbushin/php-imap#448: dot last: ' . \bin2hex(\random_bytes(16));
         yield [
-            ['subject' => $randomSubject],
+            new ComposeEnvelope($randomSubject),
             [
-                [
+                ComposeBody::fromArray([
                     'type' => \TYPEAPPLICATION,
                     'encoding' => \ENCBASE64,
                     'subtype' => 'octet-stream',
@@ -229,7 +229,7 @@ class MailboxTest extends AbstractMailboxTest
                     'disposition' => ['filename' => 'gitignore.'],
                     'type.parameters' => ['name' => 'gitignore.'],
                     'contents.data' => $contentsData,
-                ],
+                ]),
             ],
             implode(Constants::LF, [
                 sprintf(Constants::SUBJECT, $randomSubject),
@@ -248,16 +248,16 @@ class MailboxTest extends AbstractMailboxTest
         $randomAttachmentA = \base64_encode(\random_bytes(16));
         $randomAttachmentB = \base64_encode(\random_bytes(16));
         yield [
-            ['subject' => $randomSubject],
+            new ComposeEnvelope($randomSubject),
             [
-                [
+                ComposeBody::fromArray([
                     'type' => \TYPEMULTIPART,
-                ],
-                [
+                ]),
+                ComposeBody::fromArray([
                     'type' => \TYPETEXT,
                     'contents.data' => 'test',
-                ],
-                [
+                ]),
+                ComposeBody::fromArray([
                     'type' => \TYPEAPPLICATION,
                     'encoding' => \ENCBASE64,
                     'subtype' => 'octet-stream',
@@ -266,8 +266,8 @@ class MailboxTest extends AbstractMailboxTest
                     'disposition' => ['filename' => 'foo.bin'],
                     'type.parameters' => ['name' => 'foo.bin'],
                     'contents.data' => $randomAttachmentA,
-                ],
-                [
+                ]),
+                ComposeBody::fromArray([
                     'type' => \TYPEAPPLICATION,
                     'encoding' => \ENCBASE64,
                     'subtype' => 'octet-stream',
@@ -276,7 +276,7 @@ class MailboxTest extends AbstractMailboxTest
                     'disposition' => ['filename' => 'foo.bin'],
                     'type.parameters' => ['name' => 'foo.bin'],
                     'contents.data' => $randomAttachmentB,
-                ],
+                ]),
             ],
             implode(Constants::LF, [
                 sprintf(Constants::SUBJECT, $randomSubject),
@@ -308,13 +308,12 @@ class MailboxTest extends AbstractMailboxTest
     }
 
     /**
-     * @phpstan-param COMPOSE_ENVELOPE $envelope
-     * @phpstan-param COMPOSE_BODY $body
+     * @phpstan-param ComposeBody[] $body
      */
     #[Test]
     #[DataProvider('composeProvider')]
     #[Group('compose')]
-    public function testMailCompose(array $envelope, array $body, string $expectedResult): void
+    public function testMailCompose(ComposeEnvelope $envelope, array $body, string $expectedResult): void
     {
         $actualResult = Imap::mailCompose($envelope, $body);
 
@@ -327,8 +326,7 @@ class MailboxTest extends AbstractMailboxTest
      * @depends testAppend
      *
      * @phpstan-param MAILBOX_ARGS $mailboxArguments
-     * @phpstan-param COMPOSE_ENVELOPE $envelope
-     * @phpstan-param COMPOSE_BODY $body
+     * @phpstan-param ComposeBody[] $body
      *
      * @throws ConnectionException
      * @throws InvalidParameterException
@@ -339,7 +337,7 @@ class MailboxTest extends AbstractMailboxTest
     #[Group('live')]
     public function testAppendNudgesMailboxCount(
         array $mailboxArguments,
-        array $envelope,
+        ComposeEnvelope $envelope,
         array $body,
         bool $preCompose,
     ): void {
@@ -400,8 +398,7 @@ class MailboxTest extends AbstractMailboxTest
      * @depends testAppend
      *
      * @phpstan-param MAILBOX_ARGS $mailboxArguments
-     * @phpstan-param COMPOSE_ENVELOPE $envelope
-     * @phpstan-param COMPOSE_BODY $body
+     * @phpstan-param ComposeBody[] $body
      *
      * @throws ConnectionException
      * @throws InvalidParameterException
@@ -412,7 +409,7 @@ class MailboxTest extends AbstractMailboxTest
     #[Group('live')]
     public function testAppendSingleSearchMatchesSort(
         array $mailboxArguments,
-        array $envelope,
+        ComposeEnvelope $envelope,
         array $body,
         bool $preCompose,
     ): void {
@@ -469,8 +466,7 @@ class MailboxTest extends AbstractMailboxTest
      * @depends testAppend
      *
      * @phpstan-param MAILBOX_ARGS $mailboxArguments
-     * @phpstan-param COMPOSE_ENVELOPE $envelope
-     * @phpstan-param COMPOSE_BODY $body
+     * @phpstan-param ComposeBody[] $body
      *
      * @throws ConnectionException
      * @throws \Exception
@@ -482,7 +478,7 @@ class MailboxTest extends AbstractMailboxTest
     #[Group('live')]
     public function testAppendRetrievalMatchesExpected(
         array $mailboxArguments,
-        array $envelope,
+        ComposeEnvelope $envelope,
         array $body,
         bool $preCompose,
         string $expectedComposeResult,
@@ -554,7 +550,7 @@ class MailboxTest extends AbstractMailboxTest
         if (
             \preg_match(
                 '/^barbushin\/php-imap#(448|391):/',
-                $envelope['subject'] ?? '',
+                $envelope->subject ?? '',
                 $matches
             ) === 1
         ) {
@@ -588,8 +584,7 @@ class MailboxTest extends AbstractMailboxTest
 
     /**
      * @phpstan-param MAILBOX_ARGS $mailboxArguments
-     * @phpstan-param COMPOSE_ENVELOPE $envelope
-     * @phpstan-param COMPOSE_BODY $body
+     * @phpstan-param ComposeBody[] $body
      *
      * @throws \Exception
      */
@@ -598,14 +593,13 @@ class MailboxTest extends AbstractMailboxTest
     #[Group('live')]
     public function getMailsInfo(
         array $mailboxArguments,
-        array $envelope,
+        ComposeEnvelope $envelope,
         array $body,
         bool $preCompose,
     ): void {
         if ($this->maybeSkipAppendTest($envelope)) {
             return;
         }
-        $envelope['sender'] = 3;
 
         [$searchCriteria, $searchSubject] = $this->subjectSearchCriteriaAndSubject($envelope);
 
@@ -646,15 +640,12 @@ class MailboxTest extends AbstractMailboxTest
         $mailbox->deleteMailbox($removeMailbox);
     }
 
-    protected function replaceBoundaryHere(string $expectedResult, string $actualResult): string
+    protected function replaceBoundaryHere(string $expectedResult, bool|string $actualResult): string
     {
+        self::assertIsString($actualResult);
         if (
             \preg_match('/{{REPLACE_BOUNDARY_HERE}}/', $expectedResult) === 1
-            && \preg_match(
-                '/Content-Type: MULTIPART\/MIXED; BOUNDARY="([^"]+)"/',
-                $actualResult,
-                $matches
-            ) === 1
+            && \preg_match('/Content-Type: MULTIPART\/MIXED; BOUNDARY="([^"]+)"/', $actualResult, $matches) === 1
         ) {
             $expectedResult = \str_replace('{{REPLACE_BOUNDARY_HERE}}', $matches[1], $expectedResult);
         }

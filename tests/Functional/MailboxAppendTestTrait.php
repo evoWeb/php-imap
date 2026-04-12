@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace PhpImap\Tests\Functional;
 
+use PhpImap\Entities\ComposeBody;
+use PhpImap\Entities\ComposeEnvelope;
 use PhpImap\Exceptions\ConnectionException;
 use PhpImap\Exceptions\InvalidParameterException;
 use PhpImap\Imap;
@@ -24,16 +26,14 @@ use Random\RandomException;
  * Provides testAppend for test classes that implement ComposeProvider.
  *
  * @phpstan-import-type MAILBOX_ARGS from AbstractMailboxTest
- * @phpstan-import-type COMPOSE_ENVELOPE from AbstractMailboxTest
- * @phpstan-import-type COMPOSE_BODY from AbstractMailboxTest
  */
 trait MailboxAppendTestTrait
 {
     /**
      * @phpstan-return \Generator<int, array{
      *      0: MAILBOX_ARGS,
-     *      1: COMPOSE_ENVELOPE,
-     *      2: COMPOSE_BODY,
+     *      1: ComposeEnvelope,
+     *      2: ComposeBody[],
      *      3: bool,
      *      4: string
      * }, mixed, void>
@@ -60,8 +60,7 @@ trait MailboxAppendTestTrait
      * @depends testMailCompose
      *
      * @phpstan-param MAILBOX_ARGS $mailboxArguments
-     * @phpstan-param COMPOSE_ENVELOPE $envelope
-     * @phpstan-param COMPOSE_BODY $body
+     * @phpstan-param ComposeBody[] $body
      *
      * @throws \Exception
      */
@@ -69,7 +68,7 @@ trait MailboxAppendTestTrait
     #[DataProvider('appendProvider')]
     public function testAppend(
         array $mailboxArguments,
-        array $envelope,
+        ComposeEnvelope $envelope,
         array $body,
         bool $preCompose,
     ): void {
@@ -78,8 +77,7 @@ trait MailboxAppendTestTrait
 
     /**
      * @phpstan-param MAILBOX_ARGS $mailboxArguments
-     * @phpstan-param COMPOSE_ENVELOPE $envelope
-     * @phpstan-param COMPOSE_BODY $body
+     * @phpstan-param ComposeBody[] $body
      *
      * @throws ConnectionException
      * @throws \Exception
@@ -88,7 +86,7 @@ trait MailboxAppendTestTrait
      */
     protected function runAppendTest(
         array $mailboxArguments,
-        array $envelope,
+        ComposeEnvelope $envelope,
         array $body,
         bool $preCompose
     ): void {

@@ -95,7 +95,7 @@ class IncomingMail extends IncomingMailHeader
 
     public function setHeader(IncomingMailHeader $header): void
     {
-        /** @phpstan-var array<string, scalar|object|null|string[]> $array */
+        /** @phpstan-var array<string, scalar|object|string[]|null> $array */
         $array = \get_object_vars($header);
         foreach ($array as $property => $value) {
             $this->$property = $value;

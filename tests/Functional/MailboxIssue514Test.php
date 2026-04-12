@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace PhpImap\Tests\Functional;
 
 use ParagonIE\HiddenString\HiddenString;
+use PhpImap\Entities\ComposeBody;
+use PhpImap\Entities\ComposeEnvelope;
 use PhpImap\Exceptions\ConnectionException;
 use PhpImap\Exceptions\InvalidParameterException;
 use PhpImap\Imap;
@@ -22,9 +24,6 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use Random\RandomException;
 
-/**
- * @phpstan-import-type COMPOSE_ENVELOPE from AbstractMailboxTest
- */
 class MailboxIssue514Test extends AbstractMailboxTest
 {
     private const BODY = [
@@ -86,8 +85,7 @@ class MailboxIssue514Test extends AbstractMailboxTest
         /** @var ?\Exception $exception */
         $exception = null;
 
-        /** @phpstan-var COMPOSE_ENVELOPE $envelope */
-        $envelope = ['subject' => 'barbushin/php-imap#514--' . \bin2hex(\random_bytes(16))];
+        $envelope = new ComposeEnvelope('barbushin/php-imap#514--' . \bin2hex(\random_bytes(16)));
 
         [$searchCriteria] = $this->subjectSearchCriteriaAndSubject($envelope);
 
@@ -98,6 +96,12 @@ class MailboxIssue514Test extends AbstractMailboxTest
         $webpFileContent = \file_get_contents(__DIR__ . '/../Fixtures/rgbkw5x1.webp');
         self::assertIsString($webpFileContent);
         $body[4]['contents.data'] = \base64_encode($webpFileContent);
+
+        $body[0] = ComposeBody::fromArray($body[0]);
+        $body[1] = ComposeBody::fromArray($body[1]);
+        $body[2] = ComposeBody::fromArray($body[2]);
+        $body[3] = ComposeBody::fromArray($body[3]);
+        $body[4] = ComposeBody::fromArray($body[4]);
 
         $message = Imap::mailCompose($envelope, $body);
 
@@ -144,11 +148,11 @@ class MailboxIssue514Test extends AbstractMailboxTest
             $embedded = \implode('', [
                 '<img alt="png" width="5" height="1" src="',
                 'data:image/png;base64, ',
-                $body[3]['contents.data'],
+                $body[3]->contentsData,
                 '">',
                 '<img alt="webp" width="5" height="1" src="',
                 'data:image/webp;base64, ',
-                $body[4]['contents.data'],
+                $body[4]->contentsData,
                 '">',
             ]);
 
@@ -185,7 +189,7 @@ class MailboxIssue514Test extends AbstractMailboxTest
             );
 
             self::assertSame(
-                $body[2]['contents.data'],
+                $body[2]->contentsData,
                 $result->textHtml,
                 'unembeded html body did not match expected result!'
             );

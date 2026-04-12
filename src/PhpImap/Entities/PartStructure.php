@@ -6,6 +6,8 @@ namespace PhpImap\Entities;
 
 final readonly class PartStructure
 {
+    use StdClassPropertyTrait;
+
     /**
      * @param PartStructureParameter[] $parameters
      * @param PartStructureParameter[] $dparameters
@@ -33,15 +35,32 @@ final readonly class PartStructure
 
     public static function fromStdClass(\stdClass $obj): self
     {
-        $parameters = [];
-        if (isset($obj->parameters) && \is_array($obj->parameters)) {
-            foreach ($obj->parameters as $parameter) {
-                if ($parameter instanceof \stdClass) {
-                    $parameters[] = PartStructureParameter::fromStdClass($parameter);
-                }
-            }
-        }
+        return new self(
+            type: self::nullableIntProperty($obj, 'type'),
+            encoding: self::nullableIntProperty($obj, 'encoding'),
+            ifsubtype: self::boolProperty($obj, 'ifsubtype'),
+            subtype: self::nullableStringProperty($obj, 'subtype'),
+            ifdescription: self::boolProperty($obj, 'ifdescription'),
+            description: self::nullableStringProperty($obj, 'description'),
+            ifid: self::boolProperty($obj, 'ifid'),
+            id: self::nullableStringProperty($obj, 'id'),
+            lines: self::nullableIntProperty($obj, 'lines'),
+            bytes: self::nullableIntProperty($obj, 'bytes'),
+            ifdisposition: self::boolProperty($obj, 'ifdisposition'),
+            disposition: self::nullableStringProperty($obj, 'disposition'),
+            ifdparameters: self::boolProperty($obj, 'ifdparameters'),
+            dparameters: self::prepareDparameters($obj),
+            ifparameters: self::boolProperty($obj, 'ifparameters'),
+            parameters: self::prepareParameters($obj),
+            parts: self::prepareParts($obj),
+        );
+    }
 
+    /**
+     * @return PartStructureParameter[]
+     */
+    private static function prepareDparameters(\stdClass $obj): array
+    {
         $dparameters = [];
         if (isset($obj->dparameters) && \is_array($obj->dparameters)) {
             foreach ($obj->dparameters as $parameter) {
@@ -50,7 +69,30 @@ final readonly class PartStructure
                 }
             }
         }
+        return $dparameters;
+    }
 
+    /**
+     * @return PartStructureParameter[]
+     */
+    private static function prepareParameters(\stdClass $obj): array
+    {
+        $parameters = [];
+        if (isset($obj->parameters) && \is_array($obj->parameters)) {
+            foreach ($obj->parameters as $parameter) {
+                if ($parameter instanceof \stdClass) {
+                    $parameters[] = PartStructureParameter::fromStdClass($parameter);
+                }
+            }
+        }
+        return $parameters;
+    }
+
+    /**
+     * @return PartStructure[]
+     */
+    private static function prepareParts(\stdClass $obj): array
+    {
         $parts = [];
         if (isset($obj->parts) && \is_array($obj->parts)) {
             foreach ($obj->parts as $part) {
@@ -59,26 +101,7 @@ final readonly class PartStructure
                 }
             }
         }
-
-        return new self(
-            type: isset($obj->type) && \is_int($obj->type) ? $obj->type : null,
-            encoding: isset($obj->encoding) && \is_int($obj->encoding) ? $obj->encoding : null,
-            ifsubtype: (bool)($obj->ifsubtype ?? false),
-            subtype: isset($obj->subtype) && \is_string($obj->subtype) ? $obj->subtype : null,
-            ifdescription: (bool)($obj->ifdescription ?? false),
-            description: isset($obj->description) && \is_string($obj->description) ? $obj->description : null,
-            ifid: (bool)($obj->ifid ?? false),
-            id: isset($obj->id) && \is_string($obj->id) ? $obj->id : null,
-            lines: isset($obj->lines) && \is_int($obj->lines) ? $obj->lines : null,
-            bytes: isset($obj->bytes) && \is_int($obj->bytes) ? $obj->bytes : null,
-            ifdisposition: (bool)($obj->ifdisposition ?? false),
-            disposition: isset($obj->disposition) && \is_string($obj->disposition) ? $obj->disposition : null,
-            ifdparameters: (bool)($obj->ifdparameters ?? false),
-            dparameters: $dparameters,
-            ifparameters: (bool)($obj->ifparameters ?? false),
-            parameters: $parameters,
-            parts: $parts,
-        );
+        return $parts;
     }
 
     /**

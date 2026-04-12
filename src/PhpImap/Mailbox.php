@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace PhpImap;
 
 use IMAP\Connection;
+use PhpImap\Entities\ComposeBody;
+use PhpImap\Entities\ComposeEnvelope;
 use PhpImap\Entities\Constants;
 use PhpImap\Entities\HostnameAndAddress;
 use PhpImap\Entities\MailOverview;
@@ -17,18 +19,6 @@ use Random\RandomException;
  * @see https://github.com/barbushin/php-imap
  *
  * @author Barbushin Sergey http://linkedin.com/in/barbushin
- *
- * @phpstan-type COMPOSE_ENVELOPE = array{
- *      subject?: string
- * }
- * @phpstan-type COMPOSE_BODY = list<array{
- *      type?: int,
- *      encoding?: int,
- *      charset?: string,
- *      subtype?: string,
- *      description?: string,
- *      disposition?: array{filename:string}
- * }>
  */
 class Mailbox
 {
@@ -1420,10 +1410,10 @@ class Mailbox
         $dispositionAttachment = isset($partStructure->disposition)
             && \mb_strtolower($partStructure->disposition) === 'attachment';
 
-        if ($partStructure->subtype == 'RFC822' && $dispositionAttachment) {
-            $fileName = \strtolower($partStructure->subtype ?? '') . '.eml';
-        } elseif ($partStructure->subtype == 'ALTERNATIVE') {
-            $fileName = \strtolower($partStructure->subtype ?? '') . '.eml';
+        if ($partStructure->subtype === 'RFC822' && $dispositionAttachment) {
+            $fileName = \strtolower($partStructure->subtype) . '.eml';
+        } elseif ($partStructure->subtype === 'ALTERNATIVE') {
+            $fileName = \strtolower($partStructure->subtype) . '.eml';
         } elseif (
             (!isset($params['filename']) || empty(\trim((string)$params['filename'])))
             && (!isset($params['name']) || empty(\trim((string)$params['name'])))
@@ -1696,13 +1686,13 @@ class Mailbox
     /**
      * Appends $message to $mailbox.
      *
-     * @phpstan-param string|array{0?: ?COMPOSE_ENVELOPE, 1?: ?COMPOSE_BODY} $message
+     * @phpstan-param string|array{0?: ?ComposeEnvelope, 1?: ?ComposeBody[]} $message
      *
      * @throws ConnectionException
      * @see Imap::append()
      */
     public function appendMessageToMailbox(
-        string|array $message,
+        bool|string|array $message,
         string $mailbox = '',
         ?string $options = null,
         ?string $internalDate = null
@@ -1890,10 +1880,10 @@ class Mailbox
     protected function processPartParameters(PartStructure $partStructure): array
     {
         $result = [];
-        foreach ($partStructure->parameters as $param) {
-            $result[\strtolower($param->attribute)] = '';
-            if ($param->value !== null && \trim($param->value) !== '') {
-                $result[\strtolower($param->attribute)] = $this->decodeMimeStr($param->value);
+        foreach ($partStructure->parameters as $parameter) {
+            $result[\strtolower($parameter->attribute)] = '';
+            if (\trim($parameter->value) !== '') {
+                $result[\strtolower($parameter->attribute)] = $this->decodeMimeStr($parameter->value);
             }
         }
         return $result;
@@ -1907,14 +1897,14 @@ class Mailbox
     protected function processPartDParameters(PartStructure $partStructure, array $result): array
     {
         if (!empty($partStructure->dparameters)) {
-            foreach ($partStructure->dparameters as $param) {
-                $paramName = \strtolower(\preg_match('~^(.*?)\*~', $param->attribute, $matches)
+            foreach ($partStructure->dparameters as $parameter) {
+                $paramName = \strtolower(\preg_match('~^(.*?)\*~', $parameter->attribute, $matches)
                     ? $matches[1]
-                    : $param->attribute);
+                    : $parameter->attribute);
                 if (isset($result[$paramName])) {
-                    $result[$paramName] .= $param->value;
+                    $result[$paramName] .= $parameter->value;
                 } else {
-                    $result[$paramName] = $param->value;
+                    $result[$paramName] = $parameter->value;
                 }
             }
         }

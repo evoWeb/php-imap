@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PhpImap\Tests\Unit;
 
+use PhpImap\Entities\ComposeBody;
+use PhpImap\Entities\ComposeEnvelope;
 use PhpImap\Exceptions\ConnectionException;
 use PhpImap\Imap;
 use PhpImap\Tests\Fixtures\Constants;
@@ -108,15 +110,16 @@ final class ImapTest extends TestCase
     #[Test]
     public function testMailComposeSimple(): void
     {
-        $envelope = ['subject' => 'Test Subject'];
+        $envelope = new ComposeEnvelope('Test Subject');
         $body = [
-            [
+            ComposeBody::fromArray([
                 'type' => \TYPETEXT,
                 'contents.data' => Constants::HELLO_WORLD,
-            ],
+            ]),
         ];
 
         $result = Imap::mailCompose($envelope, $body);
+        self::assertIsString($result);
 
         self::assertStringContainsString(sprintf(Constants::SUBJECT, 'Test Subject'), $result);
         self::assertStringContainsString(Constants::HELLO_WORLD, $result);
@@ -125,23 +128,24 @@ final class ImapTest extends TestCase
     #[Test]
     public function testMailComposeMultipart(): void
     {
-        $envelope = ['subject' => 'Multipart Test'];
+        $envelope = new ComposeEnvelope('Multipart Test');
         $body = [
-            [
+            ComposeBody::fromArray([
                 'type' => \TYPEMULTIPART,
-            ],
-            [
+            ]),
+            ComposeBody::fromArray([
                 'type' => \TYPETEXT,
                 'contents.data' => 'plain text',
-            ],
-            [
+            ]),
+            ComposeBody::fromArray([
                 'type' => \TYPETEXT,
                 'subtype' => 'html',
                 'contents.data' => '<b>html</b>',
-            ],
+            ]),
         ];
 
         $result = Imap::mailCompose($envelope, $body);
+        self::assertIsString($result);
 
         self::assertStringContainsString(sprintf(Constants::SUBJECT, 'Multipart Test'), $result);
         self::assertStringContainsString('MULTIPART/MIXED', $result);

@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace PhpImap\Tests\Functional;
 
 use ParagonIE\HiddenString\HiddenString;
+use PhpImap\Entities\ComposeBody;
+use PhpImap\Entities\ComposeEnvelope;
 use PhpImap\Exceptions\ConnectionException;
 use PhpImap\Exceptions\InvalidParameterException;
 use PhpImap\Imap;
@@ -22,9 +24,6 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use Random\RandomException;
 
-/**
- * @phpstan-import-type MAILBOX_ARGS from AbstractMailboxTest
- */
 class MailboxIssue490Test extends AbstractMailboxTest
 {
     /**
@@ -56,9 +55,7 @@ class MailboxIssue490Test extends AbstractMailboxTest
         $exception = null;
 
         try {
-            $envelope = [
-                'subject' => 'barbushin/php-imap#501: ' . \bin2hex(\random_bytes(16)),
-            ];
+            $envelope = new ComposeEnvelope('barbushin/php-imap#501: ' . \bin2hex(\random_bytes(16)));
 
             [$searchCriteria] = $this->subjectSearchCriteriaAndSubject($envelope);
 
@@ -69,14 +66,14 @@ class MailboxIssue490Test extends AbstractMailboxTest
             $message = Imap::mailCompose(
                 $envelope,
                 [
-                    [
+                    ComposeBody::fromArray([
                         'type' => \TYPEMULTIPART,
-                    ],
-                    [
+                    ]),
+                    ComposeBody::fromArray([
                         'type' => \TYPETEXT,
                         'contents.data' => 'foo',
-                    ],
-                    [
+                    ]),
+                    ComposeBody::fromArray([
                         'type' => \TYPEMULTIPART,
                         'subtype' => 'plain',
                         'description' => 'bar.txt',
@@ -84,8 +81,8 @@ class MailboxIssue490Test extends AbstractMailboxTest
                         'disposition' => ['filename' => 'bar.txt'],
                         'type.parameters' => ['name' => 'bar.txt'],
                         'contents.data' => 'bar',
-                    ],
-                    [
+                    ]),
+                    ComposeBody::fromArray([
                         'type' => \TYPEMULTIPART,
                         'subtype' => 'plain',
                         'description' => 'baz.txt',
@@ -93,7 +90,7 @@ class MailboxIssue490Test extends AbstractMailboxTest
                         'disposition' => ['filename' => 'baz.txt'],
                         'type.parameters' => ['name' => 'baz.txt'],
                         'contents.data' => 'baz',
-                    ],
+                    ]),
                 ]
             );
 

@@ -16,8 +16,6 @@ use Random\RandomException;
 /**
  * Live tests for Mailbox::initMailPart, covering code paths that require a real
  * IMAP connection (fetch of body or attachment data).
- *
- * @phpstan-import-type MAILBOX_ARGS from AbstractMailboxTest
  */
 class InitMailPartTest extends AbstractMailboxTest
 {
@@ -36,7 +34,7 @@ class InitMailPartTest extends AbstractMailboxTest
     }
 
     // -------------------------------------------------------------------------
-    // multipart/alternative — both plain and html parts populated
+    // multipart/alternative — both plain and HTML parts populated
     // -------------------------------------------------------------------------
 
     /**

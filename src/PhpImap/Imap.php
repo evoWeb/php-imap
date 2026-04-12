@@ -10,37 +10,13 @@ declare(strict_types=1);
 namespace PhpImap;
 
 use IMAP\Connection;
-use ParagonIE\HiddenString\HiddenString;
+use PhpImap\Entities\ComposeBody;
+use PhpImap\Entities\ComposeEnvelope;
 use PhpImap\Entities\Constants;
 use PhpImap\Entities\MailOverview;
 use PhpImap\Entities\PartStructure;
 use PhpImap\Exceptions\ConnectionException;
 
-/**
- * @phpstan-type MAILBOX_ARGS = array{
- *      0: HiddenString,
- *      1: HiddenString,
- *      2: HiddenString,
- *      3: string,
- *      4?: string,
- *      5?: array<string, mixed>,
- * }
- * @phpstan-type COMPOSE_BODY = list<array{
- *      id?: string,
- *      type?: int,
- *      encoding?: int,
- *      charset?: string,
- *      subtype?: string,
- *      description?: string,
- *      disposition?: array{filename: string, type?: string},
- *      'disposition\.type'?: string,
- *      'type\.parameters'?: array{name: string},
- *      'contents\.data'?: string,
- * }>
- * @phpstan-type COMPOSE_ENVELOPE = array{
- *      subject?: string
- * }
- */
 final class Imap
 {
     /** @phpstan-var int[] */
@@ -457,21 +433,22 @@ final class Imap
     }
 
     /**
-     * @phpstan-param COMPOSE_ENVELOPE $envelope An associative array of headers fields (docblock is not complete)
-     * @phpstan-param COMPOSE_BODY $body An indexed array of bodies (docblock is not complete)
+     * @phpstan-param ComposeBody[] $body An indexed array of bodies (docblock is not complete)
      */
-    public static function mailCompose(array $envelope, array $body): string
+    public static function mailCompose(ComposeEnvelope $envelope, array $body): string|bool
     {
-        return \imap_mail_compose($envelope, $body) ?: '';
+        return \imap_mail_compose(
+            $envelope->toArray(),
+            \array_map(fn(ComposeBody $body) => $body->toArray(), $body)
+        );
     }
 
     /**
      * @deprecated since 5.x
      *
-     * @phpstan-param COMPOSE_ENVELOPE $envelope An associative array of headers fields (docblock is not complete)
-     * @phpstan-param COMPOSE_BODY $body An indexed array of bodies (docblock is not complete)
+     * @phpstan-param ComposeBody[] $body An indexed array of bodies (docblock is not complete)
      */
-    public static function mail_compose(array $envelope, array $body): string
+    public static function mail_compose(ComposeEnvelope $envelope, array $body): string|bool
     {
         return self::mailCompose($envelope, $body);
     }

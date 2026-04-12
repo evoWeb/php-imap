@@ -30,16 +30,16 @@ final class InitMailPartTest extends TestCase
     {
         return new PartStructure(
             type: \is_int($props['type'] ?? null) ? $props['type'] : \TYPETEXT,
-            subtype: \is_string($props['subtype'] ?? null) ? $props['subtype'] : 'PLAIN',
             encoding: \is_int($props['encoding'] ?? null) ? $props['encoding'] : \ENCQUOTEDPRINTABLE,
-            ifdisposition: (bool)($props['ifdisposition'] ?? false),
-            disposition: \array_key_exists('disposition', $props) ? (
-                \is_string($props['disposition']) ? $props['disposition'] : null
-            ) : null,
+            ifsubtype: (bool)($props['ifsubtype'] ?? true),
+            subtype: \is_string($props['subtype'] ?? null) ? $props['subtype'] : 'PLAIN',
+            ifdescription: (bool)($props['ifdescription'] ?? false),
             ifid: (bool)($props['ifid'] ?? false),
             id: \is_string($props['id'] ?? null) ? $props['id'] : null,
-            ifsubtype: (bool)($props['ifsubtype'] ?? true),
-            ifdescription: (bool)($props['ifdescription'] ?? false),
+            ifdisposition: (bool)($props['ifdisposition'] ?? false),
+            disposition: \array_key_exists('disposition', $props) && \is_string($props['disposition'])
+                ? $props['disposition']
+                : null,
         );
     }
 
