@@ -11,27 +11,27 @@ namespace PhpImap\Exceptions;
  */
 class ConnectionException extends \Exception
 {
+    /**
+     * @param string[] $message
+     */
     public function __construct(array $message, int $code = 0, ?\Throwable $previous = null)
     {
-        parent::__construct(json_encode($message), $code, $previous);
+        $encodedMessage = json_encode($message) ?: '';
+        parent::__construct($encodedMessage, $code, $previous);
     }
 
-    public function getErrors(string $select = 'first')
+    /**
+     * @phpstan-return string|string[]
+     */
+    public function getErrors(string $select = 'first'): string|array
     {
-        $message = $this->getMessage();
+        /** @phpstan-var string[] $message */
+        $message = json_decode($this->getMessage());
 
-        switch (strtolower($select)) {
-            case 'all':
-                return json_decode($message);
-
-            case 'last':
-                $message = json_decode($message);
-                return $message[\count($message) - 1];
-
-            default:
-            case 'first':
-                $message = json_decode($message);
-                return $message[0];
-        }
+        return match (strtolower($select)) {
+            'all' => $message,
+            'last' => $message[\count($message) - 1],
+            default => $message[0],
+        };
     }
 }

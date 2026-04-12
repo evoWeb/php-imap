@@ -7,13 +7,17 @@
  *
  * @author BAPCLTD-Marv
  */
+
 declare(strict_types=1);
 
 namespace PhpImap\Tests\Functional;
 
+use PhpImap\Entities\ComposeBody;
+use PhpImap\Entities\ComposeEnvelope;
 use PhpImap\Exceptions\ConnectionException;
 use PhpImap\Exceptions\InvalidParameterException;
 use PhpImap\Imap;
+use PhpImap\Tests\Fixtures\Constants;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Random\RandomException;
@@ -22,30 +26,28 @@ use Random\RandomException;
  * Provides testAppend for test classes that implement ComposeProvider.
  *
  * @phpstan-import-type MAILBOX_ARGS from AbstractMailboxTest
- * @phpstan-import-type COMPOSE_ENVELOPE from AbstractMailboxTest
- * @phpstan-import-type COMPOSE_BODY from AbstractMailboxTest
  */
 trait MailboxAppendTestTrait
 {
     /**
      * @phpstan-return \Generator<int, array{
      *      0: MAILBOX_ARGS,
-     *      1: COMPOSE_ENVELOPE,
-     *      2: COMPOSE_BODY,
+     *      1: ComposeEnvelope,
+     *      2: ComposeBody[],
      *      3: bool,
      *      4: string
      * }, mixed, void>
      */
-    public static function AppendProvider(): \Generator
+    public static function appendProvider(): \Generator
     {
-        foreach (static::MailBoxProvider() as $mailboxArguments) {
-            foreach (static::ComposeProvider() as $composeArguments) {
+        foreach (static::mailBoxProvider() as $mailboxArguments) {
+            foreach (static::composeProvider() as $composeArguments) {
                 [$envelope, $body, $expectedComposeResult] = $composeArguments;
 
                 yield [$mailboxArguments, $envelope, $body, false, $expectedComposeResult];
             }
 
-            foreach (static::ComposeProvider() as $composeArguments) {
+            foreach (static::composeProvider() as $composeArguments) {
                 [$envelope, $body, $expectedComposeResult] = $composeArguments;
 
                 yield [$mailboxArguments, $envelope, $body, true, $expectedComposeResult];
@@ -58,16 +60,15 @@ trait MailboxAppendTestTrait
      * @depends testMailCompose
      *
      * @phpstan-param MAILBOX_ARGS $mailboxArguments
-     * @phpstan-param COMPOSE_ENVELOPE $envelope
-     * @phpstan-param COMPOSE_BODY $body
+     * @phpstan-param ComposeBody[] $body
      *
      * @throws \Exception
      */
     #[Test]
-    #[DataProvider('AppendProvider')]
+    #[DataProvider('appendProvider')]
     public function testAppend(
         array $mailboxArguments,
-        array $envelope,
+        ComposeEnvelope $envelope,
         array $body,
         bool $preCompose,
     ): void {
@@ -76,8 +77,7 @@ trait MailboxAppendTestTrait
 
     /**
      * @phpstan-param MAILBOX_ARGS $mailboxArguments
-     * @phpstan-param COMPOSE_ENVELOPE $envelope
-     * @phpstan-param COMPOSE_BODY $body
+     * @phpstan-param ComposeBody[] $body
      *
      * @throws ConnectionException
      * @throws \Exception
@@ -86,15 +86,15 @@ trait MailboxAppendTestTrait
      */
     protected function runAppendTest(
         array $mailboxArguments,
-        array $envelope,
+        ComposeEnvelope $envelope,
         array $body,
         bool $preCompose
     ): void {
-        if ($this->MaybeSkipAppendTest($envelope)) {
+        if ($this->maybeSkipAppendTest($envelope)) {
             return;
         }
 
-        [$searchCriteria] = $this->SubjectSearchCriteriaAndSubject($envelope);
+        [$searchCriteria] = $this->subjectSearchCriteriaAndSubject($envelope);
 
         [$mailbox, $removeMailbox, $path] = $this->getMailboxFromArgs($mailboxArguments);
 
@@ -106,35 +106,19 @@ trait MailboxAppendTestTrait
         try {
             $search = $mailbox->searchMailbox($searchCriteria);
 
-            self::assertCount(
-                0,
-                $search,
-                (
-                    'If a subject was found,' .
-                    ' then the message is insufficiently unique to assert that' .
-                    ' a newly-appended message was actually created.'
-                )
-            );
+            self::assertCount(0, $search, Constants::SUBJECT_INSUFFICIENT_UNIQUE);
 
             $message = [$envelope, $body];
 
             if ($preCompose) {
-                $message = Imap::mail_compose($envelope, $body);
+                $message = Imap::mailCompose($envelope, $body);
             }
 
             $mailbox->appendMessageToMailbox($message);
 
             $search = $mailbox->searchMailbox($searchCriteria);
 
-            self::assertCount(
-                1,
-                $search,
-                (
-                    'If a subject was not found, ' .
-                    ' then Mailbox::appendMessageToMailbox() failed' .
-                    ' despite not throwing an exception.'
-                )
-            );
+            self::assertCount(1, $search, Constants::SUBJECT_NOT_FOUND);
 
             $mailbox->deleteMail($search[0]);
 
@@ -147,12 +131,10 @@ trait MailboxAppendTestTrait
             self::assertCount(
                 0,
                 $mailbox->searchMailbox($searchCriteria),
-                (
-                    'If a subject was found,' .
-                    ' then the message is was not expunged as requested.'
-                )
+                Constants::SUBJECT_INSUFFICIENT_UNIQUE
             );
         } catch (\Exception $exception) {
+            // delaying throw to clean up and close connections before that
         } finally {
             $mailbox->switchMailbox($path->getString());
             if (!$mailboxDeleted) {

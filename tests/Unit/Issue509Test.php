@@ -7,6 +7,7 @@
  *
  * @author BAPCLTD-Marv
  */
+
 declare(strict_types=1);
 
 namespace PhpImap\Tests\Unit;
@@ -17,7 +18,7 @@ use PHPUnit\Framework\TestCase;
 
 class Issue509Test extends TestCase
 {
-    public const base64 =
+    public const BASE64 =
         'vsiz58fPvcq0z7HuLiC05MDlx9jB1rzFvK0gsKi758fVtM+02S4NCsDMt7EgwM/AuiC16b7uILq7
     wPvAzCC++L3AtM+02S4NCsDMwM8gvu62u7DUIMfPvcO0wsH2ILHDsd3H1bTPtNkuDQrBprChIMik
     vcMgsPi9xMD7wLi3ziCw7b/rtce++r3AtM+x7j8NCg0KU2VudCBmcm9tIE1haWw8aHR0cHM6Ly9n
@@ -44,7 +45,7 @@ class Issue509Test extends TestCase
     YW5ub24gRHJpdmUNCkUxNCA0QVMgTG9uZG9uDQp3d3cuY2xvdWR3b3JrZXJzLmNvbXBhbnkNCg0K
     DQo=';
 
-    public const sha256 = '5656f5f8a872b8989ba3aaecdfbdc6311bf4c5e0219c27b3b004ce83d8ffd6f3';
+    public const SHA256 = '5656f5f8a872b8989ba3aaecdfbdc6311bf4c5e0219c27b3b004ce83d8ffd6f3';
 
     /**
      * @throws \Exception
@@ -55,8 +56,8 @@ class Issue509Test extends TestCase
         $mailbox = new Mailbox('', '', '');
 
         $mailbox->decodeMimeStrDefaultCharset = 'EUC-KR';
-        $decoded = $mailbox->decodeMimeStr(\base64_decode(self::base64));
+        $decoded = $mailbox->decodeMimeStr(\base64_decode(self::BASE64));
 
-        self::assertSame(self::sha256, \hash('sha256', $decoded));
+        self::assertSame(self::SHA256, \hash('sha256', $decoded));
     }
 }

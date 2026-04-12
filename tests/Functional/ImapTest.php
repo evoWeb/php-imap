@@ -3,6 +3,7 @@
 /**
 * @author BAPCLTD-Marv
 */
+
 declare(strict_types=1);
 
 namespace PhpImap\Tests\Functional;
@@ -22,7 +23,7 @@ use Random\RandomException;
  */
 class ImapTest extends TestCase
 {
-    use LiveMailboxTestingTrait;
+    use MailboxTestingTrait;
 
     /**
      * @phpstan-return \Generator<
@@ -36,7 +37,7 @@ class ImapTest extends TestCase
      *      void
      * >
      */
-    public static function OpenFailure(): \Generator
+    public static function openFailure(): \Generator
     {
         yield 'empty mailbox/username/password' => [
             ConnectionException::class,
@@ -79,7 +80,7 @@ class ImapTest extends TestCase
      * @throws ConnectionException
      */
     #[Test]
-    #[DataProvider('OpenFailure')]
+    #[DataProvider('openFailure')]
     public function testOpenFailure(
         string $exception,
         string $message,
@@ -110,7 +111,7 @@ class ImapTest extends TestCase
      * @throws RandomException
      */
     #[Test]
-    #[DataProvider('MailBoxProvider')]
+    #[DataProvider('mailBoxProvider')]
     #[Group('live')]
     public function testSortEmpty(HiddenString $path, HiddenString $login, HiddenString $password): void
     {
@@ -135,6 +136,7 @@ class ImapTest extends TestCase
                 )
             );
         } catch (\Exception $exception) {
+            // delaying throw to clean up and close connections before that
         } finally {
             $mailbox->switchMailbox($path->getString());
             $mailbox->deleteMailbox($removeMailbox);

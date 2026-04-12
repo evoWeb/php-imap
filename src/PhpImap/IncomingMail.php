@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace PhpImap;
 
+use PhpImap\Entities\Constants;
+use PhpImap\Exceptions\ConnectionException;
+
 /**
  * The PhpImap IncomingMail class.
  *
@@ -41,6 +44,8 @@ class IncomingMail extends IncomingMailHeader
      * @param string $name Name of the property (eg. textPlain)
      *
      * @return string Value of the property (eg. Plain text message)
+     *
+     * @throws ConnectionException
      */
     public function __get(string $name): string
     {
@@ -78,6 +83,8 @@ class IncomingMail extends IncomingMailHeader
      * @param string $name Name of the property (eg. textPlain)
      *
      * @return bool True, if property is set or empty
+     *
+     * @throws ConnectionException
      */
     public function __isset(string $name): bool
     {
@@ -88,7 +95,7 @@ class IncomingMail extends IncomingMailHeader
 
     public function setHeader(IncomingMailHeader $header): void
     {
-        /** @phpstan-var array<string, scalar|array|object|null> $array */
+        /** @phpstan-var array<string, scalar|object|string[]|null> $array */
         $array = \get_object_vars($header);
         foreach ($array as $property => $value) {
             $this->$property = $value;
@@ -96,7 +103,7 @@ class IncomingMail extends IncomingMailHeader
     }
 
     /**
-     * @param DataPartInfo::TEXT_PLAIN|DataPartInfo::TEXT_HTML $type
+     * @phpstan-param DataPartInfo::TEXT_PLAIN|DataPartInfo::TEXT_HTML $type
      */
     public function addDataPartInfo(DataPartInfo $dataInfo, int $type): void
     {
@@ -106,7 +113,7 @@ class IncomingMail extends IncomingMailHeader
     public function addAttachment(IncomingMailAttachment $attachment): void
     {
         if (!\is_string($attachment->id)) {
-            throw new \InvalidArgumentException('Argument 1 passed to ' . __METHOD__ . '() does not have an id specified!');
+            throw new \InvalidArgumentException(sprintf(Constants::INVALID_ID, 1, __METHOD__));
         }
         $this->attachments[$attachment->id] = $attachment;
 
@@ -163,6 +170,8 @@ class IncomingMail extends IncomingMailHeader
      * @return array attachmentId => link placeholder
      *
      * @phpstan-return array<string, string>
+     *
+     * @throws ConnectionException
      */
     public function getInternalLinksPlaceholders(): array
     {
@@ -174,17 +183,20 @@ class IncomingMail extends IncomingMailHeader
         return $match ? \array_combine($matches[2], $matches[1]) : [];
     }
 
+    /**
+     * @throws ConnectionException
+     */
     public function replaceInternalLinks(string $baseUri): string
     {
         $baseUri = \rtrim($baseUri, '\\/') . '/';
-        $fetchedHtml = $this->textHtml;
+        $fetchedHtml = $this->textHtml ?? '';
         $search = [];
         $replace = [];
         foreach ($this->getInternalLinksPlaceholders() as $attachmentId => $placeholder) {
             foreach ($this->attachments as $attachment) {
                 if ($attachment->contentId == $attachmentId) {
                     if (!\is_string($attachment->id)) {
-                        throw new \InvalidArgumentException('Argument 1 passed to ' . __METHOD__ . '() does not have an id specified!');
+                        throw new \InvalidArgumentException(sprintf(Constants::INVALID_ID, 1, __METHOD__));
                     }
                     $search[] = $placeholder;
                     $replace[] = $baseUri . \basename($this->attachments[$attachment->id]->filePath);
@@ -199,6 +211,8 @@ class IncomingMail extends IncomingMailHeader
     /**
      * Embed inline image attachments as base64 to allow for
      * email HTML to display inline images automatically.
+     *
+     * @throws ConnectionException
      */
     public function embedImageAttachments(): void
     {
@@ -206,54 +220,71 @@ class IncomingMail extends IncomingMailHeader
 
         \preg_match_all("/\bcid:[^'\"\s]{1,256}/mi", $fetchedHtml, $matches);
 
-        if (\count($matches[0])) {
-            $matches = $matches[0];
-            foreach ($matches as $match) {
-                $cid = \str_replace('cid:', '', $match);
+        if (!\count($matches[0])) {
+            return;
+        }
 
-                /**
-                 * Inline images can contain a "Content-Disposition: inline", but only a "Content-ID" is also enough.
-                 * See https://github.com/barbushin/php-imap/issues/569.
-                 *
-                 * Re-fetch attachments each iteration so removed attachments are excluded.
-                 * Prefer contentId matching; only fall back to disposition-based matching when no contentId match exists,
-                 * to avoid embedding the wrong attachment when multiple inline images are present.
-                 */
-                $attachments = $this->getAttachments();
-                $matched = null;
-                foreach ($attachments as $attachment) {
-                    if ($attachment->contentId == $cid) {
-                        $matched = $attachment;
-                        break;
-                    }
-                }
-                if ($matched === null) {
-                    foreach ($attachments as $attachment) {
-                        if (\mb_strtolower((string)$attachment->disposition) == 'inline') {
-                            $matched = $attachment;
-                            break;
-                        }
-                    }
-                }
+        $matches = $matches[0];
+        foreach ($matches as $match) {
+            $cid = \str_replace('cid:', '', $match);
 
-                if ($matched !== null) {
-                    $contents = $matched->getContents();
-                    $contentType = $matched->getFileInfo(\FILEINFO_MIME_TYPE);
+            $matched = $this->findMatchingAttachmentForCid($cid);
+            if ($matched !== null) {
+                $this->replaceCidWithImageInHtml($match, $matched);
+            }
+        }
+    }
 
-                    if (str_contains($contentType, 'image')) {
-                        if (!\is_string($matched->id)) {
-                            throw new \InvalidArgumentException('Argument 1 passed to ' . __METHOD__ . '() does not have an id specified!');
-                        }
+    /**
+     * Inline images can contain a "Content-Disposition: inline", but only a "Content-ID" is also enough.
+     * See https://github.com/barbushin/php-imap/issues/569.
+     *
+     * Re-fetch attachments each iteration so removed attachments are excluded.
+     * Prefer contentId matching; only fall back to disposition-based matching when no contentId
+     * match exists, to avoid embedding the wrong attachment when multiple inline images are present.
+     */
+    private function findMatchingAttachmentForCid(string $cid): ?IncomingMailAttachment
+    {
+        $attachments = $this->getAttachments();
+        $matched = null;
+        foreach ($attachments as $attachment) {
+            if ($attachment->contentId == $cid) {
+                $matched = $attachment;
+                break;
+            }
+        }
 
-                        $base64encoded = \base64_encode($contents);
-                        $replacement = 'data:' . $contentType . ';base64, ' . $base64encoded;
-
-                        $this->textHtml = \str_replace($match, $replacement, $this->textHtml);
-
-                        $this->removeAttachment($matched->id);
-                    }
+        if ($matched === null) {
+            foreach ($attachments as $attachment) {
+                if (\mb_strtolower((string)$attachment->disposition) == 'inline') {
+                    $matched = $attachment;
+                    break;
                 }
             }
+        }
+
+        return $matched;
+    }
+
+    /**
+     * @throws ConnectionException
+     */
+    private function replaceCidWithImageInHtml(string $match, IncomingMailAttachment $matched): void
+    {
+        $contents = $matched->getContents();
+        $contentType = $matched->getFileInfo(\FILEINFO_MIME_TYPE);
+
+        if (str_contains($contentType, 'image')) {
+            if (!\is_string($matched->id)) {
+                throw new \InvalidArgumentException(sprintf(Constants::INVALID_ID, 1, __METHOD__));
+            }
+
+            $base64encoded = \base64_encode($contents);
+            $replacement = 'data:' . $contentType . ';base64, ' . $base64encoded;
+
+            $this->textHtml = \str_replace($match, $replacement, $this->textHtml ?? '');
+
+            $this->removeAttachment($matched->id);
         }
     }
 }

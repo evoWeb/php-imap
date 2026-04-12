@@ -7,58 +7,46 @@
  *
  * @author BAPCLTD-Marv
  */
+
 declare(strict_types=1);
 
 namespace PhpImap\Tests\Functional;
 
 use ParagonIE\HiddenString\HiddenString;
+use PhpImap\Entities\ComposeBody;
+use PhpImap\Entities\ComposeEnvelope;
+use PhpImap\Tests\Fixtures\Constants;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @phpstan-type MAILBOX_ARGS = array{
- *      0: HiddenString,
- *      1: HiddenString,
- *      2: HiddenString,
- *      3: string,
- *      4?: string,
- *      5?: array,
+ *       0: HiddenString,
+ *       1: HiddenString,
+ *       2: HiddenString,
+ *       3: string,
+ *       4?: string,
  * }
- * @phpstan-type COMPOSE_ENVELOPE = array{
- *      subject: string
- * }
- * @phpstan-type COMPOSE_BODY = list<array{
- *      id?: string,
- *      type?: int,
- *      encoding?: int,
- *      charset?: string,
- *      subtype?: string,
- *      description?: string,
- *      disposition?: array{filename: string, type?: string},
- *      'disposition.type'?: string,
- *      'type.parameters'?: array{name: string},
- *      'contents.data'?: string,
- * }>
  * @phpstan-type OPEN_ARGS = array{
- *      0: HiddenString,
- *      1: HiddenString,
- *      2: HiddenString,
- *      3: int,
- *      4: int,
- *      5: array{DISABLE_AUTHENTICATOR: string}|array<empty, empty>
- *  }
+ *       0: HiddenString,
+ *       1: HiddenString,
+ *       2: HiddenString,
+ *       3: int,
+ *       4: int,
+ *       5: array{DISABLE_AUTHENTICATOR: string}|array<empty, empty>
+ * }
  */
 abstract class AbstractMailboxTest extends TestCase
 {
-    use LiveMailboxTestingTrait;
+    use MailboxTestingTrait;
 
     /**
      * @phpstan-return \Generator<int, array{
-     *      0: COMPOSE_ENVELOPE,
-     *      1: COMPOSE_BODY,
+     *      0: ComposeEnvelope,
+     *      1: ComposeBody[],
      *      2: string
      * }, mixed, void>
      */
-    public static function ComposeProvider(): \Generator
+    public static function composeProvider(): \Generator
     {
         yield from [];
     }
@@ -66,26 +54,24 @@ abstract class AbstractMailboxTest extends TestCase
     /**
      * Get subject search criteria and subject.
      *
-     * @phpstan-param array{subject: string} $envelope
-     *
      * @phpstan-return array{0: string, 1: string}
      */
-    protected function SubjectSearchCriteriaAndSubject(array $envelope): array
+    protected function subjectSearchCriteriaAndSubject(ComposeEnvelope $envelope): array
     {
         /** @var ?string $subject */
-        $subject = $envelope['subject'] ?? null;
+        $subject = $envelope->subject ?? null;
 
         self::assertIsString($subject);
 
-        $searchCriteria = \sprintf('SUBJECT "%s"', $subject);
+        $searchCriteria = sprintf(Constants::SUBJECT2, $subject);
 
         /** @phpstan-var array{0: string, 1: string} */
         return [$searchCriteria, $subject];
     }
 
-    protected function MaybeSkipAppendTest(array $envelope): bool
+    protected function maybeSkipAppendTest(ComposeEnvelope $envelope): bool
     {
-        if (!isset($envelope['subject'])) {
+        if (!isset($envelope->subject)) {
             self::markTestSkipped('Cannot search for message by subject, no subject specified!');
         }
 

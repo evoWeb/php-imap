@@ -1,5 +1,5 @@
 includes:
-  - phpstan.neon
+  - phpstan-local.neon
 
 parameters:
   # CI needs to calculate phpstan a-new each time anyways. No point in caching this.

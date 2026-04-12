@@ -2,17 +2,17 @@
 
 ## <mark>Based on works until December 2022 in [barbushin/php-imap](https://github.com/barbushin/php-imap) with merged pull requests</mark>
 
-[![GitHub release](https://img.shields.io/github/release/garbast/php-imap.svg?style=flat-square)](https://packagist.org/packages/php-imap/php-imap)
-[![Supported PHP Version](https://img.shields.io/packagist/php-v/php-imap/php-imap.svg)](README.md)
-[![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
-[![Packagist](https://img.shields.io/packagist/dt/php-imap/php-imap.svg?style=flat-square)](https://packagist.org/packages/php-imap/php-imap)
+[![GitHub release](https://img.shields.io/packagist/v/evoweb/php-imap)](https://packagist.org/packages/evoweb/php-imap)
+[![Supported PHP Version](https://img.shields.io/packagist/php-v/evoweb/php-imap)](README.md)
+[![Software License](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
+[![Downloads Packagist](https://img.shields.io/packagist/dt/evoweb/php-imap)](https://packagist.org/packages/evoweb/php-imap)
 
-[![CI PHP Unit Tests](https://github.com/garbast/php-imap/actions/workflows/php_unit_tests.yml/badge.svg?branch=master)](https://github.com/garbast/php-imap/actions/workflows/php_unit_tests.yml)
-[![CI PHP Static Analysis](https://github.com/garbast/php-imap/actions/workflows/php_static_analysis.yml/badge.svg?branch=master)](https://github.com/garbast/php-imap/actions/workflows/php_static_analysis.yml)
-[![CI PHP Code Coverage](https://github.com/garbast/php-imap/actions/workflows/php_code_coverage.yml/badge.svg?branch=master)](https://github.com/garbast/php-imap/actions/workflows/php_code_coverage.yml)
+[![PHP Unit Tests](https://github.com/evoWeb/php-imap/actions/workflows/php_unit_tests.yml/badge.svg?branch=develop)](https://github.com/evoWeb/php-imap/actions/workflows/php_unit_tests.yml)
+[![PHP Code Coverage](https://github.com/evoWeb/php-imap/actions/workflows/php_code_coverage.yml/badge.svg?branch=develop)](https://github.com/evoWeb/php-imap/actions/workflows/php_code_coverage.yml)
+[![PHP Static Analysis & Tests](https://github.com/evoWeb/php-imap/actions/workflows/php_static_analysis.yml/badge.svg?branch=develop)](https://github.com/evoWeb/php-imap/actions/workflows/php_static_analysis.yml)
 
-[![Maintainability](https://qlty.sh/gh/garbast/projects/php-imap/maintainability.svg)](https://qlty.sh/gh/garbast/projects/php-imap)
-[![Code Coverage](https://qlty.sh/gh/garbast/projects/php-imap/coverage.svg)](https://qlty.sh/gh/garbast/projects/php-imap)
+[![Maintainability](https://qlty.sh/gh/evoweb/projects/php-imap/maintainability.svg)](https://qlty.sh/gh/garbast/projects/php-imap)
+[![Code Coverage](https://qlty.sh/gh/evoweb/projects/php-imap/coverage.svg)](https://qlty.sh/gh/garbast/projects/php-imap)
 
 Initially released in December 2012, the PHP IMAP Mailbox is a powerful and open source library to connect to a mailbox by POP3, IMAP and NNTP using the PHP IMAP extension. This library allows you to fetch emails from your email server. Extend the functionality or create powerful web applications to handle your incoming emails.
 
@@ -34,9 +34,13 @@ Initially released in December 2012, the PHP IMAP Mailbox is a powerful and open
 | 7.1         | 3.x               | End of life     |
 | 7.2         | 3.x, 4.x          | End of life     |
 | 7.3         | 3.x, 4.x          | End of life     |
-| 7.4         | >3.0.33, 4.x, 5.x | Active support  |
-| 8.0         | >3.0.33, 4.x, 5.x | Active support  |
-| 8.1         | >4.3.0, 5.x       | Active support  |
+| 7.4         | >3.0.33, 4.x, 5.x | End of life     |
+| 8.0         | >3.0.33, 4.x, 5.x | End of life     |
+| 8.1         | >4.3.0, 5.x       | End of life     |
+| 8.2         | 6.x               | Active support  |
+| 8.3         | 6.x               | Active support  |
+| 8.4         | 6.x               | Active support  |
+| 8.5         | 6.x               | Active support  |
 
 * PHP `fileinfo` extension must be present; so make sure this line is active in your php.ini: `extension=php_fileinfo.dll`
 * PHP `iconv` extension must be present; so make sure this line is active in your php.ini: `extension=php_iconv.dll`
@@ -46,13 +50,13 @@ Initially released in December 2012, the PHP IMAP Mailbox is a powerful and open
 
 ### Installation by Composer
 
-Install the [latest available release](https://github.com/barbushin/php-imap/releases):
+Install the [latest available release](https://github.com/evoWeb/php-imap/releases):
 
-	$ composer require php-imap/php-imap
+	$ composer require evoWeb/php-imap
 
-Install the latest available and stable source code from `master`, which may not be released / tagged yet:
+Install the latest available and stable source code from `develop`, which may not be released / tagged yet:
 
-	$ composer require php-imap/php-imap:dev-master
+	$ composer require evoWeb/php-imap:dev-develop
 
 ### Run Tests
 
@@ -104,7 +108,7 @@ try {
 }
 
 // If $mailsIds is empty, no emails could be found
-if(!$mailsIds) {
+if (!$mailsIds) {
     die('Mailbox is empty');
 }
 
@@ -115,7 +119,7 @@ $mail = $mailbox->getMail($mailsIds[0]);
 
 // Show, if $mail has one or more attachments
 echo "\nMail has attachments? ";
-if($mail->hasAttachments()) {
+if ($mail->hasAttachments()) {
     echo "Yes\n";
 } else {
     echo "No\n";
@@ -166,9 +170,49 @@ print_r($mails_ids);
 
 ### Upgrading from below 6.x
 
+BREAKING: Change handling of data. For clearer typing the following entities were introduced:
+
+- ComposeBody
+- ComposeEnvelope
+- HostnameAndAddress
+- MailOverview
+- PartStructure
+- PartStructureParameter
+
+Before replacing any array with these, the tests where improved to cover them all.
+
+
 BREAKING: Before each method in Imap checked if it really got a connection handed. Now
 the functions are enforcing connection with typed arguments. You are still able to use
-Imap::EnsureConnection() yourself if you need to check your argument
+Imap::EnsureConnection() yourself if you need to check your argument.
+
+Functions are convertest to camel case:
+- Imap::createmailbox -> Imap::createMailbox (public)
+- Imap::deletemailbox -> Imap::deleteMailbox (public)
+- Imap::EnsureConnection -> Imap::ensureConnection (public)
+- Imap::EnsureRange -> Imap::ensureRange (private)
+- Imap::EnsureResource -> Imap::ensureResource (private)
+- Imap::fetchbody -> Imap::fetchBody (public)
+- Imap::fetchheader -> Imap::fetchHeader (public)
+- Imap::fetchstructure -> Imap::fetchStructure (public)
+- Imap::getmailboxes -> Imap::getMailboxes (public)
+- Imap::getsubscribed -> Imap::getSubscribed (public)
+- Imap::fetch_overview -> Imap::fetchOverview (public)
+- Imap::get_quotaroot -> Imap::getQuotaRoot (public)
+- Imap::HandleErrors -> Imap::handleErrors (private)
+- Imap::mail_compose -> Imap::mailCompose (public)
+- Imap::mail_copy -> Imap::mailCopy (public)
+- Imap::mail_move -> Imap::mailMove (public)
+- Imap::mailboxmsginfo -> Imap::mailboxMsgInfo (public)
+- Imap::num_msg -> Imap::numMsg (public)
+- Imap::renamemailbox -> Imap::renameMailbox (public)
+- Imap::savebody -> Imap::saveBody (public)
+- Imap::clearflag_full -> Imap::clearFlagFull (public)
+- Imap::setflag_full -> Imap::setFlagFull (public)
+
+- Mailbox::lowercase_mb_list_encodings -> Mailbox::lowercaseMbListEncodings (protected)
+
+Private property IncomingMailAttachment::file_path replaced with IncomingMailAttachment::filePath.
 
 ### Upgrading from 3.x
 

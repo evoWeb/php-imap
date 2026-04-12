@@ -1,5 +1,5 @@
 {
-	"name": "php-imap/php-imap",
+	"name": "evoweb/php-imap",
 	"description": "Manage mailboxes, filter/get/delete emails in PHP (supports IMAP/POP3/NNTP)",
 	"keywords": [
 		"PHP",
@@ -40,18 +40,20 @@
 		"friendsofphp/php-cs-fixer": "^3.4",
 		"maglnet/composer-require-checker": "^4.15.0",
 		"paragonie/hidden-string": "^2.0",
-		"phpunit/phpunit": "^11.5.55",
-		"povils/phpmnd": "^3.6.1",
 		"phpstan/phpstan": "^2.1.43",
 		"phpstan/phpstan-phpunit": "^2.0.8",
-		"roave/security-advisories": "dev-latest"
+		"phpunit/phpunit": "^11.5.55",
+		"povils/phpmnd": "^3.6.1",
+		"roave/security-advisories": "dev-latest",
+		"squizlabs/php_codesniffer": "^4.0"
 	},
 	"scripts": {
 		"php-cs-fixer-check": "php-cs-fixer check -v --diff --config=Build/php-cs-fixer/config.php",
 		"php-cs-fixer-fix": "php-cs-fixer fix --no-interaction -v --config=Build/php-cs-fixer/config.php",
 		"phpmd": "phpmnd ./ --exclude=./.ddev/ --exclude=./.github/ --exclude=./examples/ --exclude=./vendor/ --hint",
 		"composer-require-checker": "composer-require-checker check --config-file=Build/composer-require-checker/config.json composer.json",
-		"phpstan": "phpstan analyse --configuration Build/phpstan/phpstan.neon",
+		"phpcs": "phpcs --standard=Build/phpcs/phpcs.xml examples src tests",
+		"phpstan": "phpstan analyse --configuration Build/phpstan/phpstan.local.neon",
 		"phpunit": "phpunit --no-coverage --configuration Build/phpunit/UnitTests.xml",
 		"phpunit-coverage": "XDEBUG_MODE=coverage phpunit --coverage-clover .cache/clover.xml --configuration Build/phpunit/UnitTests.xml",
 		"static-analysis": [

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PhpImap;
 
+use PhpImap\Exceptions\ConnectionException;
+
 /**
  * @see https://github.com/barbushin/php-imap
  *
@@ -17,7 +19,7 @@ class DataPartInfo
 
     public ?string $charset;
 
-    protected ?string $data = null;
+    protected bool|string|null $data = null;
 
     public function __construct(
         public readonly Mailbox $mail,
@@ -27,15 +29,18 @@ class DataPartInfo
         public readonly int $options
     ) {}
 
+    /**
+     * @throws ConnectionException
+     */
     public function fetch(): string
     {
         if ($this->part === 0) {
             $this->data = Imap::body($this->mail->getImapStream(), $this->id, $this->options);
         } else {
             if ($this->data !== null) {
-                return $this->data;
+                return is_string($this->data) ? $this->data : '';
             }
-            $this->data = Imap::fetchbody($this->mail->getImapStream(), $this->id, $this->part, $this->options);
+            $this->data = Imap::fetchBody($this->mail->getImapStream(), $this->id, $this->part, $this->options);
         }
 
         return $this->decodeAfterFetch($this->data);
@@ -43,20 +48,13 @@ class DataPartInfo
 
     public function decodeAfterFetch(string $data): string
     {
-        switch ($this->encoding) {
-            case \ENC8BIT:
-                $this->data = \imap_utf8($data);
-                break;
-            case \ENCBINARY:
-                $this->data = \imap_binary($data);
-                break;
-            case \ENCBASE64:
-                $this->data = \base64_decode($data);
-                break;
-            case \ENCQUOTEDPRINTABLE:
-                $this->data = \quoted_printable_decode($data);
-                break;
-        }
+        $this->data = match ($this->encoding) {
+            \ENCBINARY => \imap_binary($data),
+            \ENCBASE64 => \base64_decode($data),
+            \ENCQUOTEDPRINTABLE => \quoted_printable_decode($data),
+            // also responsible for \ENC8BIT
+            default => \imap_utf8($data),
+        };
 
         return $this->convertEncodingAfterFetch();
     }
@@ -71,6 +69,6 @@ class DataPartInfo
             $this->data = $this->mail->convertToUtf8($this->data, $this->charset);
         }
 
-        return ($this->data === null) ? '' : $this->data;
+        return is_string($this->data) ? $this->data : '';
     }
 }

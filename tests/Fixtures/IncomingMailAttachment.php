@@ -10,15 +10,15 @@ class IncomingMailAttachment extends Base
 {
     public ?string $overrideGetFileInfoMimeType;
 
-    public function getFileInfo(int $fileinfoConst = \FILEINFO_NONE): string
+    public function getFileInfo(int $fileInformationConstant = \FILEINFO_NONE): string
     {
         if (
-            $fileinfoConst === \FILEINFO_MIME_TYPE
+            $fileInformationConstant === \FILEINFO_MIME_TYPE
             && isset($this->overrideGetFileInfoMimeType)
         ) {
             return $this->overrideGetFileInfoMimeType;
         }
 
-        return parent::getFileInfo($fileinfoConst);
+        return parent::getFileInfo($fileInformationConstant);
     }
 }

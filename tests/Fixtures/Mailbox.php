@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace PhpImap\Tests\Fixtures;
 
+use PhpImap\Entities\HostnameAndAddress;
+use PhpImap\Entities\PartStructure;
+use PhpImap\IncomingMail;
 use PhpImap\Mailbox as BaseMailbox;
 
 class Mailbox extends BaseMailbox
@@ -31,24 +34,57 @@ class Mailbox extends BaseMailbox
         return $this->decodeRFC2231($string);
     }
 
-    public function exposedLowercaseMbListEncodings(): array
-    {
-        return $this->lowercase_mb_list_encodings();
-    }
-
     /**
      * @throws \Exception
      */
-    public function exposedPossiblyGetEmailAndNameFromRecipient(object $recipient): ?array
+    public function exposeInitMailPart(
+        IncomingMail $mail,
+        PartStructure $partStructure,
+        string|int $partNumber,
+        bool $markAsSeen = true
+    ): void {
+        $this->initMailPart($mail, $partStructure, $partNumber, $markAsSeen);
+    }
+
+    /**
+     * @return string[]
+     */
+    public function exposedLowercaseMbListEncodings(): array
+    {
+        return $this->lowercaseMbListEncodings();
+    }
+
+    /**
+     * @phpstan-return array{0: string, 1: null|string}|null
+     *
+     * @throws \Exception
+     */
+    public function exposedPossiblyGetEmailAndNameFromRecipient(HostnameAndAddress $recipient): ?array
     {
         return $this->possiblyGetEmailAndNameFromRecipient($recipient);
     }
 
     /**
+     * @phpstan-param array{0: HostnameAndAddress, 1?: HostnameAndAddress} $mailboxes
+     *
+     * @phpstan-return array{0: string|null, 1: string|null, 2: string}
+     *
      * @throws \Exception
      */
-    public function exposedPossiblyGetHostNameAndAddress(array $t): array
+    public function exposedPossiblyGetHostNameAndAddress(array $mailboxes): array
     {
-        return $this->possiblyGetHostNameAndAddress($t);
+        return $this->possiblyGetHostNameAndAddress($mailboxes);
+    }
+
+    /**
+     * @param HostnameAndAddress[] $recipients
+     *
+     * @return array{0: array<string, string|null>, 1: string}
+     *
+     * @throws \Exception
+     */
+    public function exposeParseRecipientList(array $recipients): array
+    {
+        return $this->parseRecipientList($recipients);
     }
 }

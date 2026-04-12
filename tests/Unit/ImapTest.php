@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace PhpImap\Tests\Unit;
 
+use PhpImap\Entities\ComposeBody;
+use PhpImap\Entities\ComposeEnvelope;
 use PhpImap\Exceptions\ConnectionException;
 use PhpImap\Imap;
+use PhpImap\Tests\Fixtures\Constants;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -51,7 +54,7 @@ final class ImapTest extends TestCase
         return [
             'ASCII' => ['INBOX', 'INBOX'],
             'German umlauts' => ['Über uns', 'Über uns'],
-            'French accents' => ['Éléments envoyés', 'Éléments envoyés'],
+            'French accents' => [Constants::ENVOYES, Constants::ENVOYES],
             'Japanese' => ['日本語', '日本語'],
             'Chinese' => ['简体中文', '简体中文'],
             'Russian' => ['русский', 'русский'],
@@ -75,7 +78,7 @@ final class ImapTest extends TestCase
     #[Test]
     public function testEncodeStringToUtf7ImapProducesValidUtf7(): void
     {
-        $result = Imap::encodeStringToUtf7Imap('Éléments envoyés');
+        $result = Imap::encodeStringToUtf7Imap(Constants::ENVOYES);
 
         self::assertSame('&AMk-l&AOk-ments envoy&AOk-s', $result);
     }
@@ -85,7 +88,7 @@ final class ImapTest extends TestCase
     {
         $this->expectException(ConnectionException::class);
 
-        Imap::EnsureConnection('not a connection', 'testMethod', 1);
+        Imap::ensureConnection('not a connection', 'testMethod', 1);
     }
 
     #[Test]
@@ -93,7 +96,7 @@ final class ImapTest extends TestCase
     {
         $this->expectException(ConnectionException::class);
 
-        Imap::EnsureConnection(null, 'testMethod', 1);
+        Imap::ensureConnection(null, 'testMethod', 1);
     }
 
     #[Test]
@@ -101,48 +104,50 @@ final class ImapTest extends TestCase
     {
         $this->expectException(ConnectionException::class);
 
-        Imap::EnsureConnection(42, 'someMethod', 2);
+        Imap::ensureConnection(42, 'someMethod', 2);
     }
 
     #[Test]
     public function testMailComposeSimple(): void
     {
-        $envelope = ['subject' => 'Test Subject'];
+        $envelope = new ComposeEnvelope('Test Subject');
         $body = [
-            [
+            ComposeBody::fromArray([
                 'type' => \TYPETEXT,
-                'contents.data' => 'Hello World',
-            ],
+                'contents.data' => Constants::HELLO_WORLD,
+            ]),
         ];
 
-        $result = Imap::mail_compose($envelope, $body);
+        $result = Imap::mailCompose($envelope, $body);
+        self::assertIsString($result);
 
-        self::assertStringContainsString('Subject: Test Subject', $result);
-        self::assertStringContainsString('Hello World', $result);
+        self::assertStringContainsString(sprintf(Constants::SUBJECT, 'Test Subject'), $result);
+        self::assertStringContainsString(Constants::HELLO_WORLD, $result);
     }
 
     #[Test]
     public function testMailComposeMultipart(): void
     {
-        $envelope = ['subject' => 'Multipart Test'];
+        $envelope = new ComposeEnvelope('Multipart Test');
         $body = [
-            [
+            ComposeBody::fromArray([
                 'type' => \TYPEMULTIPART,
-            ],
-            [
+            ]),
+            ComposeBody::fromArray([
                 'type' => \TYPETEXT,
                 'contents.data' => 'plain text',
-            ],
-            [
+            ]),
+            ComposeBody::fromArray([
                 'type' => \TYPETEXT,
                 'subtype' => 'html',
                 'contents.data' => '<b>html</b>',
-            ],
+            ]),
         ];
 
-        $result = Imap::mail_compose($envelope, $body);
+        $result = Imap::mailCompose($envelope, $body);
+        self::assertIsString($result);
 
-        self::assertStringContainsString('Subject: Multipart Test', $result);
+        self::assertStringContainsString(sprintf(Constants::SUBJECT, 'Multipart Test'), $result);
         self::assertStringContainsString('MULTIPART/MIXED', $result);
         self::assertStringContainsString('plain text', $result);
         self::assertStringContainsString('<b>html</b>', $result);
@@ -154,5 +159,117 @@ final class ImapTest extends TestCase
         Imap::flushImapErrors();
 
         $this->addToAssertionCount(1);
+    }
+
+    #[Test]
+    public function testMailComposeDeprecatedAliasReturnsSameResult(): void
+    {
+        $envelope = new ComposeEnvelope('Alias Test');
+        $body = [
+            ComposeBody::fromArray([
+                'type' => \TYPETEXT,
+                'contents.data' => Constants::HELLO_WORLD,
+            ]),
+        ];
+
+        self::assertSame(
+            Imap::mailCompose($envelope, $body),
+            Imap::mail_compose($envelope, $body)
+        );
+    }
+
+    #[Test]
+    public function testMailComposeWithCharset(): void
+    {
+        $envelope = new ComposeEnvelope('Charset Test');
+        $body = [
+            ComposeBody::fromArray([
+                'type' => \TYPETEXT,
+                'charset' => 'UTF-8',
+                'contents.data' => 'Héllo Wörld',
+            ]),
+        ];
+
+        $result = Imap::mailCompose($envelope, $body);
+        self::assertIsString($result);
+        self::assertStringContainsString('UTF-8', $result);
+        self::assertStringContainsString('Héllo Wörld', $result);
+    }
+
+    #[Test]
+    public function testMailComposeWithBase64Encoding(): void
+    {
+        $envelope = new ComposeEnvelope('Encoding Test');
+        $body = [
+            ComposeBody::fromArray([
+                'type' => \TYPETEXT,
+                'encoding' => \ENCBASE64,
+                'contents.data' => \base64_encode(Constants::HELLO_WORLD),
+            ]),
+        ];
+
+        $result = Imap::mailCompose($envelope, $body);
+        self::assertIsString($result);
+        self::assertStringContainsString('BASE64', $result);
+    }
+
+    #[Test]
+    public function testMailComposeWithDisposition(): void
+    {
+        $envelope = new ComposeEnvelope('Disposition Test');
+        $body = [
+            ComposeBody::fromArray([
+                'type' => \TYPEAPPLICATION,
+                'subtype' => 'octet-stream',
+                'encoding' => \ENCBASE64,
+                'disposition' => ['filename' => 'test.bin'],
+                'disposition.type' => 'attachment',
+                'contents.data' => \base64_encode('binary data'),
+            ]),
+        ];
+
+        $result = Imap::mailCompose($envelope, $body);
+        self::assertIsString($result);
+        self::assertStringContainsString('test.bin', $result);
+        self::assertStringContainsString('attachment', $result);
+    }
+
+    #[Test]
+    public function testMailComposeWithDescription(): void
+    {
+        $envelope = new ComposeEnvelope('Description Test');
+        $body = [
+            ComposeBody::fromArray([
+                'type' => \TYPETEXT,
+                'description' => 'A plain text part',
+                'contents.data' => Constants::HELLO_WORLD,
+            ]),
+        ];
+
+        $result = Imap::mailCompose($envelope, $body);
+        self::assertIsString($result);
+        self::assertStringContainsString('A plain text part', $result);
+    }
+
+    #[Test]
+    public function testEnsureConnectionExceptionContainsMethodName(): void
+    {
+        try {
+            Imap::ensureConnection(null, 'MyClass::myMethod', 1);
+            self::fail('Expected ConnectionException was not thrown');
+        } catch (ConnectionException $e) {
+            self::assertStringContainsString('MyClass::myMethod', $e->getMessage());
+        }
+    }
+
+    #[Test]
+    public function testEnsureConnectionExceptionContainsArgumentNumber(): void
+    {
+        try {
+            Imap::ensureConnection(null, 'testMethod', 3);
+            self::fail('Expected ConnectionException was not thrown');
+        } catch (ConnectionException $e) {
+            self::assertStringContainsString('3', $e->getMessage());
+        }
     }
 }

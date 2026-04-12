@@ -1,21 +1,17 @@
 includes:
-  - phpstan-baseline.neon
-  - ../../vendor/phpstan/phpstan-phpunit/extension.neon
-  - ../../vendor/phpstan/phpstan-phpunit/rules.neon
+  - %rootDir%/../../phpstan/phpstan-phpunit/extension.neon
+  - %rootDir%/../../phpstan/phpstan-phpunit/rules.neon
 
 parameters:
-  # Use local .cache dir instead of /tmp
-  tmpDir: ../../.cache/phpstan
-
-  level: 5
+  level: 9
 
   bootstrapFiles:
-    - phpstan-constants.php
+    - %currentWorkingDirectory%/Build/phpstan/phpstan-constants.php
 
-  paths:
-    - ../../examples
-    - ../../src
-    - ../../tests
+  excludePaths:
+    analyse:
+      - %currentWorkingDirectory%/tests
+      - %currentWorkingDirectory%/Build
 
   # In 2026, this option does not help that much any more since our code base is moving to PHP 8
   # and native PHP types. It certainly does not hurt to re-check this every once in a while to
@@ -26,5 +22,5 @@ parameters:
   ignoreErrors:
     # imap_close() returns bool in PHP <8.4 and void since PHP 8.4
     - identifier: booleanNot.alwaysFalse
-      path: ../../src/PhpImap/Imap.php
+      path: %currentWorkingDirectory%/src/PhpImap/Imap.php
       reportUnmatched: false

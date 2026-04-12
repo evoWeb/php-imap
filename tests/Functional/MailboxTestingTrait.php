@@ -7,6 +7,7 @@
  *
  * @author BAPCLTD-Marv
  */
+
 declare(strict_types=1);
 
 namespace PhpImap\Tests\Functional;
@@ -20,14 +21,14 @@ use Random\RandomException;
 /**
  * @phpstan-import-type MAILBOX_ARGS from AbstractMailboxTest
  */
-trait LiveMailboxTestingTrait
+trait MailboxTestingTrait
 {
     /**
      * Provides constructor arguments for a live mailbox.
      *
      * @return array<string, MAILBOX_ARGS>
      */
-    public static function MailBoxProvider(): array
+    public static function mailBoxProvider(): array
     {
         $sets = [];
 
@@ -50,7 +51,7 @@ trait LiveMailboxTestingTrait
     /**
      * Get instance of Mailbox, pre-set to a random mailbox.
      *
-     * @return (Mailbox|HiddenString|string)[]
+     * @phpstan-return array{0: Mailbox, 1: string, 2: HiddenString}
      *
      * @throws InvalidParameterException
      * @throws RandomException
@@ -83,7 +84,7 @@ trait LiveMailboxTestingTrait
     /**
      * @phpstan-param MAILBOX_ARGS $mailboxArguments
      *
-     * @return (Mailbox|HiddenString|string)[]
+     * @phpstan-return array{0: Mailbox, 1: string, 2: HiddenString}
      *
      * @throws ConnectionException
      * @throws InvalidParameterException

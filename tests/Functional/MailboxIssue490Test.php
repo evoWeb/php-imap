@@ -7,22 +7,23 @@
  *
  * @author BAPCLTD-Marv
  */
+
 declare(strict_types=1);
 
 namespace PhpImap\Tests\Functional;
 
 use ParagonIE\HiddenString\HiddenString;
+use PhpImap\Entities\ComposeBody;
+use PhpImap\Entities\ComposeEnvelope;
 use PhpImap\Exceptions\ConnectionException;
 use PhpImap\Exceptions\InvalidParameterException;
 use PhpImap\Imap;
+use PhpImap\Tests\Fixtures\Constants;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use Random\RandomException;
 
-/**
- * @phpstan-import-type MAILBOX_ARGS from AbstractMailboxTest
- */
 class MailboxIssue490Test extends AbstractMailboxTest
 {
     /**
@@ -32,7 +33,7 @@ class MailboxIssue490Test extends AbstractMailboxTest
      * @throws ConnectionException
      */
     #[Test]
-    #[DataProvider('MailBoxProvider')]
+    #[DataProvider('mailBoxProvider')]
     #[Group('live')]
     #[Group('live-issue-490')]
     public function testGetTextAttachments(
@@ -54,35 +55,25 @@ class MailboxIssue490Test extends AbstractMailboxTest
         $exception = null;
 
         try {
-            $envelope = [
-                'subject' => 'barbushin/php-imap#501: ' . \bin2hex(\random_bytes(16)),
-            ];
+            $envelope = new ComposeEnvelope('barbushin/php-imap#501: ' . \bin2hex(\random_bytes(16)));
 
-            [$searchCriteria] = $this->SubjectSearchCriteriaAndSubject($envelope);
+            [$searchCriteria] = $this->subjectSearchCriteriaAndSubject($envelope);
 
             $search = $mailbox->searchMailbox($searchCriteria);
 
-            self::assertCount(
-                0,
-                $search,
-                (
-                    'If a subject was found,' .
-                    ' then the message is insufficiently unique to assert that' .
-                    ' a newly-appended message was actually created.'
-                )
-            );
+            self::assertCount(0, $search, Constants::SUBJECT_INSUFFICIENT_UNIQUE);
 
-            $message = Imap::mail_compose(
+            $message = Imap::mailCompose(
                 $envelope,
                 [
-                    [
+                    ComposeBody::fromArray([
                         'type' => \TYPEMULTIPART,
-                    ],
-                    [
+                    ]),
+                    ComposeBody::fromArray([
                         'type' => \TYPETEXT,
                         'contents.data' => 'foo',
-                    ],
-                    [
+                    ]),
+                    ComposeBody::fromArray([
                         'type' => \TYPEMULTIPART,
                         'subtype' => 'plain',
                         'description' => 'bar.txt',
@@ -90,8 +81,8 @@ class MailboxIssue490Test extends AbstractMailboxTest
                         'disposition' => ['filename' => 'bar.txt'],
                         'type.parameters' => ['name' => 'bar.txt'],
                         'contents.data' => 'bar',
-                    ],
-                    [
+                    ]),
+                    ComposeBody::fromArray([
                         'type' => \TYPEMULTIPART,
                         'subtype' => 'plain',
                         'description' => 'baz.txt',
@@ -99,7 +90,7 @@ class MailboxIssue490Test extends AbstractMailboxTest
                         'disposition' => ['filename' => 'baz.txt'],
                         'type.parameters' => ['name' => 'baz.txt'],
                         'contents.data' => 'baz',
-                    ],
+                    ]),
                 ]
             );
 
@@ -107,15 +98,7 @@ class MailboxIssue490Test extends AbstractMailboxTest
 
             $search = $mailbox->searchMailbox($searchCriteria);
 
-            self::assertCount(
-                1,
-                $search,
-                (
-                    'If a subject was not found, ' .
-                    ' then Mailbox::appendMessageToMailbox() failed' .
-                    ' despite not throwing an exception.'
-                )
-            );
+            self::assertCount(1, $search, Constants::SUBJECT_NOT_FOUND);
 
             $mail = $mailbox->getMail($search[0], false);
 
@@ -129,6 +112,7 @@ class MailboxIssue490Test extends AbstractMailboxTest
             self::assertSame('bar', $attachments[$keys[0]]->getContents());
             self::assertSame('baz', $attachments[$keys[1]]->getContents());
         } catch (\Exception $exception) {
+            // delaying throw to clean up and close connections before that
         } finally {
             $mailbox->switchMailbox($imapPath->getString());
             $mailbox->deleteMailbox($removeMailbox);

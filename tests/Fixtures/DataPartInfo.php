@@ -8,11 +8,11 @@ use PhpImap\DataPartInfo as Base;
 
 class DataPartInfo extends Base
 {
-    protected ?string $data;
+    protected bool|string|null $data;
 
     public function fetch(): string
     {
-        return $this->decodeAfterFetch($this->data);
+        return is_string($this->data) ? $this->decodeAfterFetch($this->data) : '';
     }
 
     public function setData(?string $data = null): void

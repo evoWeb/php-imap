@@ -57,6 +57,11 @@ composer-require-checker: ##@ Run composer require checker
 ##@
 
 
+.PHONY: phpcs
+phpcs: ##@ Run php code sniffer
+	ddev composer run phpcs
+
+
 .PHONY: phpstan
 phpstan: ##@ Check php with phpstan
 	ddev composer run phpstan
