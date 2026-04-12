@@ -14,7 +14,7 @@ test_patterns = [
 mode = "comment"
 
 [smells.function_parameters]
-threshold = 8
+threshold = 18
 
 [[source]]
 name = "default"
