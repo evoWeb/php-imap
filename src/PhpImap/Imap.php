@@ -131,6 +131,9 @@ final class Imap
         return $result;
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     public static function clearFlagFull(
         Connection $imapStream,
         int|string $sequence,
@@ -149,6 +152,7 @@ final class Imap
     }
 
     /**
+     * @throws \ReflectionException
      * @deprecated since 5.x
      */
     public static function clearflag_full(
@@ -170,13 +174,10 @@ final class Imap
         $result = \imap_close($imapStream, $flag);
 
         $message = 'Could not close imap connection';
-        if (!$result) {
-            if (\CL_EXPUNGE === ($flag & \CL_EXPUNGE)) {
-                $message .= ', messages may not have been expunged';
-            }
-            $message .= '!';
+        if (\CL_EXPUNGE === ($flag & \CL_EXPUNGE)) {
+            $message .= ', messages may not have been expunged';
         }
-        self::assertResultNotFalse($result, $message, 0, 'imap_close');
+        self::assertResultNotFalse($result, $message . '!', 0, 'imap_close');
 
         return $result;
     }
@@ -453,6 +454,9 @@ final class Imap
         return self::mailCompose($envelope, $body);
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     public static function mailCopy(
         Connection $imapStream,
         int|string $messageList,
@@ -471,6 +475,7 @@ final class Imap
     }
 
     /**
+     * @throws \ReflectionException
      * @deprecated since 5.x
      */
     public static function mail_copy(
@@ -482,6 +487,9 @@ final class Imap
         return self::mailCopy($imapStream, $messageList, $mailbox, $options);
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     public static function mailMove(
         Connection $imapStream,
         int|string $messageList,
@@ -500,6 +508,7 @@ final class Imap
     }
 
     /**
+     * @throws \ReflectionException
      * @deprecated since 5.x
      */
     public static function mail_move(
@@ -687,6 +696,9 @@ final class Imap
         return $result;
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     public static function setFlagFull(
         Connection $imapStream,
         int|string $sequence,
@@ -705,6 +717,7 @@ final class Imap
     }
 
     /**
+     * @throws \ReflectionException
      * @deprecated since 5.x
      */
     public static function setflag_full(
@@ -897,6 +910,9 @@ final class Imap
         return self::encodeStringToUtf7Imap(self::ensureRange($sequence, $method, 2, true));
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     private static function callWithSequenceAndString(
         \Closure $callable,
         Connection $imapStream,
