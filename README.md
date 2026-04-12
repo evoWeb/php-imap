@@ -7,9 +7,9 @@
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
 [![Downloads Packagist](https://img.shields.io/packagist/dt/evoweb/php-imap)](https://packagist.org/packages/evoweb/php-imap)
 
-[![CI PHP Unit Tests](https://github.com/evoweb/php-imap/actions/workflows/php_unit_tests.yml/badge.svg?branch=master)](https://github.com/evoweb/php-imap/actions/workflows/php_unit_tests.yml)
-[![CI PHP Static Analysis](https://github.com/evoweb/php-imap/actions/workflows/php_static_analysis.yml/badge.svg?branch=master)](https://github.com/evoweb/php-imap/actions/workflows/php_static_analysis.yml)
-[![CI PHP Code Coverage](https://github.com/evoweb/php-imap/actions/workflows/php_code_coverage.yml/badge.svg?branch=master)](https://github.com/evoweb/php-imap/actions/workflows/php_code_coverage.yml)
+[![PHP Unit Tests](https://github.com/evoWeb/php-imap/actions/workflows/php_unit_tests.yml/badge.svg?branch=develop)](https://github.com/evoWeb/php-imap/actions/workflows/php_unit_tests.yml)
+[![PHP Code Coverage](https://github.com/evoWeb/php-imap/actions/workflows/php_code_coverage.yml/badge.svg?branch=develop)](https://github.com/evoWeb/php-imap/actions/workflows/php_code_coverage.yml)
+[![PHP Static Analysis & Tests](https://github.com/evoWeb/php-imap/actions/workflows/php_static_analysis.yml/badge.svg?branch=develop)](https://github.com/evoWeb/php-imap/actions/workflows/php_static_analysis.yml)
 
 [![Maintainability](https://qlty.sh/gh/evoweb/projects/php-imap/maintainability.svg)](https://qlty.sh/gh/garbast/projects/php-imap)
 [![Code Coverage](https://qlty.sh/gh/evoweb/projects/php-imap/coverage.svg)](https://qlty.sh/gh/garbast/projects/php-imap)
