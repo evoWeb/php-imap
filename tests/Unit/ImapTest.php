@@ -160,4 +160,116 @@ final class ImapTest extends TestCase
 
         $this->addToAssertionCount(1);
     }
+
+    #[Test]
+    public function testMailComposeDeprecatedAliasReturnsSameResult(): void
+    {
+        $envelope = new ComposeEnvelope('Alias Test');
+        $body = [
+            ComposeBody::fromArray([
+                'type' => \TYPETEXT,
+                'contents.data' => Constants::HELLO_WORLD,
+            ]),
+        ];
+
+        self::assertSame(
+            Imap::mailCompose($envelope, $body),
+            Imap::mail_compose($envelope, $body)
+        );
+    }
+
+    #[Test]
+    public function testMailComposeWithCharset(): void
+    {
+        $envelope = new ComposeEnvelope('Charset Test');
+        $body = [
+            ComposeBody::fromArray([
+                'type' => \TYPETEXT,
+                'charset' => 'UTF-8',
+                'contents.data' => 'Héllo Wörld',
+            ]),
+        ];
+
+        $result = Imap::mailCompose($envelope, $body);
+        self::assertIsString($result);
+        self::assertStringContainsString('UTF-8', $result);
+        self::assertStringContainsString('Héllo Wörld', $result);
+    }
+
+    #[Test]
+    public function testMailComposeWithBase64Encoding(): void
+    {
+        $envelope = new ComposeEnvelope('Encoding Test');
+        $body = [
+            ComposeBody::fromArray([
+                'type' => \TYPETEXT,
+                'encoding' => \ENCBASE64,
+                'contents.data' => \base64_encode(Constants::HELLO_WORLD),
+            ]),
+        ];
+
+        $result = Imap::mailCompose($envelope, $body);
+        self::assertIsString($result);
+        self::assertStringContainsString('BASE64', $result);
+    }
+
+    #[Test]
+    public function testMailComposeWithDisposition(): void
+    {
+        $envelope = new ComposeEnvelope('Disposition Test');
+        $body = [
+            ComposeBody::fromArray([
+                'type' => \TYPEAPPLICATION,
+                'subtype' => 'octet-stream',
+                'encoding' => \ENCBASE64,
+                'disposition' => ['filename' => 'test.bin'],
+                'disposition.type' => 'attachment',
+                'contents.data' => \base64_encode('binary data'),
+            ]),
+        ];
+
+        $result = Imap::mailCompose($envelope, $body);
+        self::assertIsString($result);
+        self::assertStringContainsString('test.bin', $result);
+        self::assertStringContainsString('attachment', $result);
+    }
+
+    #[Test]
+    public function testMailComposeWithDescription(): void
+    {
+        $envelope = new ComposeEnvelope('Description Test');
+        $body = [
+            ComposeBody::fromArray([
+                'type' => \TYPETEXT,
+                'description' => 'A plain text part',
+                'contents.data' => Constants::HELLO_WORLD,
+            ]),
+        ];
+
+        $result = Imap::mailCompose($envelope, $body);
+        self::assertIsString($result);
+        self::assertStringContainsString('A plain text part', $result);
+    }
+
+    #[Test]
+    public function testEnsureConnectionExceptionContainsMethodName(): void
+    {
+        try {
+            Imap::ensureConnection(null, 'MyClass::myMethod', 1);
+            self::fail('Expected ConnectionException was not thrown');
+        } catch (ConnectionException $e) {
+            self::assertStringContainsString('MyClass::myMethod', $e->getMessage());
+        }
+    }
+
+    #[Test]
+    public function testEnsureConnectionExceptionContainsArgumentNumber(): void
+    {
+        try {
+            Imap::ensureConnection(null, 'testMethod', 3);
+            self::fail('Expected ConnectionException was not thrown');
+        } catch (ConnectionException $e) {
+            self::assertStringContainsString('3', $e->getMessage());
+        }
+    }
 }

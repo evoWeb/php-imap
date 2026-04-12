@@ -108,7 +108,7 @@ try {
 }
 
 // If $mailsIds is empty, no emails could be found
-if(!$mailsIds) {
+if (!$mailsIds) {
     die('Mailbox is empty');
 }
 
@@ -119,7 +119,7 @@ $mail = $mailbox->getMail($mailsIds[0]);
 
 // Show, if $mail has one or more attachments
 echo "\nMail has attachments? ";
-if($mail->hasAttachments()) {
+if ($mail->hasAttachments()) {
     echo "Yes\n";
 } else {
     echo "No\n";
@@ -169,6 +169,18 @@ print_r($mails_ids);
 ```
 
 ### Upgrading from below 6.x
+
+BREAKING: Change handling of data. For clearer typing the following entities were introduced:
+
+- ComposeBody
+- ComposeEnvelope
+- HostnameAndAddress
+- MailOverview
+- PartStructure
+- PartStructureParameter
+
+Before replacing any array with these, the tests where improved to cover them all.
+
 
 BREAKING: Before each method in Imap checked if it really got a connection handed. Now
 the functions are enforcing connection with typed arguments. You are still able to use
