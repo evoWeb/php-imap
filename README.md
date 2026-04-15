@@ -58,17 +58,21 @@ Install the latest available and stable source code from `develop`, which may no
 
 	$ composer require evoWeb/php-imap:dev-develop
 
+## Development
+
+This package supports the development with an ddev configuration. That requires to have docker and ddev installed. In addition the make tool is highly suggested.
+
 ### Run Tests
 
-Before you can run any tests you may need to run `composer install` to install all (development) dependencies.
+Before you can run any tests you may need to run `make install` or `ddev composer install` to install all (development) dependencies.
 
 #### Run all tests
 
-You can run all available tests by running the following command (inside the installed `php-imap` directory): `composer run tests`
+You can run all available tests by running the following command (inside the installed `php-imap` directory): `make test` or `ddev composer run tests`
 
 #### Run only PHPUnit tests
 
-You can run all PHPUnit tests by running the following command (inside the installed `php-imap` directory): `php vendor/bin/phpunit --testdox`
+You can run all PHPUnit tests by running the following command (inside the installed `php-imap` directory): `make phpunit` or `ddev composer run phpunit`
 
 ### Integration with frameworks
 
@@ -156,7 +160,7 @@ $mailbox->setAttachmentsIgnore(true);
 $folders = $mailbox->getMailboxes('*');
 
 // loop through mailboxes
-foreach($folders as $folder) {
+foreach ($folders as $folder) {
 
     // switch to particular mailbox
     $mailbox->switchMailbox($folder['fullpath']);
@@ -170,7 +174,7 @@ print_r($mails_ids);
 
 ### Upgrading from below 6.x
 
-BREAKING: Change handling of data. For clearer typing the following entities were introduced:
+*BREAKING*: Change handling of data. For clearer typing the following entities were introduced:
 
 - ComposeBody
 - ComposeEnvelope
@@ -182,7 +186,7 @@ BREAKING: Change handling of data. For clearer typing the following entities wer
 Before replacing any array with these, the tests where improved to cover them all.
 
 
-BREAKING: Before each method in Imap checked if it really got a connection handed. Now
+*BREAKING*: Before each method in Imap checked if it really got a connection handed. Now
 the functions are enforcing connection with typed arguments. You are still able to use
 Imap::EnsureConnection() yourself if you need to check your argument.
 
@@ -237,8 +241,3 @@ After:
         return Imap::check($this->getImapStream());
     }
 ```
-
-### Recommended
-
-* Google Chrome extension [PHP Console](https://chrome.google.com/webstore/detail/php-console/nfhmhhlpfleoednkpnnnkolmclajemef)
-* Google Chrome extension [JavaScript Errors Notifier](https://chrome.google.com/webstore/detail/javascript-errors-notifie/jafmfknfnkoekkdocjiaipcnmkklaajd)
